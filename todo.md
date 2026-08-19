@@ -22,3 +22,7 @@
 - [x] README setup instructions and mock-data replacement guidance
 - [x] TypeScript, lint, and test verification
 - [x] Final visual and navigation polish
+
+- [x] Make light/dark mode system-aware and explicit-toggle aware across app chrome and status bar
+- [x] Inspect and synchronize the complete Air-Mesh codebase to the requested GitHub repository
+- [x] Verify the synchronized repository and updated theme behavior
