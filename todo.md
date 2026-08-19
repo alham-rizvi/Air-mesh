@@ -35,3 +35,11 @@
 - [x] Implement dashboard static-file serving with SPA fallback
 - [x] Add backend README, fixtures, and offline-friendly verification
 - [x] Run Rust formatting, tests, and build verification
+
+- [x] Remove misleading fake live/demo claims and label mock data honestly
+- [x] Add offline-first local account setup and persistence
+- [x] Add user-configurable accent/theme colors constrained to accessible Air-Mesh-compatible palettes
+- [x] Add Android permission request flow with web/iOS-safe fallbacks
+- [x] Detect device/platform identity and show a truthful local device status
+- [x] Test onboarding, theme customization, permissions, device status, and core tabs
+- [x] Push the complete updated project to GitHub
