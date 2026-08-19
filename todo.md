@@ -74,3 +74,11 @@
 - [x] Verify Android native paths through the GitHub remote tree/API
 - [x] Correct any missing Android native files in the GitHub repository
 - [x] Verify clickable remote links for AndroidManifest.xml and the Android project directory
+
+- [x] Audit frontend, mesh, security/database, backend, native Android, and GitHub interfaces
+- [x] Connect encrypted message send/receive seams with database persistence and audit logging
+- [x] Connect routing-table persistence, mesh status, SOS broadcast, and report courier sync seams
+- [x] Add retry, corruption, duplicate, disconnection, and cleanup safeguards
+- [x] Add integration/unit tests and manual device test documentation with actual limitations
+- [x] Add architecture, demo, testing, and release documentation
+- [x] Reconcile every local source line with GitHub main and verify the remote tree

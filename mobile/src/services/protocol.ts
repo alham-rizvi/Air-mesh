@@ -2,6 +2,7 @@ import type { EncryptedMessage, RoutingEntry } from './types';
 
 export const CHUNK_SIZE = 512;
 export const DEFAULT_TTL = 5;
+export const CHUNK_EXPIRY_MS = 60_000;
 
 export interface MessageChunk {
   message_id: string;
@@ -43,16 +44,20 @@ export function chunkMessage(payload: EncryptedMessage, chunkSize = CHUNK_SIZE):
 export class ChunkAssembler {
   private readonly chunks = new Map<string, Map<number, MessageChunk>>();
   private readonly seen = new Set<string>();
+  private readonly touched = new Map<string, number>();
 
   hasSeen(messageId: string): boolean {
     return this.seen.has(messageId);
   }
 
   accept(chunk: MessageChunk): EncryptedMessage | null {
+    this.cleanupExpired();
     if (this.seen.has(chunk.message_id)) return null;
+    if (!chunk.message_id || chunk.total_chunks < 1 || chunk.total_chunks > 2048 || chunk.sequence_number < 0 || chunk.sequence_number >= chunk.total_chunks || !chunk.payload) return null;
     const messageChunks = this.chunks.get(chunk.message_id) ?? new Map<number, MessageChunk>();
     messageChunks.set(chunk.sequence_number, chunk);
     this.chunks.set(chunk.message_id, messageChunks);
+    this.touched.set(chunk.message_id, Date.now());
     if (messageChunks.size < chunk.total_chunks) return null;
     const ordered = Array.from(messageChunks.values()).sort((a, b) => a.sequence_number - b.sequence_number);
     if (ordered.some((part, index) => part.sequence_number !== index)) return null;
@@ -61,11 +66,23 @@ export class ChunkAssembler {
     const message = decodeMessage(bytes);
     this.seen.add(chunk.message_id);
     this.chunks.delete(chunk.message_id);
+    this.touched.delete(chunk.message_id);
     return message;
   }
 
   markSeen(messageId: string): void {
     this.seen.add(messageId);
+    this.chunks.delete(messageId);
+    this.touched.delete(messageId);
+  }
+
+  cleanupExpired(now = Date.now()): void {
+    for (const [messageId, touchedAt] of this.touched) {
+      if (now - touchedAt > CHUNK_EXPIRY_MS) {
+        this.touched.delete(messageId);
+        this.chunks.delete(messageId);
+      }
+    }
   }
 }
 
