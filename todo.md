@@ -70,3 +70,7 @@
 
 - [x] Verify exact AndroidManifest.xml path in the local and GitHub native projects
 - [x] Push any pending Air-Mesh changes to GitHub and verify the remote commit
+
+- [x] Verify Android native paths through the GitHub remote tree/API
+- [x] Correct any missing Android native files in the GitHub repository
+- [x] Verify clickable remote links for AndroidManifest.xml and the Android project directory
