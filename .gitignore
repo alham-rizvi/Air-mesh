@@ -7,7 +7,6 @@ node_modules/
 .expo/
 dist/
 web-build/
-expo-env.d.ts
 
 # Native
 .kotlin/
@@ -36,6 +35,8 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Expo type declarations are committed for reproducible TypeScript builds.
 
 app-example
 
