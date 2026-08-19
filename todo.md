@@ -82,3 +82,8 @@
 - [x] Add integration/unit tests and manual device test documentation with actual limitations
 - [x] Add architecture, demo, testing, and release documentation
 - [x] Reconcile every local source line with GitHub main and verify the remote tree
+
+- [x] Audit Android SDK, Java, Gradle, Expo, and native project prerequisites
+- [x] Prepare reproducible Android environment checks and development-build scripts
+- [x] Verify manifest, permissions, BLE/dev-client configuration, and release workflow without sandbox APK compilation
+- [ ] Push final environment documentation/configuration to GitHub main

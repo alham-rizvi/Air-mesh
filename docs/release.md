@@ -14,3 +14,11 @@ The generated native Android project is now committed under `android/`. The mani
 The manifest includes Bluetooth scan/connect, location, nearby Wi-Fi, microphone, notification, and related Expo-generated permissions. The project also includes `expo-dev-client` and `react-native-ble-plx` dependencies. The BLE service remains behind an injected adapter so the app can build safely before native transport wiring is completed.
 
 Use `pnpm expo run:android` on a machine with the Android SDK and a connected emulator/device. Use `pnpm exec expo prebuild --platform android` after changing Expo config. Do not delete `android/` if you intend to maintain native changes directly; otherwise regenerate it from `app.config.ts` and package configuration.
+
+## Android environment preflight
+
+Run `pnpm android:env` before opening the native project. It checks the generated Gradle wrapper, manifest, Kotlin application classes, and Bluetooth/nearby permissions without compiling an APK. A local Android SDK with `ANDROID_SDK_ROOT`, `adb`, and platform tools is required for `pnpm expo run:android`; Java 17 is the reproducible CI baseline.
+
+The sandbox does not compile APKs manually. The supported release path is `.github/workflows/android-release.yml`, which installs Java 17 and the Android SDK, runs Expo Doctor, runs the preflight, regenerates the Android project, builds `app-release.apk`, and attaches it to a GitHub Release. Trigger it manually from Actions or push a semantic version tag such as `v0.3.0`.
+
+The Android native project is committed for Android Studio inspection, but the generated `android/app/debug.keystore` is intentionally excluded because it is a local signing artifact. Release signing should be added later through protected GitHub secrets or a managed signing service.
