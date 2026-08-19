@@ -44,11 +44,17 @@
 - [x] Test onboarding, theme customization, permissions, device status, and core tabs
 - [x] Push the complete updated project to GitHub
 
-- [ ] Add carefully selected web-sourced visual assets with local copies and attribution notes
-- [ ] Make permission requests explicit in onboarding and Settings, with Android rationale and denied/unsupported states
-- [ ] Add TypeScript mesh service interfaces and development-build transport boundary
-- [ ] Add BLE chunking, message deduplication, TTL routing, and routing-table helpers
-- [ ] Add courier report sync service interface with BLE-first and local HTTP fallback
-- [ ] Add service documentation and release preparation notes
-- [ ] Verify the new app/service behavior and synchronize to GitHub
-- [ ] Prepare GitHub release metadata; APK binary requires the managed mobile build/release flow
+- [x] Add carefully selected web-sourced visual assets with local copies and attribution notes
+- [x] Make permission requests explicit in onboarding and Settings, with Android rationale and denied/unsupported states
+- [x] Add TypeScript mesh service interfaces and development-build transport boundary
+- [x] Add BLE chunking, message deduplication, TTL routing, and routing-table helpers
+- [x] Add courier report sync service interface with BLE-first and local HTTP fallback
+- [x] Add service documentation and release preparation notes
+- [x] Verify the new app/service behavior and synchronize to GitHub
+- [x] Prepare GitHub release metadata; APK binary requires the managed mobile build/release flow
+
+- [x] Generate and commit the Android native project directory
+- [x] Verify AndroidManifest.xml and native permissions are present
+- [x] Add or document the native BLE development-build dependency boundary
+- [x] Add Android build/run documentation and generated-file caveats
+- [x] Verify native generation and synchronize Android files to GitHub
