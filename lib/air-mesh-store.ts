@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 export type ThemeMode = 'system' | 'dark' | 'light';
+export type AccentColor = '#10A37F' | '#2F80ED' | '#8E5CF6' | '#D97706';
 export type Role = 'User' | 'Shelter' | 'Courier' | 'Base';
 export type Delivery = 'sent' | 'delivered' | 'read';
 
@@ -9,31 +10,21 @@ export type Message = { id: string; text: string; time: string; sent: boolean; d
 export type Contact = { id: string; name: string; initials: string; role: Role; distance: string; signal: number; lastSeen: string; nearby?: boolean };
 export type Report = { id: string; shelter: string; time: string; people: number; needs: string[]; severity: 'Low' | 'Medium' | 'High'; status: 'Local' | 'Synced to Courier' | 'Synced to Base' };
 
-export const mockChats: Chat[] = [
-  { id: 'maya', name: 'Maya Chen', initials: 'MC', preview: 'We found a clear route east.', time: '09:42', unread: 2, relay: 'Via 2 relays', online: true },
-  { id: 'north', name: 'North Shelter', initials: 'NS', preview: 'Water inventory updated.', time: '08:16', unread: 0, relay: 'Direct', online: true },
-  { id: 'field', name: 'Field Team', initials: 'FT', preview: 'Via relay · 3 attachments', time: 'Yesterday', unread: 5, relay: 'Via 3 relays', online: false },
-];
+export const mockChats: Chat[] = [];
 
-export const mockContacts: Contact[] = [
-  { id: 'maya', name: 'Maya Chen', initials: 'MC', role: 'User', distance: '~80m', signal: 4, lastSeen: 'Active now' },
-  { id: 'north', name: 'North Shelter', initials: 'NS', role: 'Shelter', distance: '~210m', signal: 3, lastSeen: '2 min ago' },
-  { id: 'courier', name: 'Courier 07', initials: 'C7', role: 'Courier', distance: '~340m', signal: 2, lastSeen: '5 min ago', nearby: true },
-  { id: 'base', name: 'Base Station', initials: 'BS', role: 'Base', distance: '~480m', signal: 1, lastSeen: '12 min ago', nearby: true },
-];
+export const mockContacts: Contact[] = [];
 
-export const mockReports: Report[] = [
-  { id: 'r1', shelter: 'SH-001', time: 'Today · 09:18', people: 38, needs: ['Water', 'Medical'], severity: 'High', status: 'Local' },
-  { id: 'r2', shelter: 'SH-004', time: 'Yesterday · 17:40', people: 21, needs: ['Food'], severity: 'Medium', status: 'Synced to Courier' },
-  { id: 'r3', shelter: 'SH-002', time: 'Yesterday · 14:12', people: 16, needs: ['Shelter'], severity: 'Low', status: 'Synced to Base' },
-];
+export const mockReports: Report[] = [];
 
-export const useThemeStore = create<{ mode: ThemeMode; setMode: (mode: ThemeMode) => void }>(((set) => ({ mode: 'dark', setMode: (mode) => set({ mode }) })));
+export const useThemeStore = create<{ mode: ThemeMode; accent: AccentColor; setMode: (mode: ThemeMode) => void; setAccent: (accent: AccentColor) => void }>(((set) => ({ mode: 'dark', accent: '#10A37F', setMode: (mode) => set({ mode }), setAccent: (accent) => set({ accent }) })));
+export type LocalAccount = { displayName: string; deviceId: string; createdAt: string };
+export const useAccountStore = create<{ account: LocalAccount | null; setAccount: (account: LocalAccount) => void }>(((set) => ({ account: null, setAccount: (account) => set({ account }) })));
+export const useDeviceStore = create<{ permissionStatus: 'unknown' | 'granted' | 'denied' | 'unsupported'; platform: string; model: string; setPermissionStatus: (status: 'unknown' | 'granted' | 'denied' | 'unsupported') => void; setDevice: (platform: string, model: string) => void }>(((set) => ({ permissionStatus: 'unknown', platform: 'unknown', model: 'unknown', setPermissionStatus: (permissionStatus) => set({ permissionStatus }), setDevice: (platform, model) => set({ platform, model }) })));
 export const useChatStore = create<{ chats: Chat[]; messages: Record<string, Message[]>; addMessage: (chatId: string, text: string) => void }>(((set) => ({
   chats: mockChats,
-  messages: { maya: [{ id: '1', text: 'Are you receiving this?', time: '09:40', sent: false, relay: 'Via 2 relays' }, { id: '2', text: 'Loud and clear. Mesh is stable here.', time: '09:41', sent: true, delivery: 'read' }, { id: '3', text: 'We found a clear route east.', time: '09:42', sent: false, relay: 'Via 2 relays' }] },
+  messages: {},
   addMessage: (chatId, text) => set((state) => ({ messages: { ...state.messages, [chatId]: [...(state.messages[chatId] || []), { id: String(Date.now()), text, time: 'Now', sent: true, delivery: 'sent', relay: 'Via 2 relays' }] } })),
 })));
 export const useContactStore = create<{ contacts: Contact[] }>(() => ({ contacts: mockContacts }));
 export const useReportStore = create<{ reports: Report[]; addReport: (report: Report) => void }>(((set) => ({ reports: mockReports, addReport: (report) => set((state) => ({ reports: [report, ...state.reports] })) })));
-export const useSettingsStore = create<{ role: Role; bluetooth: boolean; wifi: boolean; relay: boolean; setRole: (role: Role) => void; toggle: (key: 'bluetooth' | 'wifi' | 'relay') => void }>(((set) => ({ role: 'User', bluetooth: true, wifi: true, relay: true, setRole: (role) => set({ role }), toggle: (key) => set((state) => ({ [key]: !state[key] })) })));
+export const useSettingsStore = create<{ role: Role; bluetooth: boolean; wifi: boolean; relay: boolean; setRole: (role: Role) => void; toggle: (key: 'bluetooth' | 'wifi' | 'relay') => void }>(((set) => ({ role: 'User', bluetooth: false, wifi: false, relay: false, setRole: (role) => set({ role }), toggle: (key) => set((state) => ({ [key]: !state[key] })) })));
