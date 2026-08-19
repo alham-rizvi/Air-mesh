@@ -86,6 +86,7 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    "react-native-quick-crypto",
     [
       "expo-audio",
       {

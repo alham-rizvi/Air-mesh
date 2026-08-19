@@ -5,3 +5,6 @@ export * from './file-service';
 export * from './voice-service';
 export * from './ble-transport';
 export * from './sync-service';
+export * from './db';
+export * from './cryptoService';
+export * from './auditService';

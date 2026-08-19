@@ -23,3 +23,12 @@ During first account setup, the app explains why nearby-device permissions are n
 ## Project notes
 
 The main demo surface is `app/(tabs)/index.tsx`. It contains the screen-level flows and reusable primitives needed for this frontend foundation. The initialized template's server and database capabilities remain unused because the brief requested mock frontend data and no real networking or database integration.
+
+
+## Local database and encryption
+
+The security/data foundation lives under `mobile/src/services/` and `mobile/src/types/`. `db.native.ts` creates the SQLite schema in `airmesh.db` on app startup and provides CRUD for messages, contacts, chats, reports, audit logs, routing entries, and files. `db.ts` provides the same interface with in-memory storage for web, Vitest, and mock development.
+
+`cryptoService.ts` defines identity and ephemeral key-pair generation, public-key import/export, X25519 shared-secret derivation, AES-256-GCM payload encryption/decryption, and contact pairing. The native path dynamically loads `react-native-quick-crypto`; the mock path is intentionally non-secure and exists only so frontend tests can run without native modules. `auditService.ts` records local ISO8601 events without storing plaintext message bodies or private keys.
+
+The app initializes the active database service in `app/_layout.tsx`. The schema and security boundaries are documented in `docs/database-schema.md`. For real Android/iOS builds, regenerate native files after changing native dependencies, then use platform secure storage for private-key persistence before production deployment.
