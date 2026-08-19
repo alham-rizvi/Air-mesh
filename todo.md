@@ -42,4 +42,13 @@
 - [x] Add Android permission request flow with web/iOS-safe fallbacks
 - [x] Detect device/platform identity and show a truthful local device status
 - [x] Test onboarding, theme customization, permissions, device status, and core tabs
-- [ ] Push the complete updated project to GitHub
+- [x] Push the complete updated project to GitHub
+
+- [ ] Add carefully selected web-sourced visual assets with local copies and attribution notes
+- [ ] Make permission requests explicit in onboarding and Settings, with Android rationale and denied/unsupported states
+- [ ] Add TypeScript mesh service interfaces and development-build transport boundary
+- [ ] Add BLE chunking, message deduplication, TTL routing, and routing-table helpers
+- [ ] Add courier report sync service interface with BLE-first and local HTTP fallback
+- [ ] Add service documentation and release preparation notes
+- [ ] Verify the new app/service behavior and synchronize to GitHub
+- [ ] Prepare GitHub release metadata; APK binary requires the managed mobile build/release flow
