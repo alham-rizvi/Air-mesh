@@ -1,0 +1,84 @@
+import type { Device, MeshTransport } from './types';
+
+export interface BleCharacteristicLike {
+  uuid: string;
+  value?: string | null;
+}
+
+export interface BlePeripheralLike {
+  id: string;
+  name?: string | null;
+  localName?: string | null;
+  rssi?: number | null;
+  connect(): Promise<BlePeripheralLike>;
+  discoverAllServicesAndCharacteristics(): Promise<BlePeripheralLike>;
+  monitorCharacteristicForService(serviceUuid: string, characteristicUuid: string, listener: (error: Error | null, characteristic: BleCharacteristicLike | null) => void): { remove(): void };
+  writeCharacteristicWithResponseForService(serviceUuid: string, characteristicUuid: string, value: string): Promise<BleCharacteristicLike>;
+}
+
+export interface BleClientLike {
+  startDeviceScan(serviceUuids: string[] | null, options: object | null, listener: (error: Error | null, device: BlePeripheralLike | null) => void): void;
+  stopDeviceScan(): void;
+  connectToDevice(deviceId: string): Promise<BlePeripheralLike>;
+}
+
+export const AIR_MESH_SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+export const AIR_MESH_CHARACTERISTICS = {
+  DEVICE_INFO: '4fafc202-1fb5-459e-8fcc-c5c9c331914b',
+  ROUTING_TABLE: '4fafc203-1fb5-459e-8fcc-c5c9c331914b',
+  MESSAGE_OUTBOX: '4fafc204-1fb5-459e-8fcc-c5c9c331914b',
+  MESSAGE_INBOX: '4fafc205-1fb5-459e-8fcc-c5c9c331914b',
+  SYNC_CONTROL: '4fafc206-1fb5-459e-8fcc-c5c9c331914b',
+} as const;
+
+export class BlePlxTransport implements MeshTransport {
+  private readonly devices = new Map<string, BlePeripheralLike>();
+  private readonly subscriptions = new Map<string, { remove(): void }>();
+  private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;
+
+  constructor(private readonly client: BleClientLike) {}
+
+  async startAdvertising(): Promise<void> {
+    throw new Error('BLE advertising requires a native peripheral module; react-native-ble-plx provides central scanning only.');
+  }
+
+  async stopAdvertising(): Promise<void> {}
+
+  async startScan(): Promise<Device[]> {
+    const discovered: Device[] = [];
+    this.client.startDeviceScan([AIR_MESH_SERVICE_UUID], { allowDuplicates: false }, (_error, peripheral) => {
+      if (!peripheral) return;
+      this.devices.set(peripheral.id, peripheral);
+      discovered.push({ id: peripheral.id, name: peripheral.localName || peripheral.name || 'Nearby Air-Mesh device', role: 'user', rssi: peripheral.rssi ?? -100 });
+    });
+    return discovered;
+  }
+
+  async stopScan(): Promise<void> { this.client.stopDeviceScan(); }
+
+  async connect(deviceId: string): Promise<void> {
+    const peripheral = await (this.devices.get(deviceId) ?? this.client.connectToDevice(deviceId));
+    await peripheral.connect();
+    await peripheral.discoverAllServicesAndCharacteristics();
+    this.devices.set(deviceId, peripheral);
+    const subscription = peripheral.monitorCharacteristicForService(AIR_MESH_SERVICE_UUID, AIR_MESH_CHARACTERISTICS.MESSAGE_INBOX, (error, characteristic) => {
+      if (error || !characteristic?.value || !this.listener) return;
+      const binary = atob(characteristic.value);
+      this.listener(deviceId, Uint8Array.from(binary, (character) => character.charCodeAt(0)));
+    });
+    this.subscriptions.set(deviceId, subscription);
+  }
+
+  async disconnect(deviceId: string): Promise<void> { this.subscriptions.get(deviceId)?.remove(); this.subscriptions.delete(deviceId); this.devices.delete(deviceId); }
+
+  async send(deviceId: string, payload: Uint8Array): Promise<boolean> {
+    const peripheral = this.devices.get(deviceId);
+    if (!peripheral) return false;
+    let binary = '';
+    payload.forEach((byte) => { binary += String.fromCharCode(byte); });
+    await peripheral.writeCharacteristicWithResponseForService(AIR_MESH_SERVICE_UUID, AIR_MESH_CHARACTERISTICS.MESSAGE_OUTBOX, btoa(binary));
+    return true;
+  }
+
+  onData(callback: (deviceId: string, payload: Uint8Array) => void): () => void { this.listener = callback; return () => { this.listener = null; }; }
+}

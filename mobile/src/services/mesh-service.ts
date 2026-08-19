@@ -1,0 +1,111 @@
+import { ChunkAssembler, chunkMessage, decodeMessage, decrementTtl, encodeMessage, mergeRoutingTable, shouldForward } from './protocol';
+import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, RoutingEntry } from './types';
+
+export class UnavailableMeshTransport implements MeshTransport {
+  async startAdvertising(): Promise<void> {}
+  async stopAdvertising(): Promise<void> {}
+  async startScan(): Promise<Device[]> { return []; }
+  async stopScan(): Promise<void> {}
+  async connect(_deviceId: string): Promise<void> { throw new Error('Native mesh transport is unavailable. Install a development build with the BLE adapter.'); }
+  async disconnect(_deviceId: string): Promise<void> {}
+  async send(_deviceId: string, _payload: Uint8Array): Promise<boolean> { return false; }
+  onData(_callback: (deviceId: string, payload: Uint8Array) => void): () => void { return () => undefined; }
+}
+
+export class MockLoopbackTransport implements MeshTransport {
+  private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;
+  private readonly connected = new Set<string>();
+
+  async startAdvertising(): Promise<void> {}
+  async stopAdvertising(): Promise<void> {}
+  async startScan(): Promise<Device[]> { return []; }
+  async stopScan(): Promise<void> {}
+  async connect(deviceId: string): Promise<void> { this.connected.add(deviceId); }
+  async disconnect(deviceId: string): Promise<void> { this.connected.delete(deviceId); }
+  async send(deviceId: string, payload: Uint8Array): Promise<boolean> {
+    if (!this.connected.has(deviceId)) return false;
+    queueMicrotask(() => this.listener?.(deviceId, payload));
+    return true;
+  }
+  onData(callback: (deviceId: string, payload: Uint8Array) => void): () => void { this.listener = callback; return () => { this.listener = null; }; }
+}
+
+export class MeshService implements MeshServiceApi {
+  private readonly assembler = new ChunkAssembler();
+  private routing: RoutingEntry[] = [];
+  private readonly listeners = new Set<(message: EncryptedMessage) => void>();
+  private readonly connectedDevices = new Set<string>();
+  private unsubscribeTransport: (() => void) | null = null;
+
+  constructor(private readonly transport: MeshTransport = new UnavailableMeshTransport(), private readonly selfId = 'local-device') {
+    this.unsubscribeTransport = transport.onData((deviceId, bytes) => this.handleIncoming(deviceId, bytes));
+  }
+
+  async startAdvertising(): Promise<void> { await this.transport.startAdvertising(); }
+  async stopAdvertising(): Promise<void> { await this.transport.stopAdvertising(); }
+  async startScan(): Promise<Device[]> { return this.transport.startScan(); }
+  async stopScan(): Promise<void> { await this.transport.stopScan(); }
+  async connect(deviceId: string): Promise<void> { await this.transport.connect(deviceId); this.connectedDevices.add(deviceId); }
+  async disconnect(deviceId: string): Promise<void> { await this.transport.disconnect(deviceId); this.connectedDevices.delete(deviceId); }
+
+  async sendEncryptedMessage(deviceId: string, payload: EncryptedMessage): Promise<boolean> {
+    if (payload.ttl <= 0) return false;
+    const chunks = chunkMessage(payload);
+    let sent = true;
+    for (const chunk of chunks) {
+      sent = (await this.transport.send(deviceId, encodeMessage({ ...payload, content: JSON.stringify(chunk), content_type: 'text' }))) && sent;
+    }
+    return sent;
+  }
+
+  onMessageReceived(callback: (message: EncryptedMessage) => void): () => void {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  }
+
+  async broadcastMessage(payload: EncryptedMessage): Promise<boolean> {
+    const peers = Array.from(this.connectedDevices);
+    const results = await Promise.all(peers.map((deviceId) => this.sendEncryptedMessage(deviceId, payload)));
+    return peers.length > 0 && results.every(Boolean);
+  }
+
+  async syncReportsFromShelter(_deviceId: string): Promise<never[]> { return []; }
+
+  async syncReportsToBase(reports: import('./types').Report[], baseUrl = 'http://192.168.1.100:3000'): Promise<boolean> {
+    if (reports.length === 0) return true;
+    try {
+      const response = await fetch(`${baseUrl.replace(/\/$/, '')}/sync`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reports, audit_logs: [] }) });
+      return response.ok;
+    } catch { return false; }
+  }
+
+  async getRoutingTable(): Promise<RoutingEntry[]> { return this.routing; }
+
+  async getMeshStatus(): Promise<MeshStatus> {
+    const transport = this.transport instanceof MockLoopbackTransport ? 'mock' : this.transport instanceof UnavailableMeshTransport ? 'unavailable' : 'ble';
+    return { relay_count: this.routing.length, estimated_range_m: this.routing.length > 0 ? 500 : 0, connected_devices: this.connectedDevices.size, transport };
+  }
+
+  updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); }
+
+  dispose(): void { this.unsubscribeTransport?.(); this.unsubscribeTransport = null; this.listeners.clear(); }
+
+  private handleIncoming(deviceId: string, bytes: Uint8Array): void {
+    try {
+      const envelope = decodeMessage(bytes);
+      const chunk = JSON.parse(envelope.content) as Parameters<ChunkAssembler['accept']>[0];
+      const message = this.assembler.accept(chunk);
+      if (!message) return;
+      if (message.receiver_id === this.selfId) {
+        this.listeners.forEach((listener) => listener(message));
+        return;
+      }
+      if (shouldForward(message, this.routing, this.selfId) && message.ttl > 0) {
+        const nextHop = this.routing.find((entry) => entry.destination_device_id === message.receiver_id)?.next_hop_device_id;
+        if (nextHop && nextHop !== deviceId) void this.sendEncryptedMessage(nextHop, decrementTtl(message));
+      }
+    } catch { /* Ignore incomplete or malformed radio frames. */ }
+  }
+}
+
+export const meshService = new MeshService();

@@ -1,6 +1,6 @@
 # Air-Mesh
 
-Air-Mesh is an Expo React Native frontend foundation for offline-first peer-to-peer messaging and rescue coordination. This implementation is intentionally frontend-only: all conversations, nearby nodes, relay paths, reports, and sync states use local mock data so the interface can be demonstrated before Bluetooth, Wi-Fi Direct, or persistent storage are connected.
+Air-Mesh is an Expo React Native frontend with an offline-first local identity flow, honest empty states, configurable appearance, and a transport-agnostic mesh service layer. Real conversations, nearby nodes, relay paths, reports, and sync states remain unavailable until a native transport and persistence adapter are connected; the app does not invent live peers.
 
 ## Run locally
 
@@ -16,7 +16,9 @@ The design system follows the requested constraints: black or `#F5F5F5` backgrou
 
 Mock data and UI state are centralized in `lib/air-mesh-store.ts`. Replace the arrays for chats, messages, contacts, and reports with adapters for the eventual mesh transport and local persistence layer. The store action `addMessage` is the seam for sending a message, while `addReport` is the seam for saving a report locally. Keep relay metadata (`Direct`, `Via N relays`, or `Unavailable`) in the domain objects so the UI can continue to explain how a message reached its destination.
 
-The next integration layer should expose transport events rather than letting screens call Bluetooth or Wi-Fi APIs directly. A transport adapter can publish nearby-device discovery, delivery acknowledgements, relay-hop counts, and sync progress into the Zustand stores. Local persistence can be added with AsyncStorage or a device database without changing the screen contracts.
+The transport boundary is now defined under `mobile/src/services/`. It includes the Air-Mesh BLE UUIDs, 512-byte message/file chunking, message deduplication, TTL-limited forwarding, lower-hop routing-table merges, courier sync contracts, voice permission helpers, and an injectable BLE adapter contract for a native development build. Expo Go and web intentionally use an unavailable/mock transport.
+
+During first account setup, the app explains why nearby-device permissions are needed before Android requests are shown. Users can choose Not now and retry from Settings. The selected mesh topology reference image and its source notes are documented in `docs/web-assets.md`. `.github/workflows/android-release.yml` builds and attaches an APK to a GitHub Release when dispatched or triggered by a version tag; the APK is not manually compiled in the sandbox.
 
 ## Project notes
 
