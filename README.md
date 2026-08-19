@@ -32,3 +32,10 @@ The security/data foundation lives under `mobile/src/services/` and `mobile/src/
 `cryptoService.ts` defines identity and ephemeral key-pair generation, public-key import/export, X25519 shared-secret derivation, AES-256-GCM payload encryption/decryption, and contact pairing. The native path dynamically loads `react-native-quick-crypto`; the mock path is intentionally non-secure and exists only so frontend tests can run without native modules. `auditService.ts` records local ISO8601 events without storing plaintext message bodies or private keys.
 
 The app initializes the active database service in `app/_layout.tsx`. The schema and security boundaries are documented in `docs/database-schema.md`. For real Android/iOS builds, regenerate native files after changing native dependencies, then use platform secure storage for private-key persistence before production deployment.
+
+
+## Integrated QA and demo references
+
+The integration layer is documented in `docs/architecture.md`, `docs/demo-script.md`, and `docs/testing.md`. The mobile app now exposes a stable `airMeshIntegration` facade for encrypted text sends, encrypted receives, SOS broadcasts, routing persistence, local report writes, and courier-to-base sync. Automated tests cover the facade, database CRUD, crypto round-trips, audit events, mesh chunking, deduplication, TTL, and routing merges.
+
+For a truthful demo, use Expo Go/web for UI and mock/unavailable transport behavior, then use an Android development build for real Bluetooth permissions, discovery, advertising, and relay. The Rust base camp runs from `base-laptop/` with `MOCK_AI=1` for offline deterministic prioritization. Physical two- or three-device BLE acceptance remains a device-lab step and is not claimed as sandbox-tested.

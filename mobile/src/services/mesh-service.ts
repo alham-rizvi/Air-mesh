@@ -51,11 +51,23 @@ export class MeshService implements MeshServiceApi {
   async sendEncryptedMessage(deviceId: string, payload: EncryptedMessage): Promise<boolean> {
     if (payload.ttl <= 0) return false;
     const chunks = chunkMessage(payload);
-    let sent = true;
     for (const chunk of chunks) {
-      sent = (await this.transport.send(deviceId, encodeMessage({ ...payload, content: JSON.stringify(chunk), content_type: 'text' }))) && sent;
+      const frame = encodeMessage({ ...payload, content: JSON.stringify(chunk), content_type: 'text' });
+      if (!(await this.sendWithRetry(deviceId, frame))) return false;
     }
-    return sent;
+    return true;
+  }
+
+  private async sendWithRetry(deviceId: string, frame: Uint8Array, attempts = 3): Promise<boolean> {
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      try {
+        if (await this.transport.send(deviceId, frame)) return true;
+      } catch {
+        // A transient radio disconnect is retried without surfacing a fake success.
+      }
+      if (attempt < attempts - 1) await new Promise((resolve) => setTimeout(resolve, 25 * (attempt + 1)));
+    }
+    return false;
   }
 
   onMessageReceived(callback: (message: EncryptedMessage) => void): () => void {
@@ -91,6 +103,7 @@ export class MeshService implements MeshServiceApi {
   dispose(): void { this.unsubscribeTransport?.(); this.unsubscribeTransport = null; this.listeners.clear(); }
 
   private handleIncoming(deviceId: string, bytes: Uint8Array): void {
+    this.assembler.cleanupExpired();
     try {
       const envelope = decodeMessage(bytes);
       const chunk = JSON.parse(envelope.content) as Parameters<ChunkAssembler['accept']>[0];

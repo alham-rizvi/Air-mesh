@@ -68,5 +68,17 @@
 - [x] Add encryption and database CRUD tests
 - [x] Verify all checks and push the complete update to GitHub
 
-- [ ] Verify exact AndroidManifest.xml path in the local and GitHub native projects
-- [ ] Push any pending Air-Mesh changes to GitHub and verify the remote commit
+- [x] Verify exact AndroidManifest.xml path in the local and GitHub native projects
+- [x] Push any pending Air-Mesh changes to GitHub and verify the remote commit
+
+- [x] Verify Android native paths through the GitHub remote tree/API
+- [x] Correct any missing Android native files in the GitHub repository
+- [x] Verify clickable remote links for AndroidManifest.xml and the Android project directory
+
+- [ ] Audit frontend, mesh, security/database, backend, native Android, and GitHub interfaces
+- [ ] Connect encrypted message send/receive seams with database persistence and audit logging
+- [ ] Connect routing-table persistence, mesh status, SOS broadcast, and report courier sync seams
+- [ ] Add retry, corruption, duplicate, disconnection, and cleanup safeguards
+- [ ] Add integration/unit tests and manual device test documentation with actual limitations
+- [ ] Add architecture, demo, testing, and release documentation
+- [ ] Reconcile every local source line with GitHub main and verify the remote tree

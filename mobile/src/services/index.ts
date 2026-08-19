@@ -8,3 +8,4 @@ export * from './sync-service';
 export * from './db';
 export * from './cryptoService';
 export * from './auditService';
+export * from './integration-service';

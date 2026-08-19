@@ -21,6 +21,7 @@ export interface DatabaseService {
   getMessages(chatId: string): Promise<Message[]>;
   saveReport(report: Report): Promise<void>;
   getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]>;
+  updateReportSyncStatus(ids: string[], status: ReportSyncStatus): Promise<void>;
   saveAuditLog(log: AuditLog): Promise<void>;
   getAuditLogs(filter?: string): Promise<AuditLog[]>;
   updateRoutingTable(entries: RoutingEntry[]): Promise<void>;
