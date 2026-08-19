@@ -16,6 +16,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -27,15 +33,24 @@ jobs:
         with:
           version: 9.12.0
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Android project
-        run: npx expo prebuild --platform android --no-install --non-interactive
+      - name: Verify Expo project
+        run: pnpm exec expo-doctor
+
+      - name: Verify Android environment
+        run: pnpm android:env
+
+      - name: Regenerate native project from app config
+        run: npx expo prebuild --platform android --clean --no-install --non-interactive
 
       - name: Build release APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Publish APK to GitHub release
         uses: softprops/action-gh-release@v2
