@@ -75,10 +75,10 @@
 - [x] Correct any missing Android native files in the GitHub repository
 - [x] Verify clickable remote links for AndroidManifest.xml and the Android project directory
 
-- [ ] Audit frontend, mesh, security/database, backend, native Android, and GitHub interfaces
-- [ ] Connect encrypted message send/receive seams with database persistence and audit logging
-- [ ] Connect routing-table persistence, mesh status, SOS broadcast, and report courier sync seams
-- [ ] Add retry, corruption, duplicate, disconnection, and cleanup safeguards
-- [ ] Add integration/unit tests and manual device test documentation with actual limitations
-- [ ] Add architecture, demo, testing, and release documentation
-- [ ] Reconcile every local source line with GitHub main and verify the remote tree
+- [x] Audit frontend, mesh, security/database, backend, native Android, and GitHub interfaces
+- [x] Connect encrypted message send/receive seams with database persistence and audit logging
+- [x] Connect routing-table persistence, mesh status, SOS broadcast, and report courier sync seams
+- [x] Add retry, corruption, duplicate, disconnection, and cleanup safeguards
+- [x] Add integration/unit tests and manual device test documentation with actual limitations
+- [x] Add architecture, demo, testing, and release documentation
+- [x] Reconcile every local source line with GitHub main and verify the remote tree
