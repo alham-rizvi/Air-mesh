@@ -67,3 +67,6 @@
 - [x] Add database schema documentation and README setup guidance
 - [x] Add encryption and database CRUD tests
 - [x] Verify all checks and push the complete update to GitHub
+
+- [x] Verify exact AndroidManifest.xml path in the local and GitHub native projects
+- [x] Push any pending Air-Mesh changes to GitHub and verify the remote commit
