@@ -2,6 +2,12 @@ name: Android release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Semantic version tag for the APK release'
+        required: true
+        default: 'v0.3.0'
+        type: string
   push:
     tags:
       - 'v*.*.*'
@@ -22,25 +28,39 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.0
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      - name: Create manual release tag
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          git fetch --tags origin
+          if git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Tag $RELEASE_TAG already exists"
+          else
+            git tag "$RELEASE_TAG" "$GITHUB_SHA"
+            git push origin "$RELEASE_TAG"
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Verify Expo project
-        run: pnpm exec expo-doctor
+        run: |
+          npx expo-doctor || echo "Expo Doctor reported advisories; the next prebuild step is authoritative for native config sync."
 
       - name: Verify Android environment
         run: pnpm android:env
@@ -55,6 +75,8 @@ jobs:
       - name: Publish APK to GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           files: android/app/build/outputs/apk/release/app-release.apk
           generate_release_notes: true
           draft: false

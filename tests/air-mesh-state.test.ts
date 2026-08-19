@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mockChats, mockContacts, mockReports, useAccountStore, useDeviceStore, useThemeStore } from '../lib/air-mesh-store';
+import { mockChats, mockContacts, mockReports, useAccountStore, useChatStore, useContactStore, useDeviceStore, useThemeStore } from '../lib/air-mesh-store';
 
 describe('Air-Mesh offline foundation', () => {
   it('does not ship seeded fake peer data', () => {
@@ -14,6 +14,14 @@ describe('Air-Mesh offline foundation', () => {
     useDeviceStore.getState().setDevice('Android', 'Test device');
     expect(useAccountStore.getState().account).toEqual(account);
     expect(useDeviceStore.getState().platform).toBe('Android');
+  });
+
+  it('creates a local group and accepts a paired contact', () => {
+    const contact = { id: 'contact-test', name: 'Peer One', initials: 'PO', role: 'User' as const, distance: 'Manual', signal: 0, lastSeen: 'Just now' };
+    useContactStore.getState().addContact(contact);
+    const groupId = useChatStore.getState().addGroup('Response Team', [contact.id]);
+    expect(useContactStore.getState().contacts[0]).toMatchObject({ id: contact.id, name: 'Peer One' });
+    expect(useChatStore.getState().chats[0]).toMatchObject({ id: groupId, name: 'Response Team', type: 'group', memberIds: [contact.id] });
   });
 
   it('accepts only supported Air-Mesh accent colors', () => {
