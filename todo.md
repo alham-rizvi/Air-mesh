@@ -58,3 +58,12 @@
 - [x] Add or document the native BLE development-build dependency boundary
 - [x] Add Android build/run documentation and generated-file caveats
 - [x] Verify native generation and synchronize Android files to GitHub
+
+- [x] Add shared security and data TypeScript interfaces
+- [x] Implement SQLite schema, migrations, CRUD, and mock in-memory database mode
+- [x] Implement AES-GCM/ECDH crypto service boundary with native and mock adapters
+- [x] Implement local contact pairing and public-key identity helpers
+- [x] Implement audit logging service and integration seams
+- [x] Add database schema documentation and README setup guidance
+- [x] Add encryption and database CRUD tests
+- [x] Verify all checks and push the complete update to GitHub
