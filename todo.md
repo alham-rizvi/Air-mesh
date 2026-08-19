@@ -9,9 +9,9 @@
 - [x] Home dashboard with mesh range indicator, summary cards, SOS feedback, recent activity, and drawer
 - [x] Messages chat list with search, unread badges, relay-aware previews, and new-chat flow
 - [x] Chat screen with relay status, mock messages, delivery ticks, attachment sheet, composer, and SOS feedback
-- [ ] New group creation screen with contact multi-select
+- [x] New group creation screen with contact multi-select
 - [x] Contacts and nearby mesh devices screen with range, role, distance, and signal indicators
-- [ ] Add contact screen with QR identity display and manual entry mock flow
+- [x] Add contact screen with QR identity display and manual entry mock flow
 - [x] Rescue menu with Shelter Mode, Courier Mode, and Reports entry points
 - [x] Shelter report form with needs, severity, validation, save feedback, and navigation
 - [x] Courier sync screen with device list, progress state, and sync-all feedback
@@ -86,4 +86,10 @@
 - [x] Audit Android SDK, Java, Gradle, Expo, and native project prerequisites
 - [x] Prepare reproducible Android environment checks and development-build scripts
 - [x] Verify manifest, permissions, BLE/dev-client configuration, and release workflow without sandbox APK compilation
-- [ ] Push final environment documentation/configuration to GitHub main
+- [x] Push final environment documentation/configuration to GitHub main
+
+- [x] Re-run complete Android toolchain and release-build preflight for the expanded APK request
+- [x] Attempt the supported release APK build path and capture the resulting artifact or exact environment blocker
+- [x] Complete New Group creation flow with contact multi-select
+- [x] Complete Add Contact flow with QR identity and manual entry
+- [x] Push all expanded-task changes and verification results to GitHub main
