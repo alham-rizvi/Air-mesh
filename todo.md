@@ -52,3 +52,9 @@
 - [x] Add service documentation and release preparation notes
 - [x] Verify the new app/service behavior and synchronize to GitHub
 - [x] Prepare GitHub release metadata; APK binary requires the managed mobile build/release flow
+
+- [x] Generate and commit the Android native project directory
+- [x] Verify AndroidManifest.xml and native permissions are present
+- [x] Add or document the native BLE development-build dependency boundary
+- [x] Add Android build/run documentation and generated-file caveats
+- [x] Verify native generation and synchronize Android files to GitHub
