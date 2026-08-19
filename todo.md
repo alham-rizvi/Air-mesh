@@ -23,6 +23,15 @@
 - [x] TypeScript, lint, and test verification
 - [x] Final visual and navigation polish
 
-- [ ] Make light/dark mode system-aware and explicit-toggle aware across app chrome and status bar
-- [ ] Inspect and synchronize the complete Air-Mesh codebase to the requested GitHub repository
-- [ ] Verify the synchronized repository and updated theme behavior
+- [x] Make light/dark mode system-aware and explicit-toggle aware across app chrome and status bar
+- [x] Inspect and synchronize the complete Air-Mesh codebase to the requested GitHub repository
+- [x] Verify the synchronized repository and updated theme behavior
+
+- [x] Add Rust base-camp backend project under base-laptop
+- [x] Implement serde models for reports, audit logs, and prioritized actions
+- [x] Implement SQLite schema, upserts, retrieval, and latest-insights storage
+- [x] Implement HTTP sync, reports, insights, and audit endpoints
+- [x] Implement Ollama prioritization with mock-AI fallback and configuration
+- [x] Implement dashboard static-file serving with SPA fallback
+- [x] Add backend README, fixtures, and offline-friendly verification
+- [x] Run Rust formatting, tests, and build verification
