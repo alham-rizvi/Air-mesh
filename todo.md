@@ -176,7 +176,7 @@
 
 - [x] Source, optimize, and attribute non-AI images for Settings and Profile
 - [x] Add privacy-safe decorative images to the Settings and Profile screens
-- [ ] Push the verified Settings/Profile visual improvements to GitHub main
+- [x] Push the verified Settings/Profile visual improvements to GitHub main
 
 - [ ] Confirm the latest Home visual commit on GitHub main and dispatch a managed Android APK release
 - [ ] Verify the resulting release workflow and APK publication status
