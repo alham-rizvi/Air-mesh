@@ -157,7 +157,13 @@ Rescue verification must cover Shelter Report creation, validation, local persis
 
 ## Stage 10 — Automated verification commands
 
-Run the following from the repository root before every push:
+Run the following from the repository root before every push. The `verify:all` script now runs the same sequence with the Rust toolchain path normalized automatically:
+
+```bash
+pnpm verify:all
+```
+
+For manual debugging, the equivalent commands are:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -171,11 +177,15 @@ source "$HOME/.cargo/env"
 (cd base-laptop && cargo fmt -- --check && cargo test && cargo build)
 ```
 
-The current local baseline is **12 passing Vitest tests and 1 intentionally skipped auth test**, zero TypeScript errors, lint passing with a Node module-format warning, Android preflight passing, Gradle wrapper inspection passing, and Rust formatting/tests/build passing with Cargo 1.97.1.
+The current local baseline is **12 passing Vitest tests and 1 intentionally skipped auth test**, zero TypeScript errors, lint passing with a Node module-format warning, Android preflight passing, Gradle wrapper inspection passing, and Rust formatting/tests/build passing with Cargo 1.97.1. A base-camp smoke test also passes: the server starts with an empty dashboard directory, serves the built-in coordinator dashboard, and returns empty JSON arrays for reports, insights, and audit records.
 
 Where a command cannot run because the sandbox lacks hardware or an SDK, record the exact limitation rather than replacing it with fabricated success. The Android preflight currently reports Java 21, a present Gradle wrapper, declared Bluetooth/nearby permissions, but no `adb` and no configured Android SDK in the sandbox.
 
-## Stage 11 — Release APK workflow
+## Stage 11 — Base-camp dashboard
+
+The base-camp server now includes a truthful built-in dashboard fallback when no prebuilt `dashboard/dist/index.html` exists. It renders only API-backed reports, insights, and audit counts, labels the server as local, and shows unavailable/empty states rather than placeholder coordination numbers. The fallback was smoke-tested against a clean temporary database and empty dashboard directory.
+
+## Stage 12 — Release APK workflow
 
 The supported APK path is `.github/workflows/android-release.yml`. It installs Java 17, pnpm, Node, the Android SDK, dependencies, runs Expo Doctor, runs the Android preflight, regenerates the native project from `app.config.ts`, runs `./gradlew assembleRelease`, and attaches `app-release.apk` to a GitHub Release.
 
@@ -199,7 +209,7 @@ gh run view 32297068416 --repo alham-rizvi/Air-mesh
 
 OpenSSL deprecation warnings emitted while compiling `react-native-quick-crypto` are warnings, not proof of a failed build. Only the final Gradle error or the workflow conclusion determines success.
 
-## Stage 12 — Physical-device acceptance matrix
+## Stage 13 — Physical-device acceptance matrix
 
 At least two physical Android devices should be used for mesh behavior. The test record should include Android version, device model, app build/version, permissions granted, Bluetooth state, Airplane Mode state, and observed result.
 
@@ -216,7 +226,7 @@ At least two physical Android devices should be used for mesh behavior. The test
 | SOS | Required | Optional | Event is queued/audited when no transport accepts it and delivered only when accepted. |
 | APK launch | Required | Optional | Release APK launches without Metro. |
 
-## Stage 13 — Documentation and release hygiene
+## Stage 14 — Documentation and release hygiene
 
 Keep `docs/release.md`, backend documentation, database schema documentation, service documentation, demo script, testing matrix, and this plan synchronized with actual behavior. Remove obsolete statements whenever a feature changes from mock to native or from unavailable to verified.
 

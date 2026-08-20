@@ -158,8 +158,70 @@ async fn static_dashboard(State(state): State<AppState>, uri: Uri) -> Response {
             )
                 .into_response()
         }
-        Err(_) => (StatusCode::NOT_FOUND, "Dashboard not built yet").into_response(),
+        Err(_) => (
+            [(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("text/html; charset=utf-8"),
+            )],
+            default_dashboard_html(),
+        )
+            .into_response(),
     }
+}
+
+fn default_dashboard_html() -> &'static str {
+    r##"<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Air-Mesh Base Camp</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #0b1220; color: #e5edf7; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top right, #12304a, #0b1220 55%); }
+    main { max-width: 1080px; margin: 0 auto; padding: 48px 24px; }
+    header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
+    h1 { margin: 0; font-size: clamp(2rem, 6vw, 4rem); letter-spacing: -0.05em; }
+    p { color: #9eb1c7; line-height: 1.6; }
+    .status { border: 1px solid #2dd4bf; color: #7ee7d7; border-radius: 999px; padding: 8px 12px; font-size: .85rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 32px; }
+    .card { background: rgba(20, 33, 51, .84); border: 1px solid #263c56; border-radius: 18px; padding: 20px; min-height: 120px; }
+    .label { color: #8da5be; font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; }
+    .value { margin-top: 14px; font-size: 1.8rem; font-weight: 700; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; color: #b8c9da; font-size: .82rem; }
+    button { margin-top: 24px; border: 0; border-radius: 12px; padding: 12px 16px; background: #2dd4bf; color: #052323; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div><div class="label">Offline coordination console</div><h1>Air-Mesh Base Camp</h1><p>This dashboard reports only data accepted by this base camp. Empty states mean no records have been synchronized.</p></div>
+      <div class="status">LOCAL SERVER ONLINE</div>
+    </header>
+    <section class="grid">
+      <article class="card"><div class="label">Reports</div><div id="reports" class="value">Loading…</div><p>Stored reports available to the coordinator.</p></article>
+      <article class="card"><div class="label">Prioritized actions</div><div id="insights" class="value">Loading…</div><p>Latest locally stored prioritization results.</p></article>
+      <article class="card"><div class="label">Audit events</div><div id="audit" class="value">Loading…</div><p>Recorded base-camp and courier events.</p></article>
+    </section>
+    <button onclick="refresh()">Refresh coordinator data</button>
+    <section class="card" style="margin-top:16px"><div class="label">Raw response summary</div><pre id="detail">Waiting for data…</pre></section>
+  </main>
+  <script>
+    async function load(path) {
+      try { const response = await fetch(path); if (!response.ok) throw new Error(response.status); return await response.json(); }
+      catch (error) { return { unavailable: true, error: String(error) }; }
+    }
+    async function refresh() {
+      const [reports, insights, audit] = await Promise.all([load('/reports'), load('/insights'), load('/audit')]);
+      document.querySelector('#reports').textContent = Array.isArray(reports) ? reports.length : 'Unavailable';
+      document.querySelector('#insights').textContent = Array.isArray(insights) ? insights.length : 'Unavailable';
+      document.querySelector('#audit').textContent = Array.isArray(audit) ? audit.length : 'Unavailable';
+      document.querySelector('#detail').textContent = JSON.stringify({ reports, insights, audit }, null, 2);
+    }
+    refresh();
+  </script>
+</body>
+</html>"##
 }
 
 // A tiny local result alias avoids adding an error framework to the demo server.

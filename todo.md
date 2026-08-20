@@ -97,3 +97,9 @@
 - [x] Run the complete automated verification suite before finalizing the comprehensive development-stage Markdown plan
 - [x] Create a full remaining-work plan covering implementation, native Android, backend, security, mesh transport, device testing, release, and GitHub verification
 - [x] Finalize and synchronize the comprehensive Markdown plan after verification passes
+
+- [x] Audit the post-APK repository and identify every remaining implementation or environment gap
+- [x] Set up reproducible local Rust, Android, Expo, and release verification commands
+- [x] Complete any remaining frontend, native, transport, backend, security, and documentation gaps that are implementable in the sandbox
+- [x] Run the complete automated suite and verify the published APK/release state
+- [x] Push all final changes and update the remaining-work documentation
