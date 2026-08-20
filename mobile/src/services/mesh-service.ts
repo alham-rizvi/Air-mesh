@@ -37,7 +37,17 @@ export class MeshService implements MeshServiceApi {
   private readonly connectedDevices = new Set<string>();
   private unsubscribeTransport: (() => void) | null = null;
 
-  constructor(private readonly transport: MeshTransport = new UnavailableMeshTransport(), private readonly selfId = 'local-device') {
+  constructor(private transport: MeshTransport = new UnavailableMeshTransport(), private readonly selfId = 'local-device') {
+    this.attachTransport(transport);
+  }
+
+  setTransport(transport: MeshTransport): void {
+    this.unsubscribeTransport?.();
+    this.transport = transport;
+    this.attachTransport(transport);
+  }
+
+  private attachTransport(transport: MeshTransport): void {
     this.unsubscribeTransport = transport.onData((deviceId, bytes) => this.handleIncoming(deviceId, bytes));
   }
 

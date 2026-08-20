@@ -20,6 +20,7 @@ export interface BleClientLike {
   startDeviceScan(serviceUuids: string[] | null, options: object | null, listener: (error: Error | null, device: BlePeripheralLike | null) => void): void;
   stopDeviceScan(): void;
   connectToDevice(deviceId: string): Promise<BlePeripheralLike>;
+  cancelDeviceConnection?(deviceId: string): Promise<unknown>;
 }
 
 export const AIR_MESH_SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
@@ -35,8 +36,9 @@ export class BlePlxTransport implements MeshTransport {
   private readonly devices = new Map<string, BlePeripheralLike>();
   private readonly subscriptions = new Map<string, { remove(): void }>();
   private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;
+  private finishScan: (() => void) | null = null;
 
-  constructor(private readonly client: BleClientLike) {}
+  constructor(private readonly client: BleClientLike, private readonly scanWindowMs = 4_500) {}
 
   async startAdvertising(): Promise<void> {
     throw new Error('BLE advertising requires a native peripheral module; react-native-ble-plx provides central scanning only.');
@@ -45,16 +47,44 @@ export class BlePlxTransport implements MeshTransport {
   async stopAdvertising(): Promise<void> {}
 
   async startScan(): Promise<Device[]> {
-    const discovered: Device[] = [];
-    this.client.startDeviceScan([AIR_MESH_SERVICE_UUID], { allowDuplicates: false }, (_error, peripheral) => {
-      if (!peripheral) return;
-      this.devices.set(peripheral.id, peripheral);
-      discovered.push({ id: peripheral.id, name: peripheral.localName || peripheral.name || 'Nearby Air-Mesh device', role: 'user', rssi: peripheral.rssi ?? -100 });
+    await this.stopScan();
+    return new Promise<Device[]>((resolve, reject) => {
+      const discovered = new Map<string, Device>();
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        this.finishScan = null;
+        this.client.stopDeviceScan();
+        resolve(Array.from(discovered.values()));
+      };
+      const timer = setTimeout(finish, this.scanWindowMs);
+      this.finishScan = finish;
+      this.client.startDeviceScan([AIR_MESH_SERVICE_UUID], { allowDuplicates: false }, (error, peripheral) => {
+        if (error) {
+          if (!done) {
+            done = true;
+            clearTimeout(timer);
+            this.finishScan = null;
+            this.client.stopDeviceScan();
+            reject(error);
+          }
+          return;
+        }
+        if (!peripheral) return;
+        this.devices.set(peripheral.id, peripheral);
+        discovered.set(peripheral.id, {
+          id: peripheral.id,
+          name: peripheral.localName || peripheral.name || 'Nearby Air-Mesh device',
+          role: 'user',
+          rssi: peripheral.rssi ?? -100,
+        });
+      });
     });
-    return discovered;
   }
 
-  async stopScan(): Promise<void> { this.client.stopDeviceScan(); }
+  async stopScan(): Promise<void> { this.finishScan?.(); this.finishScan = null; this.client.stopDeviceScan(); }
 
   async connect(deviceId: string): Promise<void> {
     const peripheral = await (this.devices.get(deviceId) ?? this.client.connectToDevice(deviceId));
@@ -69,7 +99,7 @@ export class BlePlxTransport implements MeshTransport {
     this.subscriptions.set(deviceId, subscription);
   }
 
-  async disconnect(deviceId: string): Promise<void> { this.subscriptions.get(deviceId)?.remove(); this.subscriptions.delete(deviceId); this.devices.delete(deviceId); }
+  async disconnect(deviceId: string): Promise<void> { this.subscriptions.get(deviceId)?.remove(); this.subscriptions.delete(deviceId); await this.client.cancelDeviceConnection?.(deviceId); this.devices.delete(deviceId); }
 
   async send(deviceId: string, payload: Uint8Array): Promise<boolean> {
     const peripheral = this.devices.get(deviceId);
