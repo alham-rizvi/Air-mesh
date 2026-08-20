@@ -1,5 +1,11 @@
 import type { Device, DeviceRole } from './types';
 
+export const BOUNDED_BLE_SCAN_WINDOW_MS = 4_500;
+
+export function scanSecondsRemaining(elapsedMs: number, windowMs = BOUNDED_BLE_SCAN_WINDOW_MS): number {
+  return Math.max(0, Math.ceil((windowMs - elapsedMs) / 1_000));
+}
+
 export type TopologyNode = { id: string; role: DeviceRole; title: string; description: string };
 
 export const AIR_MESH_TOPOLOGY: TopologyNode[] = [

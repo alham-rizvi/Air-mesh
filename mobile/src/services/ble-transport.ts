@@ -1,4 +1,5 @@
 import type { Device, MeshTransport } from './types';
+import { BOUNDED_BLE_SCAN_WINDOW_MS } from './discovery';
 
 export interface BleCharacteristicLike {
   uuid: string;
@@ -39,7 +40,7 @@ export class BlePlxTransport implements MeshTransport {
   private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;
   private finishScan: (() => void) | null = null;
 
-  constructor(private readonly client: BleClientLike, private readonly scanWindowMs = 4_500) {}
+  constructor(private readonly client: BleClientLike, private readonly scanWindowMs = BOUNDED_BLE_SCAN_WINDOW_MS) {}
 
   async startAdvertising(): Promise<void> {
     throw new Error('BLE advertising requires a native peripheral module; react-native-ble-plx provides central scanning only.');

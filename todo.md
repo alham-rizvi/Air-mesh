@@ -178,5 +178,16 @@
 - [x] Add privacy-safe decorative images to the Settings and Profile screens
 - [x] Push the verified Settings/Profile visual improvements to GitHub main
 
+- [ ] Confirm the Settings/Profile visual commit on GitHub main and dispatch a managed Android APK release
+- [ ] Check the resulting managed release workflow and APK publication status
+
+- [x] Inspect bounded scan lifecycle, Android compatibility checks, permission prompts, Base Camp APIs, and P2P callback behavior
+- [x] Add an accessible bounded-scan progress state and clear scan completion feedback
+- [x] Add an Android startup compatibility gate with pre-permission rationale and safe unsupported-device behavior
+- [x] Add deterministic coverage for scan lifecycle, readiness gate, and P2P callback boundaries
+- [x] Verify Base Camp endpoints, P2P boundaries, Android configuration, and the full test suite
+- [ ] Push the verified changes and dispatch a v1 managed Android APK release
+- [ ] Confirm v1 workflow and APK publication status
+
 - [ ] Confirm the latest Home visual commit on GitHub main and dispatch a managed Android APK release
 - [ ] Verify the resulting release workflow and APK publication status

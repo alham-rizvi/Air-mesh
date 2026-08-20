@@ -49,6 +49,18 @@ describe('Air-Mesh mesh protocol', () => {
     expect(service.getPeerConnectionState('receiver')).toBe('disconnected');
   });
 
+  it('delivers an inbound encrypted P2P frame through the registered callback', async () => {
+    const service = new MeshService(new MockLoopbackTransport(), 'receiver');
+    const received: EncryptedMessage[] = [];
+    const unsubscribe = service.onMessageReceived((incoming) => received.push(incoming));
+    await service.connect('sender');
+    const inbound = { ...message, message_id: 'm-callback', receiver_id: 'receiver' };
+    await expect(service.sendEncryptedMessage('sender', inbound)).resolves.toBe(true);
+    await Promise.resolve();
+    expect(received).toEqual([inbound]);
+    unsubscribe();
+  });
+
   it('round-trips file chunks', () => {
     const bytes = new Uint8Array(Array.from({ length: 1400 }, (_, index) => index % 255));
     expect(reassembleFile(chunkFile(bytes, 128))).toEqual(bytes);
