@@ -167,3 +167,7 @@
 - [x] Source and attribute a non-AI web image for the offline identity setup experience
 - [x] Improve account-setup hierarchy and the first-load state for one-handed mobile use
 - [x] Push the verified refreshed onboarding interface to GitHub main
+
+- [x] Add a clearly decorative non-AI visual card to the Home dashboard
+- [x] Optimize the bundled onboarding photograph below the checkpoint media threshold
+- [ ] Push the verified Home dashboard visual update to GitHub main and checkpoint it
