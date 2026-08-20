@@ -24,6 +24,19 @@ describe('Air-Mesh offline foundation', () => {
     expect(useChatStore.getState().chats[0]).toMatchObject({ id: groupId, name: 'Response Team', type: 'group', memberIds: [contact.id] });
   });
 
+  it('clears local session data without reseeding fake content', () => {
+    useAccountStore.getState().setAccount({ displayName: 'Reset Me', deviceId: 'AM-RESET', createdAt: '2026-08-20T00:00:00Z' });
+    useContactStore.getState().addContact({ id: 'reset-peer', name: 'Reset Peer', initials: 'RP', role: 'User', distance: 'Manual', signal: 0, lastSeen: 'Just now' });
+    useChatStore.getState().addGroup('Reset Group', ['reset-peer']);
+    useAccountStore.getState().setAccount(null);
+    useContactStore.getState().reset();
+    useChatStore.getState().reset();
+    expect(useAccountStore.getState().account).toBeNull();
+    expect(useContactStore.getState().contacts).toHaveLength(0);
+    expect(useChatStore.getState().chats).toHaveLength(0);
+    expect(useChatStore.getState().messages).toEqual({});
+  });
+
   it('accepts only supported Air-Mesh accent colors', () => {
     useThemeStore.getState().setAccent('#2F80ED');
     expect(useThemeStore.getState().accent).toBe('#2F80ED');
