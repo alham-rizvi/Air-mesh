@@ -33,6 +33,7 @@ export const AIR_MESH_CHARACTERISTICS = {
 } as const;
 
 export class BlePlxTransport implements MeshTransport {
+  readonly kind = 'ble' as const;
   private readonly devices = new Map<string, BlePeripheralLike>();
   private readonly subscriptions = new Map<string, { remove(): void }>();
   private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;

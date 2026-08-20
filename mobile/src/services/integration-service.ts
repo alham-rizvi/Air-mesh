@@ -2,6 +2,7 @@ import { auditService } from './auditService';
 import { database, now, uuid } from './db';
 import { decryptMessageFromContact, encryptMessageForContact } from './cryptoService';
 import { meshService } from './mesh-service';
+import { captureRescueLocation } from './rescue-location';
 import type { EncryptedMessage, MeshStatus, Report as MeshReport, RoutingEntry as MeshRoutingEntry } from './types';
 import type { Message, Report as StoredReport, RoutingEntry as StoredRoutingEntry } from '../types/security-data';
 
@@ -29,9 +30,10 @@ export async function receiveEncryptedMessage(contactId: string, payload: Encryp
 }
 
 export async function broadcastSos(senderId: string, senderName: string, message = 'Emergency assistance requested'): Promise<boolean> {
-  const payload: EncryptedMessage = { message_id: uuid(), sender_id: senderId, receiver_id: '*', content_type: 'ack', content: encode({ kind: 'sos', senderName, message }), timestamp: now(), ttl: 8 };
+  const captured = await captureRescueLocation();
+  const payload: EncryptedMessage = { message_id: uuid(), sender_id: senderId, receiver_id: '*', content_type: 'ack', content: encode({ kind: 'sos', senderName, message, ...(captured.state === 'captured' ? { location: captured.location } : {}) }), timestamp: now(), ttl: 8 };
   const delivered = await meshService.broadcastMessage(payload);
-  await auditService.logAction('sos_triggered', { message_id: payload.message_id, delivered, sender_id: senderId });
+  await auditService.logAction('sos_triggered', { message_id: payload.message_id, delivered, sender_id: senderId, location_included: captured.state === 'captured', location_state: captured.state });
   return delivered;
 }
 

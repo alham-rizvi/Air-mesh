@@ -1,7 +1,8 @@
 import { ChunkAssembler, chunkMessage, decodeMessage, decrementTtl, encodeMessage, mergeRoutingTable, shouldForward } from './protocol';
-import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, PeerConnectionState, RoutingEntry, TransmissionMode } from './types';
+import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, MeshTransportKind, PeerConnectionState, RoutingEntry, TransmissionMode } from './types';
 
 export class UnavailableMeshTransport implements MeshTransport {
+  readonly kind = 'unavailable' as const;
   async startAdvertising(): Promise<void> {}
   async stopAdvertising(): Promise<void> {}
   async startScan(): Promise<Device[]> { return []; }
@@ -13,6 +14,7 @@ export class UnavailableMeshTransport implements MeshTransport {
 }
 
 export class MockLoopbackTransport implements MeshTransport {
+  readonly kind = 'mock' as const;
   private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;
   private readonly connected = new Set<string>();
 
@@ -137,8 +139,15 @@ export class MeshService implements MeshServiceApi {
   async getRoutingTable(): Promise<RoutingEntry[]> { return this.routing; }
 
   async getMeshStatus(): Promise<MeshStatus> {
-    const transport = this.transport instanceof MockLoopbackTransport ? 'mock' : this.transport instanceof UnavailableMeshTransport ? 'unavailable' : 'ble';
-    return { relay_count: this.routing.length, estimated_range_m: this.routing.length > 0 ? 500 : 0, connected_devices: this.connectedDevices.size, transport };
+    const transport: MeshTransportKind = this.transport.kind ?? (this.transport instanceof MockLoopbackTransport ? 'mock' : this.transport instanceof UnavailableMeshTransport ? 'unavailable' : 'ble');
+    const externalRadio = await this.transport.getExternalRadioStatus?.();
+    return {
+      relay_count: this.routing.length,
+      estimated_range_m: externalRadio?.measured_range_m ?? null,
+      connected_devices: this.connectedDevices.size,
+      transport,
+      ...(externalRadio ? { external_radio: externalRadio } : {}),
+    };
   }
 
   updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); }

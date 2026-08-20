@@ -3,6 +3,17 @@ export type ContentType = 'text' | 'voice' | 'file' | 'ack';
 export type ReportSyncStatus = 'local' | 'synced_to_courier' | 'synced_to_base';
 export type PeerConnectionState = 'discovered' | 'connecting' | 'connected' | 'disconnected' | 'failed';
 export type TransmissionMode = { kind: 'p2p' | 'mesh' | 'broadcast'; receiverId?: string };
+export type MeshTransportKind = 'unavailable' | 'mock' | 'ble' | 'wifi-direct' | 'external-radio';
+export type ExternalRadioState = 'unconfigured' | 'pairing-required' | 'connected' | 'disconnected' | 'unsupported';
+
+/** Status reported by a physical radio integration. Values are omitted when the adapter cannot measure them. */
+export interface ExternalRadioStatus {
+  state: ExternalRadioState;
+  label: string;
+  hardware_required: true;
+  radio_family: 'proprietary' | 'lora' | 'other';
+  measured_range_m?: number;
+}
 
 export interface Device {
   id: string;
@@ -63,12 +74,15 @@ export interface AuditLog {
 
 export interface MeshStatus {
   relay_count: number;
-  estimated_range_m: number;
+  /** A measured transport range when supplied by hardware; never a phone-only guess. */
+  estimated_range_m: number | null;
   connected_devices: number;
-  transport: 'unavailable' | 'mock' | 'ble' | 'wifi-direct';
+  transport: MeshTransportKind;
+  external_radio?: ExternalRadioStatus;
 }
 
 export interface MeshTransport {
+  readonly kind?: MeshTransportKind;
   startAdvertising(): Promise<void>;
   stopAdvertising(): Promise<void>;
   startScan(): Promise<Device[]>;
@@ -77,6 +91,7 @@ export interface MeshTransport {
   disconnect(deviceId: string): Promise<void>;
   send(deviceId: string, payload: Uint8Array): Promise<boolean>;
   onData(callback: (deviceId: string, payload: Uint8Array) => void): () => void;
+  getExternalRadioStatus?(): Promise<ExternalRadioStatus>;
 }
 
 export interface MeshServiceApi {
