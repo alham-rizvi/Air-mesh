@@ -116,4 +116,8 @@
 - [x] Add a detailed in-app FAQ and helpful offline/permission/troubleshooting guidance
 - [x] Add focused UI polish and one or more practical Air-Mesh quality-of-life features
 - [x] Expand automated coverage and run full verification plus preview checks
-- [ ] Push the debugged and polished result to GitHub main
+- [x] Push the debugged and polished result to GitHub main
+
+- [ ] Push the latest verified Air-Mesh code to GitHub main for the release build
+- [ ] Dispatch and monitor a new Android APK release workflow
+- [ ] Verify the published release entry and APK asset
