@@ -110,3 +110,10 @@
 - [x] Extend automated coverage for repaired flows and new features
 - [x] Run interactive preview checks and the complete verification suite
 - [x] Push the tested fixes and feature improvements to GitHub main
+
+- [x] Audit remaining dead buttons, placeholder alerts, runtime warnings, and visual friction points
+- [x] Repair high-impact non-working interactions and improve loading, empty, error, and success feedback
+- [x] Add a detailed in-app FAQ and helpful offline/permission/troubleshooting guidance
+- [x] Add focused UI polish and one or more practical Air-Mesh quality-of-life features
+- [x] Expand automated coverage and run full verification plus preview checks
+- [x] Push the debugged and polished result to GitHub main
