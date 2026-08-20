@@ -166,4 +166,4 @@
 
 - [x] Source and attribute a non-AI web image for the offline identity setup experience
 - [x] Improve account-setup hierarchy and the first-load state for one-handed mobile use
-- [ ] Push the verified refreshed onboarding interface to GitHub main
+- [x] Push the verified refreshed onboarding interface to GitHub main
