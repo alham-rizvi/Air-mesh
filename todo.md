@@ -161,3 +161,9 @@
 - [x] Validate Android manifest permissions, Expo plugin configuration, and native build prerequisites
 - [x] Run the complete cross-stack verification and resolve any Android environment defects
 - [x] Verify the managed APK release artifact and record physical-device acceptance requirements
+
+- [x] Verify Rust Base Camp tests, runtime health endpoint, and core HTTP API responses
+
+- [x] Source and attribute a non-AI web image for the offline identity setup experience
+- [x] Improve account-setup hierarchy and the first-load state for one-handed mobile use
+- [ ] Push the verified refreshed onboarding interface to GitHub main
