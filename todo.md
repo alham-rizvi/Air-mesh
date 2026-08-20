@@ -102,4 +102,11 @@
 - [x] Set up reproducible local Rust, Android, Expo, and release verification commands
 - [x] Complete any remaining frontend, native, transport, backend, security, and documentation gaps that are implementable in the sandbox
 - [x] Run the complete automated suite and verify the published APK/release state
-- [ ] Push all final changes and update the remaining-work documentation
+- [x] Push all final changes and update the remaining-work documentation
+
+- [x] Audit logout, options/settings, and audit-log handlers and reproduce each broken interaction
+- [x] Repair logout reset behavior, options/settings navigation, and audit-log loading/empty/error states
+- [x] Add focused Air-Mesh quality-of-life features that are locally verifiable
+- [x] Extend automated coverage for repaired flows and new features
+- [x] Run interactive preview checks and the complete verification suite
+- [ ] Push the tested fixes and feature improvements to GitHub main
