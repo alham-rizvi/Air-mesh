@@ -72,6 +72,12 @@ tests/                  Deterministic Vitest coverage
 .github/workflows/       Android release automation
 ```
 
+## Nearby discovery and connection flow
+
+Starting a conversation now opens **Nearby devices**, not Settings. The screen explains the connection path, requests a real BLE scan through the mesh service boundary, lists only discovered peers, shows RSSI and distance labels, and exposes explicit Connect, Disconnect, retry, and native-build guidance. Web and unsupported environments remain honest and show an empty state rather than fabricated devices.
+
+The intended rescue topology is a store-and-forward chain: a Shelter device creates local reports, a Courier device carries encrypted envelopes, a Base Camp laptop receives courier sync over BLE or local HTTP, and other phones can relay messages when a destination is out of range. The UI presents this topology alongside discovery so users understand why a nearby connection is required before messaging can leave the device.
+
 ## Base camp server
 
 The Rust base camp lives in `base-laptop/` and supports deterministic mock-AI prioritization:

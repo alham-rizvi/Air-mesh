@@ -118,12 +118,19 @@
 - [x] Expand automated coverage and run full verification plus preview checks
 - [x] Push the debugged and polished result to GitHub main
 
-- [ ] Push the latest verified Air-Mesh code to GitHub main for the release build
-- [ ] Dispatch and monitor a new Android APK release workflow
+- [x] Push the latest verified Air-Mesh code to GitHub main for the release build
+- [x] Dispatch and monitor a new Android APK release workflow
 - [ ] Verify the published release entry and APK asset
 
 - [x] Audit README quality, branding references, project layout, and UI opportunities for safe improvements
 - [x] Improve useful UI content and polish without weakening offline-state honesty
 - [x] Create a proper branded README with logo references, setup, architecture, testing, release, and limitations
 - [x] Organize documentation and repository folders without moving generated native paths unsafely
-- [ ] Run verification and push the UI/documentation/organization improvements to GitHub main
+- [x] Run verification and push the UI/documentation/organization improvements to GitHub main
+
+- [x] Reproduce and repair the New Conversation redirect that currently lands in Settings
+- [x] Add a usable nearby-device discovery screen with scan state, device cards, RSSI/distance, role, and connection actions
+- [x] Add connection progress, connected-peer status, disconnect/retry states, and honest native/web fallbacks
+- [x] Integrate shelter, courier, base-camp, friends, and mesh-relay topology into the app UI and documentation
+- [x] Add deterministic tests for conversation routing, discovery state, connection transitions, and topology status
+- [ ] Run preview and full cross-stack verification, push changes, and dispatch a new APK release
