@@ -127,3 +127,20 @@
 - [x] Create a proper branded README with logo references, setup, architecture, testing, release, and limitations
 - [x] Organize documentation and repository folders without moving generated native paths unsafely
 - [x] Run verification and push the UI/documentation/organization improvements to GitHub main
+
+- [x] Reproduce and repair the New Conversation redirect that currently lands in Settings
+- [x] Add a usable nearby-device discovery screen with scan state, device cards, RSSI/distance, role, and connection actions
+- [x] Add connection progress, connected-peer status, disconnect/retry states, and honest native/web fallbacks
+- [x] Integrate shelter, courier, base-camp, friends, and mesh-relay topology into the app UI and documentation
+- [x] Add deterministic tests for conversation routing, discovery state, connection transitions, and topology status
+- [ ] Run preview and full cross-stack verification, push changes, and dispatch a new APK release
+
+- [x] Map every pasted discovery, advertising, GATT, connection, chunking, routing, security, sync, and base-camp requirement to a code location
+- [x] Verify which requirements are production-capable, scaffolded behind an adapter, mock-only, or missing
+- [x] Write a precise gap report with evidence and a single final release gate
+- [x] Avoid another APK rebuild until the gap audit and required fixes are complete
+
+- [x] Implement the highest-impact startup, onboarding, discovery, messaging, SOS, report, courier-sync, and base-camp workflow integrations from the reference
+- [x] Add a runtime-selectable Android BLE transport factory without falsely claiming peripheral advertising support
+- [x] Extend deterministic tests for startup audit, transport injection, queued messaging, and report-sync status changes
+- [x] Verify all implementable workflows and publish a single release readiness decision
