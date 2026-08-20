@@ -10,6 +10,14 @@ Search result files reviewed:
 
 No image should be presented as an official Air-Mesh photograph or as evidence of live network state.
 
+## Account setup photograph
+
+The local account-setup screen bundles `assets/images/onboarding-hiker-phone.jpg`, a non-AI editorial photograph selected to communicate preparing a device before entering a remote environment. It is decorative only; it does not represent an Air-Mesh user, a live peer, a radio device, or measured service coverage.
+
+| Asset | Creator | Source and usage note |
+| --- | --- | --- |
+| `onboarding-hiker-phone.jpg` | John Farias | [Pexels — “Hiker Walking Uphill Looking at His Phone”](https://www.pexels.com/photo/hiker-walking-uphill-looking-at-his-phone-15466921/), marked “Free to use” on the source page. |
+
 Source pages for attribution/review:
 
 - [An Introduction to Bluetooth Mesh Networking](https://www.allaboutcircuits.com/technical-articles/introduction-to-bluetooth-ble-mesh-networking/)
