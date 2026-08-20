@@ -13,4 +13,15 @@ describe('onboarding visual assets', () => {
     expect(attribution).toContain('John Farias');
     expect(attribution).toContain('15466921');
   });
+
+  it('bundles checkpoint-safe Settings and Profile visuals with their attribution', () => {
+    for (const filename of ['profile-field-backpack.jpg', 'settings-vintage-radio.jpg']) {
+      const asset = resolve(root, 'assets/images', filename);
+      expect(existsSync(asset)).toBe(true);
+      expect(statSync(asset).size).toBeLessThan(1_000_000);
+    }
+    const attribution = readFileSync(resolve(root, 'docs/web-assets.md'), 'utf8');
+    expect(attribution).toContain('moon chahcha');
+    expect(attribution).toContain('güney kayra acer');
+  });
 });
