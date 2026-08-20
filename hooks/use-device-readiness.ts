@@ -8,7 +8,9 @@ export function useDeviceReadiness() {
   const { permissionStatus, platform, model, setPermissionStatus, setDevice } = useDeviceStore();
   const compatibility = useMemo(() => evaluateAndroidCompatibility(Platform.OS, Platform.Version), []);
   const permissionPlan = useMemo(() => {
-    const permissions = PermissionsAndroid.PERMISSIONS as Record<string, string>;
+    const permissions = Platform.OS === 'android'
+      ? ((PermissionsAndroid?.PERMISSIONS ?? {}) as Record<string, string>)
+      : {};
     return buildNearbyPermissionPlan(compatibility.apiLevel ?? 0, {
       scan: permissions.BLUETOOTH_SCAN,
       connect: permissions.BLUETOOTH_CONNECT,

@@ -189,5 +189,7 @@
 - [ ] Push the verified changes and dispatch a v1 managed Android APK release
 - [ ] Confirm v1 workflow and APK publication status
 
+- [x] Fix web startup crash caused by Android permission constants being accessed outside Android
+
 - [ ] Confirm the latest Home visual commit on GitHub main and dispatch a managed Android APK release
 - [ ] Verify the resulting release workflow and APK publication status
