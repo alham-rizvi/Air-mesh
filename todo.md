@@ -156,3 +156,8 @@
 - [x] Add location-aware rescue reporting and emergency broadcast controls with platform-safe permission handling
 - [x] Add deterministic tests and full verification for the radio/location/emergency additions
 - [x] Push the verified goTenna-informed improvements to GitHub main
+
+- [x] Inspect the current Android SDK, Java, Gradle, native-project, and release-workflow state
+- [x] Validate Android manifest permissions, Expo plugin configuration, and native build prerequisites
+- [x] Run the complete cross-stack verification and resolve any Android environment defects
+- [x] Verify the managed APK release artifact and record physical-device acceptance requirements
