@@ -121,3 +121,9 @@
 - [ ] Push the latest verified Air-Mesh code to GitHub main for the release build
 - [ ] Dispatch and monitor a new Android APK release workflow
 - [ ] Verify the published release entry and APK asset
+
+- [x] Audit README quality, branding references, project layout, and UI opportunities for safe improvements
+- [x] Improve useful UI content and polish without weakening offline-state honesty
+- [x] Create a proper branded README with logo references, setup, architecture, testing, release, and limitations
+- [x] Organize documentation and repository folders without moving generated native paths unsafely
+- [ ] Run verification and push the UI/documentation/organization improvements to GitHub main
