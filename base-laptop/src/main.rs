@@ -53,6 +53,7 @@ async fn main() -> anyhowless::Result<()> {
         .route("/reports", get(reports))
         .route("/insights", get(insights))
         .route("/audit", get(audit))
+        .route("/health", get(health))
         .fallback(static_dashboard)
         .layer(CorsLayer::permissive())
         .with_state(state);
@@ -121,11 +122,23 @@ async fn audit(State(state): State<AppState>) -> Response {
     }
 }
 
+async fn health(State(state): State<AppState>) -> Response {
+    Json(serde_json::json!({
+        "service": "air-mesh-base-camp",
+        "status": "ready",
+        "sync_endpoint": "/sync",
+        "transport": "local-http",
+        "mock_ai": state.mock_ai,
+    }))
+    .into_response()
+}
+
 async fn static_dashboard(State(state): State<AppState>, uri: Uri) -> Response {
     let request_path = uri.path().trim_start_matches('/');
     if request_path.starts_with("reports")
         || request_path.starts_with("insights")
         || request_path.starts_with("audit")
+        || request_path.starts_with("health")
         || request_path.starts_with("sync")
     {
         return StatusCode::NOT_FOUND.into_response();

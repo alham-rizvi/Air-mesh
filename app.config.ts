@@ -125,6 +125,12 @@ const config: ExpoConfig = {
         },
       },
     ],
+    [
+      "expo-location",
+      {
+        "locationWhenInUsePermission": "Allow Air-Mesh to attach your current location to an SOS or rescue report you explicitly send.",
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

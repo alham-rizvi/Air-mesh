@@ -1,7 +1,8 @@
 import { ChunkAssembler, chunkMessage, decodeMessage, decrementTtl, encodeMessage, mergeRoutingTable, shouldForward } from './protocol';
-import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, RoutingEntry } from './types';
+import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, MeshTransportKind, PeerConnectionState, RoutingEntry, TransmissionMode } from './types';
 
 export class UnavailableMeshTransport implements MeshTransport {
+  readonly kind = 'unavailable' as const;
   async startAdvertising(): Promise<void> {}
   async stopAdvertising(): Promise<void> {}
   async startScan(): Promise<Device[]> { return []; }
@@ -13,6 +14,7 @@ export class UnavailableMeshTransport implements MeshTransport {
 }
 
 export class MockLoopbackTransport implements MeshTransport {
+  readonly kind = 'mock' as const;
   private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;
   private readonly connected = new Set<string>();
 
@@ -35,6 +37,7 @@ export class MeshService implements MeshServiceApi {
   private routing: RoutingEntry[] = [];
   private readonly listeners = new Set<(message: EncryptedMessage) => void>();
   private readonly connectedDevices = new Set<string>();
+  private readonly peerStates = new Map<string, PeerConnectionState>();
   private unsubscribeTransport: (() => void) | null = null;
 
   constructor(private transport: MeshTransport = new UnavailableMeshTransport(), private readonly selfId = 'local-device') {
@@ -53,10 +56,28 @@ export class MeshService implements MeshServiceApi {
 
   async startAdvertising(): Promise<void> { await this.transport.startAdvertising(); }
   async stopAdvertising(): Promise<void> { await this.transport.stopAdvertising(); }
-  async startScan(): Promise<Device[]> { return this.transport.startScan(); }
+  async startScan(): Promise<Device[]> {
+    const devices = await this.transport.startScan();
+    devices.forEach((device) => this.peerStates.set(device.id, 'discovered'));
+    return devices;
+  }
   async stopScan(): Promise<void> { await this.transport.stopScan(); }
-  async connect(deviceId: string): Promise<void> { await this.transport.connect(deviceId); this.connectedDevices.add(deviceId); }
-  async disconnect(deviceId: string): Promise<void> { await this.transport.disconnect(deviceId); this.connectedDevices.delete(deviceId); }
+  async connect(deviceId: string): Promise<void> {
+    this.peerStates.set(deviceId, 'connecting');
+    try {
+      await this.transport.connect(deviceId);
+      this.connectedDevices.add(deviceId);
+      this.peerStates.set(deviceId, 'connected');
+    } catch (error) {
+      this.peerStates.set(deviceId, 'failed');
+      throw error;
+    }
+  }
+  async disconnect(deviceId: string): Promise<void> {
+    await this.transport.disconnect(deviceId);
+    this.connectedDevices.delete(deviceId);
+    this.peerStates.set(deviceId, 'disconnected');
+  }
 
   async sendEncryptedMessage(deviceId: string, payload: EncryptedMessage): Promise<boolean> {
     if (payload.ttl <= 0) return false;
@@ -91,6 +112,20 @@ export class MeshService implements MeshServiceApi {
     return peers.length > 0 && results.every(Boolean);
   }
 
+  getPeerConnectionState(deviceId: string): PeerConnectionState | 'unknown' { return this.peerStates.get(deviceId) ?? 'unknown'; }
+
+  async sendWithMode(mode: TransmissionMode, payload: EncryptedMessage): Promise<boolean> {
+    if (mode.kind === 'broadcast') return this.broadcastMessage({ ...payload, receiver_id: '*' });
+    const receiverId = mode.receiverId ?? payload.receiver_id;
+    if (!receiverId || receiverId === '*') return false;
+    if (mode.kind === 'p2p') return this.sendEncryptedMessage(receiverId, payload);
+    const direct = await this.sendEncryptedMessage(receiverId, payload);
+    if (direct) return true;
+    const peers = Array.from(this.connectedDevices).filter((peerId) => peerId !== receiverId);
+    const results = await Promise.all(peers.map((peerId) => this.sendEncryptedMessage(peerId, payload)));
+    return results.some(Boolean);
+  }
+
   async syncReportsFromShelter(_deviceId: string): Promise<never[]> { return []; }
 
   async syncReportsToBase(reports: import('./types').Report[], baseUrl = 'http://192.168.1.100:3000'): Promise<boolean> {
@@ -104,8 +139,15 @@ export class MeshService implements MeshServiceApi {
   async getRoutingTable(): Promise<RoutingEntry[]> { return this.routing; }
 
   async getMeshStatus(): Promise<MeshStatus> {
-    const transport = this.transport instanceof MockLoopbackTransport ? 'mock' : this.transport instanceof UnavailableMeshTransport ? 'unavailable' : 'ble';
-    return { relay_count: this.routing.length, estimated_range_m: this.routing.length > 0 ? 500 : 0, connected_devices: this.connectedDevices.size, transport };
+    const transport: MeshTransportKind = this.transport.kind ?? (this.transport instanceof MockLoopbackTransport ? 'mock' : this.transport instanceof UnavailableMeshTransport ? 'unavailable' : 'ble');
+    const externalRadio = await this.transport.getExternalRadioStatus?.();
+    return {
+      relay_count: this.routing.length,
+      estimated_range_m: externalRadio?.measured_range_m ?? null,
+      connected_devices: this.connectedDevices.size,
+      transport,
+      ...(externalRadio ? { external_radio: externalRadio } : {}),
+    };
   }
 
   updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); }

@@ -144,3 +144,15 @@
 - [x] Add a runtime-selectable Android BLE transport factory without falsely claiming peripheral advertising support
 - [x] Extend deterministic tests for startup audit, transport injection, queued messaging, and report-sync status changes
 - [x] Verify all implementable workflows and publish a single release readiness decision
+
+- [x] Inspect Bridgefy SDK licensing, Android support, and compatibility with Expo/React Native native modules
+- [x] Design an Air-Mesh-owned Android peer-to-peer transport that preserves the existing protocol, crypto, audit, and database boundaries
+- [x] Implement compatible native transport and base-camp backend integration without copying incompatible SDK internals
+- [x] Verify Android compilation, TypeScript, Rust backend, tests, and physical-device acceptance prerequisites
+- [x] Push verified Bridgefy-informed changes and dispatch one managed release build
+
+- [x] Research goTenna-style hardware-radio and location-sharing constraints without claiming phone-only long-range capability
+- [x] Add an Air-Mesh external-radio transport boundary with honest connection and range states
+- [x] Add location-aware rescue reporting and emergency broadcast controls with platform-safe permission handling
+- [x] Add deterministic tests and full verification for the radio/location/emergency additions
+- [x] Push the verified goTenna-informed improvements to GitHub main
