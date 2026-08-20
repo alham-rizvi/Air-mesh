@@ -19,9 +19,10 @@ describe('Air-Mesh offline foundation', () => {
   it('creates a local group and accepts a paired contact', () => {
     const contact = { id: 'contact-test', name: 'Peer One', initials: 'PO', role: 'User' as const, distance: 'Manual', signal: 0, lastSeen: 'Just now' };
     useContactStore.getState().addContact(contact);
+    const directId = useChatStore.getState().addDirect(contact);
     const groupId = useChatStore.getState().addGroup('Response Team', [contact.id]);
     expect(useContactStore.getState().contacts[0]).toMatchObject({ id: contact.id, name: 'Peer One' });
-    expect(useChatStore.getState().chats[0]).toMatchObject({ id: groupId, name: 'Response Team', type: 'group', memberIds: [contact.id] });
+    expect(useChatStore.getState().chats).toEqual(expect.arrayContaining([expect.objectContaining({ id: directId, name: 'Peer One', type: 'direct' }), expect.objectContaining({ id: groupId, name: 'Response Team', type: 'group', memberIds: [contact.id] })]));
   });
 
   it('clears local session data without reseeding fake content', () => {
