@@ -1,5 +1,5 @@
 import { ChunkAssembler, chunkMessage, decodeMessage, decrementTtl, encodeMessage, mergeRoutingTable, shouldForward } from './protocol';
-import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, RoutingEntry } from './types';
+import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, PeerConnectionState, RoutingEntry, TransmissionMode } from './types';
 
 export class UnavailableMeshTransport implements MeshTransport {
   async startAdvertising(): Promise<void> {}
@@ -35,6 +35,7 @@ export class MeshService implements MeshServiceApi {
   private routing: RoutingEntry[] = [];
   private readonly listeners = new Set<(message: EncryptedMessage) => void>();
   private readonly connectedDevices = new Set<string>();
+  private readonly peerStates = new Map<string, PeerConnectionState>();
   private unsubscribeTransport: (() => void) | null = null;
 
   constructor(private transport: MeshTransport = new UnavailableMeshTransport(), private readonly selfId = 'local-device') {
@@ -53,10 +54,28 @@ export class MeshService implements MeshServiceApi {
 
   async startAdvertising(): Promise<void> { await this.transport.startAdvertising(); }
   async stopAdvertising(): Promise<void> { await this.transport.stopAdvertising(); }
-  async startScan(): Promise<Device[]> { return this.transport.startScan(); }
+  async startScan(): Promise<Device[]> {
+    const devices = await this.transport.startScan();
+    devices.forEach((device) => this.peerStates.set(device.id, 'discovered'));
+    return devices;
+  }
   async stopScan(): Promise<void> { await this.transport.stopScan(); }
-  async connect(deviceId: string): Promise<void> { await this.transport.connect(deviceId); this.connectedDevices.add(deviceId); }
-  async disconnect(deviceId: string): Promise<void> { await this.transport.disconnect(deviceId); this.connectedDevices.delete(deviceId); }
+  async connect(deviceId: string): Promise<void> {
+    this.peerStates.set(deviceId, 'connecting');
+    try {
+      await this.transport.connect(deviceId);
+      this.connectedDevices.add(deviceId);
+      this.peerStates.set(deviceId, 'connected');
+    } catch (error) {
+      this.peerStates.set(deviceId, 'failed');
+      throw error;
+    }
+  }
+  async disconnect(deviceId: string): Promise<void> {
+    await this.transport.disconnect(deviceId);
+    this.connectedDevices.delete(deviceId);
+    this.peerStates.set(deviceId, 'disconnected');
+  }
 
   async sendEncryptedMessage(deviceId: string, payload: EncryptedMessage): Promise<boolean> {
     if (payload.ttl <= 0) return false;
@@ -89,6 +108,20 @@ export class MeshService implements MeshServiceApi {
     const peers = Array.from(this.connectedDevices);
     const results = await Promise.all(peers.map((deviceId) => this.sendEncryptedMessage(deviceId, payload)));
     return peers.length > 0 && results.every(Boolean);
+  }
+
+  getPeerConnectionState(deviceId: string): PeerConnectionState | 'unknown' { return this.peerStates.get(deviceId) ?? 'unknown'; }
+
+  async sendWithMode(mode: TransmissionMode, payload: EncryptedMessage): Promise<boolean> {
+    if (mode.kind === 'broadcast') return this.broadcastMessage({ ...payload, receiver_id: '*' });
+    const receiverId = mode.receiverId ?? payload.receiver_id;
+    if (!receiverId || receiverId === '*') return false;
+    if (mode.kind === 'p2p') return this.sendEncryptedMessage(receiverId, payload);
+    const direct = await this.sendEncryptedMessage(receiverId, payload);
+    if (direct) return true;
+    const peers = Array.from(this.connectedDevices).filter((peerId) => peerId !== receiverId);
+    const results = await Promise.all(peers.map((peerId) => this.sendEncryptedMessage(peerId, payload)));
+    return results.some(Boolean);
   }
 
   async syncReportsFromShelter(_deviceId: string): Promise<never[]> { return []; }

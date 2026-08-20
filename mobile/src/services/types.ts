@@ -1,6 +1,8 @@
 export type DeviceRole = 'user' | 'shelter' | 'courier' | 'base';
 export type ContentType = 'text' | 'voice' | 'file' | 'ack';
 export type ReportSyncStatus = 'local' | 'synced_to_courier' | 'synced_to_base';
+export type PeerConnectionState = 'discovered' | 'connecting' | 'connected' | 'disconnected' | 'failed';
+export type TransmissionMode = { kind: 'p2p' | 'mesh' | 'broadcast'; receiverId?: string };
 
 export interface Device {
   id: string;
@@ -91,4 +93,6 @@ export interface MeshServiceApi {
   syncReportsToBase(reports: Report[], baseUrl?: string): Promise<boolean>;
   getRoutingTable(): Promise<RoutingEntry[]>;
   getMeshStatus(): Promise<MeshStatus>;
+  getPeerConnectionState(deviceId: string): PeerConnectionState | 'unknown';
+  sendWithMode(mode: TransmissionMode, payload: EncryptedMessage): Promise<boolean>;
 }

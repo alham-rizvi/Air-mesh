@@ -3,6 +3,7 @@ import { chunkFile, reassembleFile } from '../mobile/src/services/file-service';
 import { ChunkAssembler, chunkMessage, decrementTtl, mergeRoutingTable } from '../mobile/src/services/protocol';
 import type { Device, EncryptedMessage } from '../mobile/src/services/types';
 import { AIR_MESH_TOPOLOGY, distanceLabel, sortDiscoveredDevices } from '../mobile/src/services/discovery';
+import { MeshService, MockLoopbackTransport } from '../mobile/src/services/mesh-service';
 
 describe('Air-Mesh mesh protocol', () => {
   const message: EncryptedMessage = {
@@ -35,6 +36,17 @@ describe('Air-Mesh mesh protocol', () => {
     expect(distanceLabel(-74)).toBe('In range');
     expect(sortDiscoveredDevices(devices).map((device) => device.id)).toEqual(['same', 'near', 'far']);
     expect(AIR_MESH_TOPOLOGY.map((node) => node.role)).toEqual(['shelter', 'courier', 'base', 'user']);
+  });
+
+  it('tracks peer lifecycle and supports Air-Mesh transmission modes', async () => {
+    const service = new MeshService(new MockLoopbackTransport(), 'sender');
+    await service.connect('receiver');
+    expect(service.getPeerConnectionState('receiver')).toBe('connected');
+    await expect(service.sendWithMode({ kind: 'p2p', receiverId: 'receiver' }, message)).resolves.toBe(true);
+    await expect(service.sendWithMode({ kind: 'mesh', receiverId: 'receiver' }, message)).resolves.toBe(true);
+    await expect(service.sendWithMode({ kind: 'broadcast' }, message)).resolves.toBe(true);
+    await service.disconnect('receiver');
+    expect(service.getPeerConnectionState('receiver')).toBe('disconnected');
   });
 
   it('round-trips file chunks', () => {

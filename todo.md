@@ -144,3 +144,9 @@
 - [x] Add a runtime-selectable Android BLE transport factory without falsely claiming peripheral advertising support
 - [x] Extend deterministic tests for startup audit, transport injection, queued messaging, and report-sync status changes
 - [x] Verify all implementable workflows and publish a single release readiness decision
+
+- [x] Inspect Bridgefy SDK licensing, Android support, and compatibility with Expo/React Native native modules
+- [x] Design an Air-Mesh-owned Android peer-to-peer transport that preserves the existing protocol, crypto, audit, and database boundaries
+- [x] Implement compatible native transport and base-camp backend integration without copying incompatible SDK internals
+- [x] Verify Android compilation, TypeScript, Rust backend, tests, and physical-device acceptance prerequisites
+- [ ] Push verified Bridgefy-informed changes and dispatch one managed release build
