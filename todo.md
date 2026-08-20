@@ -170,4 +170,4 @@
 
 - [x] Add a clearly decorative non-AI visual card to the Home dashboard
 - [x] Optimize the bundled onboarding photograph below the checkpoint media threshold
-- [ ] Push the verified Home dashboard visual update to GitHub main and checkpoint it
+- [x] Push the verified Home dashboard visual update to GitHub main and checkpoint it
