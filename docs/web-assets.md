@@ -18,6 +18,15 @@ The local account-setup screen bundles `assets/images/onboarding-hiker-phone.jpg
 | --- | --- | --- |
 | `onboarding-hiker-phone.jpg` | John Farias | [Pexels — “Hiker Walking Uphill Looking at His Phone”](https://www.pexels.com/photo/hiker-walking-uphill-looking-at-his-phone-15466921/), marked “Free to use” on the source page. |
 
+## Planned Settings and Profile photographs
+
+The following non-AI Pexels pages were checked before selecting additional decorative photographs. They will be presented only as visual context, never as a user portrait, user location, actual radio hardware, live transport state, or coverage claim.
+
+| Intended screen | Photograph | Creator | Source and usage note |
+| --- | --- | --- | --- |
+| Settings | Vintage Portable Radio on Outdoor Shelf | güney kayra acer | [Pexels source](https://www.pexels.com/photo/vintage-portable-radio-on-outdoor-shelf-30965101/), marked “Free to use” on the source page. The bundled visual remains decorative and does not represent an Air-Mesh transport. |
+| Profile | Person Carrying Green Backpack in Forest | moon chahcha | [Pexels source](https://www.pexels.com/photo/person-carrying-green-backpack-in-forest-2415438/), marked “Free to use” on the source page. The bundled visual remains decorative and does not represent the local account holder. |
+
 Source pages for attribution/review:
 
 - [An Introduction to Bluetooth Mesh Networking](https://www.allaboutcircuits.com/technical-articles/introduction-to-bluetooth-ble-mesh-networking/)

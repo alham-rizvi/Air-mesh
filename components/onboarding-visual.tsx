@@ -31,6 +31,36 @@ export function HomePreparednessVisual({ colors }: { colors: OnboardingColors })
   );
 }
 
+export function SettingsProfileVisual({
+  colors,
+  variant,
+}: {
+  colors: OnboardingColors;
+  variant: 'settings' | 'profile';
+}) {
+  const profile = variant === 'profile';
+  const source = profile
+    ? require('../assets/images/profile-field-backpack.jpg')
+    : require('../assets/images/settings-vintage-radio.jpg');
+  const eyebrow = profile ? 'LOCAL PROFILE' : 'FIELD SETTINGS';
+  const title = profile ? 'Identity stays in your hands.' : 'Controls prepared for the field.';
+  const note = profile
+    ? 'Decorative image · not a profile photo'
+    : 'Decorative image · not a live transport status';
+
+  return (
+    <View style={[styles.settingsProfileVisual, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+      <Image source={source} style={styles.settingsProfileImage} resizeMode="cover" />
+      <View style={styles.settingsProfileScrim} />
+      <View style={styles.settingsProfileCopy}>
+        <Text style={styles.settingsProfileEyebrow}>{eyebrow}</Text>
+        <Text style={styles.settingsProfileTitle}>{title}</Text>
+        <Text style={styles.settingsProfileNote}>{note}</Text>
+      </View>
+    </View>
+  );
+}
+
 export function BootstrapScreen({ colors }: { colors: OnboardingColors }) {
   return (
     <ScreenContainer edges={['top', 'bottom', 'left', 'right']}>
@@ -62,6 +92,13 @@ const styles = StyleSheet.create({
   homeEyebrow: { color: '#9FE6D0', fontSize: 10, fontWeight: '800', letterSpacing: 1.15, marginBottom: 3 },
   homeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', lineHeight: 22, maxWidth: '82%' },
   homeBody: { color: '#E8F8F2', fontSize: 11, lineHeight: 15, marginTop: 6 },
+  settingsProfileVisual: { height: 148, borderWidth: 1, borderRadius: 18, overflow: 'hidden', marginBottom: 16 },
+  settingsProfileImage: { width: '100%', height: '100%' },
+  settingsProfileScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(5, 20, 16, 0.42)' },
+  settingsProfileCopy: { position: 'absolute', left: 15, right: 15, bottom: 14 },
+  settingsProfileEyebrow: { color: '#9FE6D0', fontSize: 10, fontWeight: '800', letterSpacing: 1.15, marginBottom: 3 },
+  settingsProfileTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', lineHeight: 22 },
+  settingsProfileNote: { color: '#E8F8F2', fontSize: 11, lineHeight: 15, marginTop: 5 },
   bootstrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   bootstrapMark: { width: 42, height: 42, borderWidth: 3, transform: [{ rotate: '45deg' }], borderRadius: 7, marginBottom: 28 },
   bootstrapTitle: { fontSize: 27, fontWeight: '800', letterSpacing: -0.6 },
