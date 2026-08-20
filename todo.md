@@ -149,10 +149,10 @@
 - [x] Design an Air-Mesh-owned Android peer-to-peer transport that preserves the existing protocol, crypto, audit, and database boundaries
 - [x] Implement compatible native transport and base-camp backend integration without copying incompatible SDK internals
 - [x] Verify Android compilation, TypeScript, Rust backend, tests, and physical-device acceptance prerequisites
-- [ ] Push verified Bridgefy-informed changes and dispatch one managed release build
+- [x] Push verified Bridgefy-informed changes and dispatch one managed release build
 
 - [x] Research goTenna-style hardware-radio and location-sharing constraints without claiming phone-only long-range capability
 - [x] Add an Air-Mesh external-radio transport boundary with honest connection and range states
 - [x] Add location-aware rescue reporting and emergency broadcast controls with platform-safe permission handling
 - [x] Add deterministic tests and full verification for the radio/location/emergency additions
-- [ ] Push the verified goTenna-informed improvements to GitHub main
+- [x] Push the verified goTenna-informed improvements to GitHub main
