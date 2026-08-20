@@ -1,41 +1,111 @@
 # Air-Mesh
 
-Air-Mesh is an Expo React Native frontend with an offline-first local identity flow, honest empty states, configurable appearance, and a transport-agnostic mesh service layer. Real conversations, nearby nodes, relay paths, reports, and sync states remain unavailable until a native transport and persistence adapter are connected; the app does not invent live peers.
+<p align="center">
+  <img src="assets/images/icon.png" width="128" alt="Air-Mesh triangle logo" />
+</p>
 
-## Run locally
+<p align="center"><strong>Offline-first peer-to-peer messaging and rescue coordination.</strong></p>
 
-Install dependencies with `pnpm install`, then start the Expo development server with `pnpm dev:metro` or `pnpm start`. The project targets Expo SDK 54 with TypeScript and Expo Router. `pnpm check` runs TypeScript validation and `pnpm lint` runs the Expo ESLint configuration.
+<p align="center">
+  <a href="https://github.com/alham-rizvi/Air-mesh/actions/workflows/android-release.yml"><img src="https://github.com/alham-rizvi/Air-mesh/actions/workflows/android-release.yml/badge.svg" alt="Android release workflow" /></a>
+  <a href="https://github.com/alham-rizvi/Air-mesh/releases"><img src="https://img.shields.io/github/v/release/alham-rizvi/Air-mesh?display_name=tag&sort=semver" alt="Latest release" /></a>
+</p>
 
-## Included experience
+Air-Mesh is a React Native and Expo application for situations where ordinary connectivity is unreliable or unavailable. It keeps local identity, conversations, rescue reports, audit events, themes, and queued actions on the device. It is explicit about transport state: the app does not present mock peers as live connections.
 
-The app uses four primary modules: Home, Messages, Rescue, and Settings. Home emphasizes the mesh relay value proposition with a `~500m reachable` indicator, nearby peer counts, relay-aware recent activity, and SOS feedback. Messages includes a searchable chat list, relay status in chat, mock delivery ticks, a pill composer, attachment and voice-note feedback, contacts, and nearby-device signal indicators. Rescue includes shelter reports, courier sync progress, report filters, severity, and synchronization state. Settings includes role selection, connectivity toggles, dark/light mode, profile, audit log, and About screens.
+> **Android release:** [Download the APK from GitHub Releases](https://github.com/alham-rizvi/Air-mesh/releases). Release builds are produced by GitHub Actions.
 
-The design system follows the requested constraints: black or `#F5F5F5` backgrounds, `#1E1E1E` or white surfaces, monochrome text and borders, and the restrained Air-Mesh green accent `#10A37F`. The triangle mark is used in the About screen and the generated launcher icon is copied into the Expo asset slots.
+## What is included
 
-## Replace mock data later
+| Area | Included capability |
+|---|---|
+| Local identity | Offline account creation, device detection, identity QR, local logout/reset |
+| Messaging | Local direct chats, groups, queued messages, relay metadata, SOS actions |
+| Rescue coordination | Shelter reports, courier sync states, severity/needs capture, report filters |
+| Mesh foundation | BLE service boundary, 512-byte chunking, deduplication, TTL routing, routing-table helpers |
+| Security boundary | AES-256-GCM/X25519 interfaces, contact pairing, local audit logging, SQLite schema |
+| Android | Generated `android/` project, manifest permissions, Expo Dev Client/BLE boundary, release workflow |
+| Help and UX | Light/dark mode, selectable accents, expandable FAQ, permission guidance, honest empty/error states |
+| Base camp | Rust/Axum server, SQLite persistence, mock/Ollama prioritization, API-backed dashboard |
 
-Mock data and UI state are centralized in `lib/air-mesh-store.ts`. Replace the arrays for chats, messages, contacts, and reports with adapters for the eventual mesh transport and local persistence layer. The store action `addMessage` is the seam for sending a message, while `addReport` is the seam for saving a report locally. Keep relay metadata (`Direct`, `Via N relays`, or `Unavailable`) in the domain objects so the UI can continue to explain how a message reached its destination.
+## Quick start
 
-The transport boundary is now defined under `mobile/src/services/`. It includes the Air-Mesh BLE UUIDs, 512-byte message/file chunking, message deduplication, TTL-limited forwarding, lower-hop routing-table merges, courier sync contracts, voice permission helpers, and an injectable BLE adapter contract for a native development build. Expo Go and web intentionally use an unavailable/mock transport.
+```bash
+pnpm install
+pnpm dev
+```
 
-During first account setup, the app explains why nearby-device permissions are needed before Android requests are shown. Users can choose Not now and retry from Settings. The selected mesh topology reference image and its source notes are documented in `docs/web-assets.md`. `.github/workflows/android-release.yml` builds and attaches an APK to a GitHub Release when dispatched or triggered by a version tag; the APK is not manually compiled in the sandbox.
+Create a local identity first; no email, password, or internet connection is required for the local UI foundation. For deterministic verification, run:
 
-## Project notes
+```bash
+pnpm verify:all
+```
 
-The main demo surface is `app/(tabs)/index.tsx`. It contains the screen-level flows and reusable primitives needed for this frontend foundation. The initialized template's server and database capabilities remain unused because the brief requested mock frontend data and no real networking or database integration.
+The verifier runs TypeScript, lint, Vitest, Android environment checks, Gradle wrapper validation, Rust formatting/tests, and the Rust build. It intentionally does not compile an APK inside the sandbox.
 
+## Android development and release
 
-## Local database and encryption
+The native project is committed under `android/`, including `android/app/src/main/AndroidManifest.xml`, Kotlin entry points, Gradle configuration, and generated resources. The manifest and Expo configuration declare Bluetooth scan/connect, nearby Wi-Fi, microphone, and notification boundaries as applicable to the native build.
 
-The security/data foundation lives under `mobile/src/services/` and `mobile/src/types/`. `db.native.ts` creates the SQLite schema in `airmesh.db` on app startup and provides CRUD for messages, contacts, chats, reports, audit logs, routing entries, and files. `db.ts` provides the same interface with in-memory storage for web, Vitest, and mock development.
+Use a physical Android device for BLE and runtime permission validation. The release workflow installs its own Android SDK on GitHub Actions, regenerates native configuration, builds `app-release.apk`, and attaches it to a GitHub Release. Run it manually from a configured GitHub checkout with:
 
-`cryptoService.ts` defines identity and ephemeral key-pair generation, public-key import/export, X25519 shared-secret derivation, AES-256-GCM payload encryption/decryption, and contact pairing. The native path dynamically loads `react-native-quick-crypto`; the mock path is intentionally non-secure and exists only so frontend tests can run without native modules. `auditService.ts` records local ISO8601 events without storing plaintext message bodies or private keys.
+```bash
+gh workflow run android-release.yml --repo alham-rizvi/Air-mesh --ref main
+```
 
-The app initializes the active database service in `app/_layout.tsx`. The schema and security boundaries are documented in `docs/database-schema.md`. For real Android/iOS builds, regenerate native files after changing native dependencies, then use platform secure storage for private-key persistence before production deployment.
+You can also push a semantic tag such as `v0.4.0` to trigger a release build.
 
+## Repository map
 
-## Integrated QA and demo references
+```text
+app/                    Expo Router screens and the main Air-Mesh UI
+components/             Shared mobile UI primitives
+lib/                    Zustand stores, theme, and app helpers
+mobile/src/services/     Database, crypto, audit, mesh, and integration services
+mobile/src/types/        Shared security and domain types
+base-laptop/             Rust base-camp server and dashboard
+android/                 Committed native Android project
+assets/images/           App logo, splash, favicon, adaptive icons, topology visual
+docs/                    Architecture, testing, release, FAQ, and development plans
+scripts/                 Reproducible diagnostics and verification commands
+tests/                  Deterministic Vitest coverage
+.github/workflows/       Android release automation
+```
 
-The integration layer is documented in `docs/architecture.md`, `docs/demo-script.md`, and `docs/testing.md`. The mobile app now exposes a stable `airMeshIntegration` facade for encrypted text sends, encrypted receives, SOS broadcasts, routing persistence, local report writes, and courier-to-base sync. Automated tests cover the facade, database CRUD, crypto round-trips, audit events, mesh chunking, deduplication, TTL, and routing merges.
+## Base camp server
 
-For a truthful demo, use Expo Go/web for UI and mock/unavailable transport behavior, then use an Android development build for real Bluetooth permissions, discovery, advertising, and relay. The Rust base camp runs from `base-laptop/` with `MOCK_AI=1` for offline deterministic prioritization. Physical two- or three-device BLE acceptance remains a device-lab step and is not claimed as sandbox-tested.
+The Rust base camp lives in `base-laptop/` and supports deterministic mock-AI prioritization:
+
+```bash
+cd base-laptop
+cargo fmt --check
+MOCK_AI=1 cargo test
+MOCK_AI=1 cargo run
+```
+
+The server persists reports, audit entries, and prioritized actions in SQLite and serves a truthful dashboard with live API-backed empty states. See [`base-laptop/README.md`](base-laptop/README.md) for endpoint and configuration details.
+
+## Testing and device acceptance
+
+The project verifies frontend compilation, linting, state, database, encryption, audit, integration, and mesh protocol behavior. The complete command is `pnpm verify:all`.
+
+The published APK should be installed on two or more Android devices for final acceptance. Validate onboarding, permission grant/denial, theme switching, logout, audit history, manual contact pairing, direct-chat creation, group creation, SOS queuing, report creation, courier sync, and BLE discovery.
+
+## Privacy and limitations
+
+Air-Mesh stores the local UI and security foundation on the device. The native crypto boundary is designed for secure adapters, while web/Vitest fallbacks are intentionally non-production mocks. Live BLE discovery, advertising, relay behavior, camera QR scanning, voice capture, and Wi-Fi Direct interoperability require a native build and physical-device testing.
+
+The app does not claim successful delivery when no transport is connected. Local messages, reports, and SOS events remain labeled as local or queued until a supported transport accepts them.
+
+## Documentation
+
+- [`docs/full-development-verification-plan.md`](docs/full-development-verification-plan.md) — complete development and acceptance plan.
+- [`docs/architecture.md`](docs/architecture.md) — frontend, service, security, transport, and base-camp boundaries.
+- [`docs/testing.md`](docs/testing.md) — automated and device test guidance.
+- [`docs/release.md`](docs/release.md) — Android environment and GitHub release instructions.
+- [`docs/debug-preview-findings.md`](docs/debug-preview-findings.md) — preview smoke-check notes and limitations.
+- [`docs/web-assets.md`](docs/web-assets.md) — local visual assets and attribution notes.
+
+## License
+
+This repository is prepared for the Air-Mesh project. Review dependency licenses and add a project license before public redistribution.
