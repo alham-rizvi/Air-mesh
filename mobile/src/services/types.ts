@@ -4,6 +4,17 @@ export type ReportSyncStatus = 'local' | 'synced_to_courier' | 'synced_to_base';
 export type PeerConnectionState = 'discovered' | 'connecting' | 'connected' | 'disconnected' | 'failed';
 export type TransmissionMode = { kind: 'p2p' | 'mesh' | 'broadcast'; receiverId?: string };
 export type MeshTransportKind = 'unavailable' | 'mock' | 'ble' | 'wifi-direct' | 'external-radio';
+export type PeerLinkStrength = 'excellent' | 'good' | 'fair' | 'weak' | 'unavailable';
+
+/** Signal data from the active local transport. Distance is always an estimate, never a GPS position. */
+export interface PeerLinkMetrics {
+  transport: MeshTransportKind;
+  strength: PeerLinkStrength;
+  rssi_dbm: number | null;
+  estimated_distance_m: number | null;
+  source: 'ble-rssi-uncalibrated' | 'wifi-direct-unavailable' | 'unavailable';
+  detail: string;
+}
 export type ExternalRadioState = 'unconfigured' | 'pairing-required' | 'connected' | 'disconnected' | 'unsupported';
 
 /** Status reported by a physical radio integration. Values are omitted when the adapter cannot measure them. */
@@ -19,7 +30,7 @@ export interface Device {
   id: string;
   name: string;
   role: DeviceRole;
-  rssi: number;
+  rssi: number | null;
   distance_estimate?: string;
 }
 
@@ -94,6 +105,7 @@ export interface MeshTransport {
   /** Native peripheral transports report server-side client connections here. */
   onPeerState?(callback: (event: { deviceId: string; state: PeerConnectionState; status?: number }) => void): () => void;
   getExternalRadioStatus?(): Promise<ExternalRadioStatus>;
+  getPeerLinkMetrics?(deviceId: string): Promise<PeerLinkMetrics>;
 }
 
 export interface MeshServiceApi {
@@ -111,5 +123,6 @@ export interface MeshServiceApi {
   getRoutingTable(): Promise<RoutingEntry[]>;
   getMeshStatus(): Promise<MeshStatus>;
   getPeerConnectionState(deviceId: string): PeerConnectionState | 'unknown';
+  getPeerLinkMetrics(deviceId: string): Promise<PeerLinkMetrics>;
   sendWithMode(mode: TransmissionMode, payload: EncryptedMessage): Promise<boolean>;
 }

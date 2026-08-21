@@ -227,3 +227,6 @@
 - [x] Implement an Android native Wi-Fi peer bridge with real discovery, connection, socket, teardown, and event callbacks
 - [x] Present the phone-only transport state as device-supported best effort; do not promise 200–300 m without field evidence
 - [x] Add deterministic transport tests and a two-phone Wi-Fi P2P acceptance matrix covering offline delivery, reconnect, and no-internet validation
+- [x] Add a live active-peer connection-strength indicator sourced from actual BLE RSSI or Android Wi-Fi Direct link measurements
+- [x] Show estimated distance only when a transport supports a documented measured/derived value, with unavailable states instead of fabricated meters
+- [x] Add deterministic status-model/UI tests and verify the connection indicator update

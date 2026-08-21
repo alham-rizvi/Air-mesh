@@ -1,6 +1,7 @@
 import { BOUNDED_BLE_SCAN_WINDOW_MS } from './discovery';
 import { fragmentGattFrame, GattFrameAssembler } from './gatt-framing';
-import type { Device, MeshTransport } from './types';
+import { peerLinkMetricsFromBleRssi } from './discovery';
+import type { Device, MeshTransport, PeerLinkMetrics } from './types';
 
 export interface BleCharacteristicLike {
   uuid: string;
@@ -16,6 +17,7 @@ export interface BlePeripheralLike {
   discoverAllServicesAndCharacteristics(): Promise<BlePeripheralLike>;
   monitorCharacteristicForService(serviceUuid: string, characteristicUuid: string, listener: (error: Error | null, characteristic: BleCharacteristicLike | null) => void): { remove(): void };
   writeCharacteristicWithResponseForService(serviceUuid: string, characteristicUuid: string, value: string): Promise<BleCharacteristicLike>;
+  readRSSI?(): Promise<BlePeripheralLike>;
 }
 
 export interface BleClientLike {
@@ -82,7 +84,7 @@ export class BlePlxTransport implements MeshTransport {
           id: peripheral.id,
           name: peripheral.localName || peripheral.name || 'Nearby Air-Mesh device',
           role: 'user',
-          rssi: peripheral.rssi ?? -100,
+          rssi: peripheral.rssi ?? null,
         });
       });
     });
@@ -118,4 +120,13 @@ export class BlePlxTransport implements MeshTransport {
   }
 
   onData(callback: (deviceId: string, payload: Uint8Array) => void): () => void { this.listener = callback; return () => { this.listener = null; }; }
+
+  async getPeerLinkMetrics(deviceId: string): Promise<PeerLinkMetrics> {
+    const peripheral = this.devices.get(deviceId);
+    if (!peripheral) return peerLinkMetricsFromBleRssi(null);
+    try {
+      const reading = peripheral.readRSSI ? await peripheral.readRSSI() : peripheral;
+      return peerLinkMetricsFromBleRssi(reading.rssi ?? peripheral.rssi ?? null);
+    } catch { return peerLinkMetricsFromBleRssi(null); }
+  }
 }

@@ -1,5 +1,5 @@
 import { fragmentGattFrame, GattFrameAssembler } from './gatt-framing';
-import type { Device, MeshTransport, PeerConnectionState } from './types';
+import type { Device, MeshTransport, PeerConnectionState, PeerLinkMetrics } from './types';
 
 export type GattPeerEvent = { deviceId: string; state: PeerConnectionState; status?: number };
 
@@ -65,4 +65,8 @@ export class GattPeripheralTransport implements MeshTransport {
   }
 
   onPeerState(callback: (event: GattPeerEvent) => void): () => void { return this.peripheral.onPeerState(callback); }
+  async getPeerLinkMetrics(deviceId: string): Promise<PeerLinkMetrics> {
+    if (this.central.getPeerLinkMetrics) return this.central.getPeerLinkMetrics(deviceId);
+    return { transport: 'ble', strength: 'unavailable', rssi_dbm: null, estimated_distance_m: null, source: 'unavailable', detail: 'No current signal measurement is available for this GATT-server peer.' };
+  }
 }

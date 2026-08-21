@@ -1,4 +1,4 @@
-import type { Device, MeshTransport, PeerConnectionState } from './types';
+import type { Device, MeshTransport, PeerConnectionState, PeerLinkMetrics } from './types';
 import type { AndroidWifiDirectClient } from './wifi-direct-client';
 
 function encodeBase64(value: Uint8Array): string { let binary = ''; value.forEach((byte) => { binary += String.fromCharCode(byte); }); return btoa(binary); }
@@ -40,4 +40,7 @@ export class WifiDirectTransport implements MeshTransport {
   onData(callback: (deviceId: string, payload: Uint8Array) => void): () => void { return this.client.onPacket(callback); }
   onPeerState(callback: (event: { deviceId: string; state: PeerConnectionState; status?: number }) => void): () => void { return this.client.onPeerState(callback); }
   onDevices(callback: (devices: Device[]) => void): () => void { this.deviceListener = callback; return () => { this.deviceListener = null; }; }
+  async getPeerLinkMetrics(): Promise<PeerLinkMetrics> {
+    return { transport: 'wifi-direct', strength: 'unavailable', rssi_dbm: null, estimated_distance_m: null, source: 'wifi-direct-unavailable', detail: 'Android Wi-Fi Direct confirms the local socket connection but does not expose a per-peer RSSI or distance reading through this transport.' };
+  }
 }

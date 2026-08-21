@@ -1,5 +1,5 @@
 import { ChunkAssembler, chunkMessage, decodeMessage, decrementTtl, encodeMessage, mergeRoutingTable, shouldForward } from './protocol';
-import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, MeshTransportKind, PeerConnectionState, RoutingEntry, TransmissionMode } from './types';
+import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, MeshTransportKind, PeerConnectionState, PeerLinkMetrics, RoutingEntry, TransmissionMode } from './types';
 
 export class UnavailableMeshTransport implements MeshTransport {
   readonly kind = 'unavailable' as const;
@@ -120,6 +120,10 @@ export class MeshService implements MeshServiceApi {
   }
 
   getPeerConnectionState(deviceId: string): PeerConnectionState | 'unknown' { return this.peerStates.get(deviceId) ?? 'unknown'; }
+  async getPeerLinkMetrics(deviceId: string): Promise<PeerLinkMetrics> {
+    if (this.transport.getPeerLinkMetrics) return this.transport.getPeerLinkMetrics(deviceId);
+    return { transport: this.transport.kind ?? 'unavailable', strength: 'unavailable', rssi_dbm: null, estimated_distance_m: null, source: 'unavailable', detail: 'The active transport does not provide a peer signal measurement.' };
+  }
 
   async sendWithMode(mode: TransmissionMode, payload: EncryptedMessage): Promise<boolean> {
     if (mode.kind === 'broadcast') return this.broadcastMessage({ ...payload, receiver_id: '*' });

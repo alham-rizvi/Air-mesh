@@ -288,7 +288,7 @@ class AirMeshWifiDirectModule(private val reactContext: ReactApplicationContext)
     override fun onSuccess() = onSuccess()
     override fun onFailure(reason: Int) = onFailure(reason)
   }
-  private fun emitPeerDevice(device: WifiP2pDevice) = emit("airMeshWifiDirectDevice", Arguments.createMap().apply { putString("deviceId", device.deviceAddress); putString("name", device.deviceName ?: "Nearby Air-Mesh phone"); putInt("rssi", -100) })
+  private fun emitPeerDevice(device: WifiP2pDevice) = emit("airMeshWifiDirectDevice", Arguments.createMap().apply { putString("deviceId", device.deviceAddress); putString("name", device.deviceName ?: "Nearby Air-Mesh phone"); putNull("rssi") })
   private fun emitPeer(deviceId: String, state: String) = emit("airMeshWifiDirectPeerState", Arguments.createMap().apply { putString("deviceId", deviceId); putString("state", state) })
   private fun emitStatus(state: String, reason: String? = null) = emit("airMeshWifiDirectStatus", Arguments.createMap().apply { putString("state", state); if (reason != null) putString("reason", reason) })
   private fun emit(eventName: String, payload: com.facebook.react.bridge.WritableMap) { if (reactContext.hasActiveReactInstance()) reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, payload) }

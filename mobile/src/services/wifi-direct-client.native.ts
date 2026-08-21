@@ -25,7 +25,7 @@ export function createAndroidWifiDirectClient(): AndroidWifiDirectClient {
     connect: (deviceId) => nativeModule.connect(deviceId),
     disconnect: (deviceId) => nativeModule.disconnect(deviceId),
     sendPacket: (deviceId, payloadBase64) => nativeModule.sendPacket(deviceId, payloadBase64),
-    onDevice: (callback) => { const listener = emitter.addListener('airMeshWifiDirectDevice', (device: Device) => callback(device)); return () => listener.remove(); },
+    onDevice: (callback) => { const listener = emitter.addListener('airMeshWifiDirectDevice', (device: Device) => callback({ ...device, rssi: device.rssi ?? null })); return () => listener.remove(); },
     onPacket: (callback) => { const listener = emitter.addListener('airMeshWifiDirectPacket', (event: { deviceId: string; payloadBase64: string }) => callback(event.deviceId, decodeBase64(event.payloadBase64))); return () => listener.remove(); },
     onPeerState: (callback) => { const listener = emitter.addListener('airMeshWifiDirectPeerState', (event: WifiDirectPeerEvent) => callback(event)); return () => listener.remove(); },
     onStatus: (callback) => { const listener = emitter.addListener('airMeshWifiDirectStatus', callback); return () => listener.remove(); },
