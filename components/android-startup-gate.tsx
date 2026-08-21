@@ -3,6 +3,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 
 import { useDeviceReadiness } from '@/hooks/use-device-readiness';
+import { startMeshAdvertising } from '@/mobile/src/services/runtime-transport';
 
 export function AndroidStartupGate({ children }: { children: React.ReactNode }) {
   const device = useDeviceReadiness();
@@ -26,6 +27,7 @@ export function AndroidStartupGate({ children }: { children: React.ReactNode }) 
   const requestNearby = async () => {
     setRequesting(true);
     const granted = await device.requestPermissions();
+    if (granted) await startMeshAdvertising();
     setRequesting(false);
     if (!granted) setContinueLocal(true);
   };

@@ -39,6 +39,7 @@ export class MeshService implements MeshServiceApi {
   private readonly connectedDevices = new Set<string>();
   private readonly peerStates = new Map<string, PeerConnectionState>();
   private unsubscribeTransport: (() => void) | null = null;
+  private unsubscribePeerState: (() => void) | null = null;
 
   constructor(private transport: MeshTransport = new UnavailableMeshTransport(), private readonly selfId = 'local-device') {
     this.attachTransport(transport);
@@ -46,12 +47,18 @@ export class MeshService implements MeshServiceApi {
 
   setTransport(transport: MeshTransport): void {
     this.unsubscribeTransport?.();
+    this.unsubscribePeerState?.();
     this.transport = transport;
     this.attachTransport(transport);
   }
 
   private attachTransport(transport: MeshTransport): void {
     this.unsubscribeTransport = transport.onData((deviceId, bytes) => this.handleIncoming(deviceId, bytes));
+    this.unsubscribePeerState = transport.onPeerState?.((event) => {
+      this.peerStates.set(event.deviceId, event.state);
+      if (event.state === 'connected') this.connectedDevices.add(event.deviceId);
+      if (event.state === 'disconnected' || event.state === 'failed') this.connectedDevices.delete(event.deviceId);
+    }) ?? null;
   }
 
   async startAdvertising(): Promise<void> { await this.transport.startAdvertising(); }
@@ -152,7 +159,7 @@ export class MeshService implements MeshServiceApi {
 
   updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); }
 
-  dispose(): void { this.unsubscribeTransport?.(); this.unsubscribeTransport = null; this.listeners.clear(); }
+  dispose(): void { this.unsubscribeTransport?.(); this.unsubscribeTransport = null; this.unsubscribePeerState?.(); this.unsubscribePeerState = null; this.listeners.clear(); }
 
   private handleIncoming(deviceId: string, bytes: Uint8Array): void {
     this.assembler.cleanupExpired();

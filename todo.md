@@ -206,3 +206,14 @@
 
 - [ ] Commit and push the two-phone offline acceptance protocol to GitHub main
 - [ ] Dispatch a managed Android APK release from the acceptance-protocol commit and verify workflow status
+
+- [x] Review and extend deterministic local two-device handshake simulation coverage
+- [x] Run simulated discovery, pairing, transport callback, encrypted delivery, queueing, and recovery tests
+- [x] Report simulation results and distinguish physical BLE/GATT requirements
+
+- [x] Review Android native BLE, manifest, and existing mesh boundaries for a peripheral/GATT bridge
+- [x] Implement Bluetooth LE advertising and Air-Mesh GATT server with a React Native bridge
+- [x] Integrate native peripheral events into the runtime mesh transport and add deterministic bridge tests
+- [x] Prepare P0 two-phone execution and paired-device audit-log capture procedure; record sandbox hardware limitation
+- [ ] Verify, commit, push, and dispatch a release APK containing the native GATT bridge
+- [x] Add conservative 20-byte ATT framing and per-peer reassembly for both central and peripheral GATT data paths

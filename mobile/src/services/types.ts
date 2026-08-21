@@ -91,6 +91,8 @@ export interface MeshTransport {
   disconnect(deviceId: string): Promise<void>;
   send(deviceId: string, payload: Uint8Array): Promise<boolean>;
   onData(callback: (deviceId: string, payload: Uint8Array) => void): () => void;
+  /** Native peripheral transports report server-side client connections here. */
+  onPeerState?(callback: (event: { deviceId: string; state: PeerConnectionState; status?: number }) => void): () => void;
   getExternalRadioStatus?(): Promise<ExternalRadioStatus>;
 }
 

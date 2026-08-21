@@ -12,8 +12,8 @@ describe('Android discovery readiness', () => {
   });
 
   it('uses Nearby permissions on Android 12+ and explains legacy location discovery accurately', () => {
-    const modern = buildNearbyPermissionPlan(31, { scan: 'BLUETOOTH_SCAN', connect: 'BLUETOOTH_CONNECT', fineLocation: 'ACCESS_FINE_LOCATION' });
-    expect(modern.permissions).toEqual(['BLUETOOTH_SCAN', 'BLUETOOTH_CONNECT']);
+    const modern = buildNearbyPermissionPlan(31, { scan: 'BLUETOOTH_SCAN', connect: 'BLUETOOTH_CONNECT', advertise: 'BLUETOOTH_ADVERTISE', fineLocation: 'ACCESS_FINE_LOCATION' });
+    expect(modern.permissions).toEqual(['BLUETOOTH_SCAN', 'BLUETOOTH_CONNECT', 'BLUETOOTH_ADVERTISE']);
     expect(modern.rationale).toContain('Nearby devices');
     const legacy = buildNearbyPermissionPlan(30, { fineLocation: 'ACCESS_FINE_LOCATION' });
     expect(legacy.permissions).toEqual(['ACCESS_FINE_LOCATION']);

@@ -212,6 +212,8 @@ pnpm verify:all
 
 The deterministic suite currently validates Android readiness/rationale, bounded scan calculation, BLE scan collection, protocol chunking and dedupe, peer lifecycle and modes, inbound P2P callback behavior using the loopback boundary, database/audit/security integration, radio/location validation, and asset constraints. These tests are **necessary but not sufficient** for P0 radio acceptance.
 
+`tests/gatt-peripheral-transport.test.ts` additionally validates the hybrid transport contract: an Android peripheral advertiser is started, server-side GATT writes are delivered to the mesh callback, server connection events alter peer state, and a response falls back to GATT notifications when the peer is not a central-client connection. `tests/gatt-framing.test.ts` verifies each characteristic value remains within the conservative 20-byte default ATT payload and is reassembled per device before the MeshService sees it. These remain deterministic bridge contracts, not Bluetooth radio tests.
+
 ---
 
 ## 8. Completion Decision
@@ -226,7 +228,7 @@ The two-phone offline feature is eligible for a production claim only when:
 
 Until then, the accurate statement is:
 
-> “Air-Mesh provides offline-first local records, identity pairing, protocol/security layers, and a BLE central transport boundary. Native peripheral/GATT implementation and two-phone hardware acceptance remain required for verified phone-to-phone offline delivery.”
+> “Air-Mesh includes an Android native BLE peripheral/GATT bridge and conservative GATT frame handling, but two-phone hardware acceptance remains required before any verified phone-to-phone offline-delivery claim.”
 
 ---
 

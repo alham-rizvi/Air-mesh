@@ -14,6 +14,7 @@ export function useDeviceReadiness() {
     return buildNearbyPermissionPlan(compatibility.apiLevel ?? 0, {
       scan: permissions.BLUETOOTH_SCAN,
       connect: permissions.BLUETOOTH_CONNECT,
+      advertise: permissions.BLUETOOTH_ADVERTISE,
       fineLocation: permissions.ACCESS_FINE_LOCATION,
     });
   }, [compatibility.apiLevel]);

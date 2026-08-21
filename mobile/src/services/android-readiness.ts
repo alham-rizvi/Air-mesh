@@ -46,11 +46,11 @@ export function evaluateAndroidCompatibility(platform: string, version?: string 
  * releases require fine location at runtime for Bluetooth discovery. This function
  * is intentionally pure so UI and tests share the same permission rationale.
  */
-export function buildNearbyPermissionPlan(apiLevel: number, permissions: { scan?: string; connect?: string; fineLocation?: string }): NearbyPermissionPlan {
+export function buildNearbyPermissionPlan(apiLevel: number, permissions: { scan?: string; connect?: string; advertise?: string; fineLocation?: string }): NearbyPermissionPlan {
   if (apiLevel >= 31) {
     return {
-      permissions: [permissions.scan, permissions.connect].filter((value): value is string => Boolean(value)),
-      rationale: 'Air-Mesh uses Nearby devices and Bluetooth only to scan for and connect to nearby Air-Mesh devices. It does not use this permission to read contacts or access the internet.',
+      permissions: [permissions.scan, permissions.connect, permissions.advertise].filter((value): value is string => Boolean(value)),
+      rationale: 'Air-Mesh uses Nearby devices and Bluetooth to scan, connect, and advertise its local Air-Mesh service for nearby phones. It does not use this permission to read contacts or access the internet.',
     };
   }
   return {
