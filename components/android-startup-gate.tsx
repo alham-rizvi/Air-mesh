@@ -3,6 +3,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 
 import { useDeviceReadiness } from '@/hooks/use-device-readiness';
+import { startMeshAdvertising } from '@/mobile/src/services/runtime-transport';
 
 export function AndroidStartupGate({ children }: { children: React.ReactNode }) {
   const device = useDeviceReadiness();
@@ -26,6 +27,7 @@ export function AndroidStartupGate({ children }: { children: React.ReactNode }) 
   const requestNearby = async () => {
     setRequesting(true);
     const granted = await device.requestPermissions();
+    if (granted) await startMeshAdvertising();
     setRequesting(false);
     if (!granted) setContinueLocal(true);
   };
@@ -33,7 +35,7 @@ export function AndroidStartupGate({ children }: { children: React.ReactNode }) 
   return <View style={styles.shell}>
     <View style={styles.iconWrap}><MaterialIcons name={supported ? 'bluetooth-searching' : 'phonelink-erase'} size={34} color="#2ED1A1" /></View>
     <Text style={styles.eyebrow}>{supported ? 'ANDROID READY' : 'LOCAL-ONLY MODE'}</Text>
-    <Text style={styles.title}>{supported ? 'Enable nearby discovery?' : 'This Android version cannot run the BLE transport.'}</Text>
+    <Text style={styles.title}>{supported ? 'Enable nearby discovery?' : 'This Android version cannot run native nearby transport.'}</Text>
     <Text style={styles.body}>{device.compatibility.reason}</Text>
     {supported && <View style={styles.explanation}><Text style={styles.explanationTitle}>Why we ask</Text><Text style={styles.explanationBody}>{device.permissionRationale}</Text></View>}
     <Pressable disabled={!supported || requesting} onPress={() => void requestNearby()} style={({ pressed }) => [styles.primary, { opacity: !supported || requesting ? 0.5 : pressed ? 0.82 : 1 }]}>
@@ -42,7 +44,7 @@ export function AndroidStartupGate({ children }: { children: React.ReactNode }) 
     <Pressable onPress={() => setContinueLocal(true)} style={({ pressed }) => [styles.secondary, { opacity: pressed ? 0.7 : 1 }]}>
       <Text style={styles.secondaryText}>Continue with local-only mode</Text>
     </Pressable>
-    <Text style={styles.footnote}>You can change this later in Settings. Air-Mesh does not need internet access to store local messages, reports, or identity.</Text>
+    <Text style={styles.footnote}>You can change this later in Settings. Air-Mesh uses a local phone-to-phone path only; it does not need internet access to store or exchange local messages, reports, or identity.</Text>
   </View>;
 }
 

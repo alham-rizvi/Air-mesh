@@ -1,5 +1,6 @@
-import type { Device, MeshTransport } from './types';
 import { BOUNDED_BLE_SCAN_WINDOW_MS } from './discovery';
+import { fragmentGattFrame, GattFrameAssembler } from './gatt-framing';
+import type { Device, MeshTransport } from './types';
 
 export interface BleCharacteristicLike {
   uuid: string;
@@ -37,6 +38,7 @@ export class BlePlxTransport implements MeshTransport {
   readonly kind = 'ble' as const;
   private readonly devices = new Map<string, BlePeripheralLike>();
   private readonly subscriptions = new Map<string, { remove(): void }>();
+  private readonly incomingFrames = new GattFrameAssembler();
   private listener: ((deviceId: string, payload: Uint8Array) => void) | null = null;
   private finishScan: (() => void) | null = null;
 
@@ -96,7 +98,8 @@ export class BlePlxTransport implements MeshTransport {
     const subscription = peripheral.monitorCharacteristicForService(AIR_MESH_SERVICE_UUID, AIR_MESH_CHARACTERISTICS.MESSAGE_INBOX, (error, characteristic) => {
       if (error || !characteristic?.value || !this.listener) return;
       const binary = atob(characteristic.value);
-      this.listener(deviceId, Uint8Array.from(binary, (character) => character.charCodeAt(0)));
+      const complete = this.incomingFrames.accept(deviceId, Uint8Array.from(binary, (character) => character.charCodeAt(0)));
+      if (complete) this.listener(deviceId, complete);
     });
     this.subscriptions.set(deviceId, subscription);
   }
@@ -106,9 +109,11 @@ export class BlePlxTransport implements MeshTransport {
   async send(deviceId: string, payload: Uint8Array): Promise<boolean> {
     const peripheral = this.devices.get(deviceId);
     if (!peripheral) return false;
-    let binary = '';
-    payload.forEach((byte) => { binary += String.fromCharCode(byte); });
-    await peripheral.writeCharacteristicWithResponseForService(AIR_MESH_SERVICE_UUID, AIR_MESH_CHARACTERISTICS.MESSAGE_OUTBOX, btoa(binary));
+    for (const fragment of fragmentGattFrame(payload)) {
+      let binary = '';
+      fragment.forEach((byte) => { binary += String.fromCharCode(byte); });
+      await peripheral.writeCharacteristicWithResponseForService(AIR_MESH_SERVICE_UUID, AIR_MESH_CHARACTERISTICS.MESSAGE_OUTBOX, btoa(binary));
+    }
     return true;
   }
 

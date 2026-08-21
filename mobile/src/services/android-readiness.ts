@@ -22,7 +22,7 @@ export function normalizeAndroidApiLevel(version: string | number | undefined): 
 
 export function evaluateAndroidCompatibility(platform: string, version?: string | number): AndroidCompatibility {
   if (platform !== 'android') {
-    return { status: 'not-android', apiLevel: null, reason: 'Nearby BLE discovery is available only in the Android native build. Local offline records remain available on this platform.' };
+    return { status: 'not-android', apiLevel: null, reason: 'Nearby phone-to-phone discovery is available only in the Android native build. Local offline records remain available on this platform.' };
   }
 
   const apiLevel = normalizeAndroidApiLevel(version);
@@ -30,31 +30,32 @@ export function evaluateAndroidCompatibility(platform: string, version?: string 
     return {
       status: 'unsupported',
       apiLevel,
-      reason: `Air-Mesh requires Android ${AIR_MESH_MIN_ANDROID_API} or later for the native BLE transport. You can still use local-only records on this device.`,
+      reason: `Air-Mesh requires Android ${AIR_MESH_MIN_ANDROID_API} or later for native nearby transport. You can still use local-only records on this device.`,
     };
   }
 
   return {
     status: 'supported',
     apiLevel,
-    reason: `Android ${apiLevel} supports the Air-Mesh native BLE boundary. Nearby permission is requested only when you choose to enable discovery.`,
+    reason: `Android ${apiLevel} supports Air-Mesh native nearby transport. Wi-Fi Direct is preferred when the device supports it; Bluetooth/GATT remains a fallback. Nearby permission is requested only when you choose to enable discovery.`,
   };
 }
 
 /**
- * Android 12+ exposes Bluetooth scan/connect permissions. Older supported Android
- * releases require fine location at runtime for Bluetooth discovery. This function
+ * Android 12+ exposes Bluetooth scan/connect permissions and Android 13+ exposes
+ * Nearby Wi-Fi permission. Older supported Android releases require fine location
+ * at runtime for nearby Bluetooth/Wi-Fi discovery. This function
  * is intentionally pure so UI and tests share the same permission rationale.
  */
-export function buildNearbyPermissionPlan(apiLevel: number, permissions: { scan?: string; connect?: string; fineLocation?: string }): NearbyPermissionPlan {
+export function buildNearbyPermissionPlan(apiLevel: number, permissions: { scan?: string; connect?: string; advertise?: string; nearbyWifi?: string; fineLocation?: string }): NearbyPermissionPlan {
   if (apiLevel >= 31) {
     return {
-      permissions: [permissions.scan, permissions.connect].filter((value): value is string => Boolean(value)),
-      rationale: 'Air-Mesh uses Nearby devices and Bluetooth only to scan for and connect to nearby Air-Mesh devices. It does not use this permission to read contacts or access the internet.',
+      permissions: [permissions.scan, permissions.connect, permissions.advertise, ...(apiLevel >= 33 ? [permissions.nearbyWifi] : [])].filter((value): value is string => Boolean(value)),
+      rationale: 'Air-Mesh uses Nearby devices, Bluetooth, and supported local Wi-Fi peer-to-peer features to discover and connect nearby phones. The Wi-Fi permission enables a local link, not an internet connection; Air-Mesh does not use it to read contacts.',
     };
   }
   return {
     permissions: [permissions.fineLocation].filter((value): value is string => Boolean(value)),
-    rationale: 'Android requires location permission for Bluetooth discovery on this Android version. Air-Mesh does not collect GPS location for discovery; location is attached only to an SOS you explicitly send.',
+    rationale: 'Android requires location permission for nearby Bluetooth or Wi-Fi discovery on this Android version. Air-Mesh does not collect GPS location for discovery; location is attached only to an SOS you explicitly send.',
   };
 }

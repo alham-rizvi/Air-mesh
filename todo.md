@@ -210,3 +210,20 @@
 - [x] Review and extend deterministic local two-device handshake simulation coverage
 - [x] Run simulated discovery, pairing, transport callback, encrypted delivery, queueing, and recovery tests
 - [x] Report simulation results and distinguish physical BLE/GATT requirements
+
+- [x] Review Android native BLE, manifest, and existing mesh boundaries for a peripheral/GATT bridge
+- [x] Implement Bluetooth LE advertising and Air-Mesh GATT server with a React Native bridge
+- [x] Integrate native peripheral events into the runtime mesh transport and add deterministic bridge tests
+- [x] Prepare P0 two-phone execution and paired-device audit-log capture procedure; record sandbox hardware limitation
+- [ ] Verify, commit, push, and dispatch a release APK containing the native GATT bridge
+- [x] Add conservative 20-byte ATT framing and per-peer reassembly for both central and peripheral GATT data paths
+- [ ] Define a truthful, country-configurable 700–800 m internet-free neighborhood radio profile; do not present phone BLE as its range mechanism
+- [ ] Implement an external-radio adapter contract for compatible certified LoRa-class hardware connected locally to Android
+- [ ] Add a long-range deployment/setup screen that distinguishes attached hardware, direct-radio reachability, queued local messages, and unverified coverage
+- [ ] Add deterministic protocol/adapter tests and a real neighborhood field-acceptance matrix for two or more radio nodes
+- [ ] Push the long-range implementation to GitHub and publish a hardware-tested APK release
+- [x] Research Android Wi-Fi Aware and Wi-Fi Direct capability, permissions, compatibility, and no-internet constraints for phone-only peer-to-peer messaging
+- [x] Design a phone-only transport hierarchy: Wi-Fi Aware/Direct when supported, BLE GATT fallback, local queue otherwise, and optional external LoRa extension
+- [x] Implement an Android native Wi-Fi peer bridge with real discovery, connection, socket, teardown, and event callbacks
+- [x] Present the phone-only transport state as device-supported best effort; do not promise 200–300 m without field evidence
+- [x] Add deterministic transport tests and a two-phone Wi-Fi P2P acceptance matrix covering offline delivery, reconnect, and no-internet validation
