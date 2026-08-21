@@ -193,3 +193,16 @@
 
 - [ ] Confirm the latest Home visual commit on GitHub main and dispatch a managed Android APK release
 - [ ] Verify the resulting release workflow and APK publication status
+
+- [x] Write and deliver a detailed Markdown record of all implemented checklist items, verification evidence, limitations, and release status
+
+- [x] Diagnose QR pairing versus real offline BLE connection and identify why two phones cannot connect without internet
+- [x] Make QR pairing and offline-transport requirements explicit in the app and documentation
+- [x] Verify the corrected guidance and document the required native peripheral/GATT implementation for true phone-to-phone offline connection
+
+- [x] Review existing transport tests and enumerate all two-phone offline acceptance stages
+- [x] Write a comprehensive two-phone Android acceptance matrix covering every connection, messaging, SOS, sync, and recovery path
+- [x] Add deterministic checklist/diagnostic coverage where possible and verify the protocol
+
+- [ ] Commit and push the two-phone offline acceptance protocol to GitHub main
+- [ ] Dispatch a managed Android APK release from the acceptance-protocol commit and verify workflow status
