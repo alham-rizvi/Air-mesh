@@ -22,7 +22,7 @@ export async function sendEncryptedText(input: { chatId: string; contactId: stri
   const accepted = await meshService.sendWithMode({ kind: 'mesh', receiverId: input.receiverId }, payload);
   const attemptedAt = now();
   await database.updateOutboxEnvelope(messageId, { status: accepted ? 'sent' : 'queued', last_attempt_at: attemptedAt, attempt_count: 1 });
-  await database.saveRetryHistory({ id: uuid(), message_id: messageId, attempted_at: attemptedAt, trigger: 'automatic', outcome: accepted ? 'accepted' : 'queued', reason: 'Initial local transport attempt' });
+  await database.saveRetryHistory({ id: uuid(), message_id: messageId, attempted_at: attemptedAt, trigger: 'automatic', outcome: accepted ? 'accepted' : 'queued', reason: accepted ? 'Initial connected peer accepted the envelope' : 'No eligible peer accepted the initial local transport attempt' });
   const message: Message = { id: messageId, chat_id: input.chatId, sender_id: input.senderId, receiver_id: input.receiverId, content_type: 'text', content: payload.content, timestamp: payload.timestamp, status: accepted ? 'sent' : 'queued', ttl: payload.ttl, message_id_for_dedup: messageId };
   await database.saveMessage(message);
   await auditService.logAction(accepted ? 'message_transport_accepted' : 'message_queued', { message_id: messageId, receiver_id: input.receiverId, encrypted: true, recipient_delivery_confirmed: false });
@@ -41,13 +41,13 @@ export async function retryQueuedEncryptedEnvelopes(): Promise<{ attempted: numb
     if (!directlyConnected && !shouldAttemptEnvelope(envelope, routes, Date.now(), { maxAttempts: preferences.maxAttempts, minIntervalMs: preferences.retryIntervalMinutes * 60_000 })) continue;
     let payload: EncryptedMessage;
     try { payload = decode<EncryptedMessage>(envelope.encrypted_payload); }
-    catch { continue; }
+    catch { await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: now(), trigger: 'automatic', outcome: 'skipped', reason: 'Queued envelope could not be decoded locally' }); continue; }
     attempted += 1;
     const sent = await meshService.sendWithMode({ kind: 'mesh', receiverId: envelope.destination_id }, payload);
     const attemptCount = envelope.attempt_count + 1;
     const attemptedAt = now();
     await database.updateOutboxEnvelope(envelope.message_id, { status: sent ? 'sent' : 'queued', last_attempt_at: attemptedAt, attempt_count: attemptCount });
-    await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: attemptedAt, trigger: 'automatic', outcome: sent ? 'accepted' : 'queued', reason: sent ? 'Eligible transport accepted the envelope' : 'No eligible transport accepted the envelope' });
+    await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: attemptedAt, trigger: 'automatic', outcome: sent ? 'accepted' : 'queued', reason: sent ? 'Eligible transport accepted the envelope' : directlyConnected ? 'Connected peer did not accept the envelope' : 'Route retry did not find an eligible next hop' });
     if (sent) accepted += 1;
   }
   if (attempted) await auditService.logAction('outbox_retry_completed', { attempted, immediate_transport_accepted: accepted, recipient_delivery_confirmed: false });
@@ -66,11 +66,11 @@ export async function retryOutboxEnvelopeNow(messageId: string): Promise<{ accep
   const envelope = (await database.getQueuedOutboxEnvelopes()).find((entry) => entry.message_id === messageId);
   if (!envelope) return { accepted: false, reason: 'The message is no longer queued locally.' };
   let payload: EncryptedMessage;
-  try { payload = decode<EncryptedMessage>(envelope.encrypted_payload); } catch { return { accepted: false, reason: 'The queued envelope is corrupted.' }; }
+  try { payload = decode<EncryptedMessage>(envelope.encrypted_payload); } catch { await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: now(), trigger: 'manual', outcome: 'skipped', reason: 'Queued envelope could not be decoded locally' }); return { accepted: false, reason: 'The queued envelope is corrupted.' }; }
   const accepted = await meshService.sendWithMode({ kind: 'mesh', receiverId: envelope.destination_id }, payload);
   const attemptedAt = now();
   await database.updateOutboxEnvelope(envelope.message_id, { status: accepted ? 'sent' : 'queued', last_attempt_at: attemptedAt, attempt_count: envelope.attempt_count + 1 });
-  await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: attemptedAt, trigger: 'manual', outcome: accepted ? 'accepted' : 'queued', reason: accepted ? 'User retry accepted by eligible transport' : 'User retry was not accepted by an eligible transport' });
+  await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: attemptedAt, trigger: 'manual', outcome: accepted ? 'accepted' : 'queued', reason: accepted ? 'User retry accepted by eligible transport' : meshService.isPeerConnected(envelope.destination_id) ? 'Connected peer did not accept the user retry' : 'No eligible peer or route was available for the user retry' });
   await auditService.logAction('outbox_manual_retry', { message_id: envelope.message_id, destination_id: envelope.destination_id, immediate_transport_accepted: accepted, recipient_delivery_confirmed: false });
   return { accepted };
 }

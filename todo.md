@@ -261,3 +261,7 @@
 - [x] Add deterministic retry-history and malformed/unsafe support-bundle import tests
 - [x] Verify v1.4.0 Android share/export prerequisites, push the release source, and dispatch the managed APK workflow
 - [ ] Perform physical Android share-sheet validation after the release APK is installed and record the result
+- [x] Add Diagnostics search and filter controls for peer identifiers, destinations, and next-hop route entries
+- [x] Add read-only visual differences between imported redacted topology and the current locally observed topology
+- [x] Record and show exact retry timestamps plus specific non-sensitive failed-attempt reasons in chat retry history
+- [x] Add deterministic filtering, topology-difference, and retry-detail tests and run full verification

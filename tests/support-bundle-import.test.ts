@@ -5,7 +5,7 @@ const validBundle = JSON.stringify({ schema_version: 1, generated_at: '2026-08-2
 
 describe('support-bundle import parser', () => {
   it('accepts the redacted exported schema and returns a read-only summary', () => {
-    expect(parseRedactedSupportBundle(validBundle)).toMatchObject({ transport: 'wifi-direct', connectedPeers: 1, routes: 0 });
+    expect(parseRedactedSupportBundle(validBundle)).toMatchObject({ summary: { transport: 'wifi-direct', connectedPeers: 1, routes: 0 }, topology: { nodes: ['rela…id'] } });
   });
   it('rejects malformed, unsupported, and unsafe bundles', () => {
     expect(() => parseRedactedSupportBundle('{bad json')).toThrow('not valid JSON');
