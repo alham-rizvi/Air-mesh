@@ -39,6 +39,7 @@ export class MeshService implements MeshServiceApi {
   private readonly listeners = new Set<(message: EncryptedMessage) => void>();
   private readonly connectedDevices = new Set<string>();
   private readonly peerStates = new Map<string, PeerConnectionState>();
+  private readonly retryOpportunityListeners = new Set<(event: { kind: 'peer-connected' | 'route-updated'; peerId?: string }) => void>();
   private unsubscribeTransport: (() => void) | null = null;
   private unsubscribePeerState: (() => void) | null = null;
 
@@ -77,6 +78,7 @@ export class MeshService implements MeshServiceApi {
       this.connectedDevices.add(deviceId);
       this.peerStates.set(deviceId, 'connected');
       void this.flushRelayQueue();
+      this.publishRetryOpportunity({ kind: 'peer-connected', peerId: deviceId });
     } catch (error) {
       this.peerStates.set(deviceId, 'failed');
       throw error;
@@ -122,6 +124,9 @@ export class MeshService implements MeshServiceApi {
   }
 
   getPeerConnectionState(deviceId: string): PeerConnectionState | 'unknown' { return this.peerStates.get(deviceId) ?? 'unknown'; }
+  getConnectedPeerIds(): string[] { return Array.from(this.connectedDevices); }
+  isPeerConnected(deviceId: string): boolean { return this.connectedDevices.has(deviceId); }
+  onRetryOpportunity(callback: (event: { kind: 'peer-connected' | 'route-updated'; peerId?: string }) => void): () => void { this.retryOpportunityListeners.add(callback); return () => this.retryOpportunityListeners.delete(callback); }
   async getPeerLinkMetrics(deviceId: string): Promise<PeerLinkMetrics> {
     if (this.transport.getPeerLinkMetrics) return this.transport.getPeerLinkMetrics(deviceId);
     return { transport: this.transport.kind ?? 'unavailable', strength: 'unavailable', rssi_dbm: null, estimated_distance_m: null, source: 'unavailable', detail: 'The active transport does not provide a peer signal measurement.' };
@@ -179,7 +184,7 @@ export class MeshService implements MeshServiceApi {
     };
   }
 
-  updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); void this.flushRelayQueue(); }
+  updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); void this.flushRelayQueue(); this.publishRetryOpportunity({ kind: 'route-updated' }); }
 
   dispose(): void { this.unsubscribeTransport?.(); this.unsubscribeTransport = null; this.unsubscribePeerState?.(); this.unsubscribePeerState = null; this.listeners.clear(); }
 
@@ -206,6 +211,8 @@ export class MeshService implements MeshServiceApi {
     await database.saveRelayQueueEnvelope({ id, message_id: message.message_id, destination_id: message.receiver_id, next_hop_id: nextHop, opaque_envelope: JSON.stringify(forwarded), ttl: forwarded.ttl, created_at: now(), last_attempt_at: null, attempt_count: 0, status: 'queued' });
     if (nextHop && nextHop !== fromDeviceId && this.connectedDevices.has(nextHop)) await this.flushRelayQueue();
   }
+
+  private publishRetryOpportunity(event: { kind: 'peer-connected' | 'route-updated'; peerId?: string }): void { this.retryOpportunityListeners.forEach((listener) => listener(event)); }
 }
 
 export const meshService = new MeshService();

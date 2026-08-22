@@ -14,6 +14,7 @@ export interface Message { id: string; chat_id: string; sender_id: string; recei
 export interface OutboxEnvelope { message_id: string; chat_id: string; destination_id: string; encrypted_payload: string; ttl: number; created_at: string; last_attempt_at: string | null; attempt_count: number; status: OutboxStatus; }
 export interface RelayQueueEnvelope { id: string; message_id: string; destination_id: string; next_hop_id: string | null; opaque_envelope: string; ttl: number; created_at: string; last_attempt_at: string | null; attempt_count: number; status: 'queued' | 'accepted'; }
 export interface DeliveryReceiptRecord { message_id: string; recipient_id: string; receipt_payload: string; verified_at: string; }
+export interface RetryHistoryRecord { id: string; message_id: string; attempted_at: string; trigger: 'automatic' | 'manual'; outcome: 'accepted' | 'queued' | 'skipped'; reason: string; }
 export interface Chat { id: string; type: ChatType; name: string; member_ids: string[]; created_at: string; }
 export interface Report { id: string; shelter_id: string; timestamp: string; people_count: number; needs: string[]; notes: string; severity: ReportSeverity; status: 'active' | 'resolved'; sync_status: ReportSyncStatus; origin_device_id: string; location?: RescueLocation; }
 export interface AuditLog { id: string; device_id: string; timestamp: string; action: string; details: Record<string, unknown>; }
@@ -36,6 +37,8 @@ export interface DatabaseService {
   updateRelayQueueEnvelope(id: string, update: Pick<RelayQueueEnvelope, 'status' | 'last_attempt_at' | 'attempt_count' | 'next_hop_id'>): Promise<void>;
   clearQueuedRelayEnvelopes(): Promise<number>;
   saveDeliveryReceipt(receipt: DeliveryReceiptRecord): Promise<void>;
+  saveRetryHistory(record: RetryHistoryRecord): Promise<void>;
+  getRetryHistory(messageId: string): Promise<RetryHistoryRecord[]>;
   saveReport(report: Report): Promise<void>;
   getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]>;
   updateReportSyncStatus(ids: string[], status: ReportSyncStatus): Promise<void>;

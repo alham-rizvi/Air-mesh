@@ -239,8 +239,25 @@
 - [x] Implement authenticated route-table exchange, durable multi-hop forwarding, bounded relay retries, and receipt propagation
 - [x] Update chat UI to display truthful Queued, Accepted, and Delivered states from persisted protocol events
 - [x] Add a deterministic two-person, no-internet duplex simulation covering route exchange, multi-hop relay, delivery receipt, duplicate suppression, and queue recovery
-- [ ] Add a Settings diagnostics panel showing current route entries, connected relay peers, and transport status without synthetic values
-- [ ] Add Settings views for pending sender/relay envelopes and a confirmation-protected manual clear action for durable queues
-- [ ] Add accessible distinct icons and colors for Queued, Accepted, Delivered, and Read chat delivery states
-- [ ] Add deterministic diagnostics/queue-control/UI-state coverage and run full verification
-- [ ] Push the verified diagnostics update and dispatch a managed Android release after GitHub authentication is restored
+- [x] Add a Settings diagnostics panel showing current route entries, connected relay peers, and transport status without synthetic values
+- [x] Add Settings views for pending sender/relay envelopes and a confirmation-protected manual clear action for durable queues
+- [x] Add accessible distinct icons and colors for Queued, Accepted, Delivered, and Read chat delivery states
+- [x] Add deterministic diagnostics/queue-control/UI-state coverage and run full verification
+- [x] Push the verified diagnostics update and dispatch the v1.2.0 managed Android release after GitHub authentication was restored
+- [ ] Verify the v1.2.0 GitHub Actions result and published APK asset
+- [x] Add a diagnostics topology graph derived only from current local route-table and connected-peer data
+- [x] Add bounded automatic retry on eligible connection/route events with durable attempt counts and stale-route detection
+- [x] Add truthful local notification when an eligible peer returns and pending envelopes are retried
+- [x] Add chat warnings for stale routes and retry-limit-exhausted messages
+- [x] Add deterministic topology/retry/notification/warning tests and verify the enhancement
+- [x] Implement the approved hybrid retry policy: immediate eligible-peer/route event retries plus optional best-effort Android background queue maintenance
+- [x] Add persistent user controls for automatic retry limit and retry interval in Settings options
+- [x] Add a manual retry action for queued messages paused at the automatic retry limit
+- [x] Add a privacy-preserving mesh diagnostics export containing observed topology, routing, connection, and queue metadata without plaintext or secrets
+- [x] Add deterministic retry-preference, manual-retry, and export-redaction tests and run full verification
+- [ ] Add durable per-message retry-history records for automatic and manual attempts, including timestamp, outcome, and non-sensitive reason
+- [ ] Render detailed retry history directly within outgoing chat messages
+- [ ] Add strict support-bundle JSON import and validation for redacted diagnostic reproduction without changing live mesh state
+- [ ] Add deterministic retry-history and malformed/unsafe support-bundle import tests
+- [ ] Verify v1.4.0 Android share/export prerequisites, push the release source, and dispatch the managed APK workflow
+- [ ] Perform physical Android share-sheet validation after the release APK is installed and record the result
