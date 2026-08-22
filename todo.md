@@ -272,3 +272,7 @@
 - [x] Define and apply a refined light/dark editorial theme with soft surfaces, near-black typography, rounded layers, and a deliberate orange signal accent
 - [x] Restyle onboarding, primary tabs, message states, and Mesh Diagnostics using the new visual primitives without changing offline semantics
 - [x] Verify the redesigned screens at mobile portrait dimensions and run full functional verification
+- [x] Create original Air-Mesh logo, launch artwork, and signal-lime visual assets for the rebuilt product identity
+- [x] Replace the warm card-led interface with a dark immersive Air-Mesh UI: strong type, sparse signal-lime actions, compact navigation, and high-contrast system states
+- [x] Rebuild onboarding, Home, Messages, Rescue, Settings, and Diagnostics visual hierarchy without altering local-only mesh, queue, route, receipt, or retry semantics
+- [x] Verify the new dark product experience at mobile portrait dimensions and run the full cross-stack suite
