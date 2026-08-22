@@ -269,3 +269,6 @@
 - [x] Add a redacted export file for live-versus-imported topology differences without identifiers, payloads, or secrets
 - [x] Add deterministic preset persistence and topology-difference export redaction tests and run full verification
 - [x] Provide an Android physical share-sheet test procedure for the installed v1.4.0 APK; pending user-supplied physical result
+- [x] Define and apply a refined light/dark editorial theme with soft surfaces, near-black typography, rounded layers, and a deliberate orange signal accent
+- [x] Restyle onboarding, primary tabs, message states, and Mesh Diagnostics using the new visual primitives without changing offline semantics
+- [x] Verify the redesigned screens at mobile portrait dimensions and run full functional verification

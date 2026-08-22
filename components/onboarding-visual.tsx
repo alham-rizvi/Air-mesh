@@ -1,110 +1,31 @@
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '@/components/screen-container';
 
 type OnboardingColors = { bg: string; surface: string; text: string; muted: string; border: string; field: string; accent: string };
 
+function SignalNodes({ colors }: { colors: OnboardingColors }) {
+  return <View style={styles.signalArea}><View style={[styles.signalLine,{backgroundColor:colors.border,width:'70%',transform:[{rotate:'-18deg'}]}]}/><View style={[styles.signalLine,{backgroundColor:colors.border,width:'57%',transform:[{rotate:'22deg'}]}]}/><View style={[styles.node,{backgroundColor:colors.accent,left:20,top:39}]}/><View style={[styles.node,{backgroundColor:colors.text,left:94,top:20}]}/><View style={[styles.node,{backgroundColor:colors.text,left:144,top:72}]}/><View style={[styles.centerNode,{backgroundColor:colors.accent}]}><MaterialIcons name="wifi-tethering" size={21} color="#FFFFFF"/></View></View>;
+}
+
 export function OnboardingVisual({ colors }: { colors: OnboardingColors }) {
-  return (
-    <View style={[styles.visual, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-      <Image source={require('../assets/images/onboarding-hiker-phone.jpg')} style={styles.image} resizeMode="cover" />
-      <View style={styles.scrim} />
-      <View style={[styles.caption, { backgroundColor: 'rgba(7, 30, 25, 0.86)' }]}>
-        <Text style={[styles.captionEyebrow, { color: '#9FE6D0' }]}>AIR-MESH OFFLINE</Text>
-        <Text style={styles.captionTitle}>Prepared before the signal disappears.</Text>
-      </View>
-    </View>
-  );
+  return <View style={[styles.heroCard,{backgroundColor:colors.surface,borderColor:colors.border}]}><View style={{flex:1}}><Text style={[styles.eyebrow,{color:colors.accent}]}>AIR-MESH / LOCAL FIRST</Text><Text style={[styles.heroTitle,{color:colors.text}]}>Keep your network close.</Text><Text style={[styles.heroBody,{color:colors.muted}]}>Private identity and resilient local coordination, designed for the field.</Text><View style={styles.heroPill}><View style={[styles.tinyDot,{backgroundColor:colors.accent}]}/><Text style={[styles.pillText,{color:colors.text}]}>No account required</Text></View></View><SignalNodes colors={colors}/></View>;
 }
 
 export function HomePreparednessVisual({ colors }: { colors: OnboardingColors }) {
-  return (
-    <View style={[styles.homeVisual, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-      <Image source={require('../assets/images/onboarding-hiker-phone.jpg')} style={styles.homeImage} resizeMode="cover" />
-      <View style={styles.homeScrim} />
-      <View style={styles.homeCopy}>
-        <Text style={styles.homeEyebrow}>OFFLINE-READY</Text>
-        <Text style={styles.homeTitle}>Prepared before the signal disappears.</Text>
-        <Text style={styles.homeBody}>Decorative field image · not a live coverage map</Text>
-      </View>
-    </View>
-  );
+  return <View style={[styles.homeCard,{backgroundColor:colors.text,borderColor:colors.text}]}><View style={{flex:1}}><Text style={[styles.eyebrow,{color:'#FFB08B'}]}>LOCAL MESH</Text><Text style={styles.homeTitle}>One phone at a time, one route at a time.</Text><Text style={styles.homeBody}>Messages stay queued on-device until a nearby hop is eligible.</Text></View><View style={[styles.homeMark,{borderColor:colors.accent}]}><MaterialIcons name="hub" size={25} color={colors.accent}/></View></View>;
 }
 
-export function SettingsProfileVisual({
-  colors,
-  variant,
-}: {
-  colors: OnboardingColors;
-  variant: 'settings' | 'profile';
-}) {
+export function SettingsProfileVisual({ colors, variant }: { colors: OnboardingColors; variant: 'settings' | 'profile' }) {
   const profile = variant === 'profile';
-  const source = profile
-    ? require('../assets/images/profile-field-backpack.jpg')
-    : require('../assets/images/settings-vintage-radio.jpg');
-  const eyebrow = profile ? 'LOCAL PROFILE' : 'FIELD SETTINGS';
-  const title = profile ? 'Identity stays in your hands.' : 'Controls prepared for the field.';
-  const note = profile
-    ? 'Decorative image · not a profile photo'
-    : 'Decorative image · not a live transport status';
-
-  return (
-    <View style={[styles.settingsProfileVisual, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-      <Image source={source} style={styles.settingsProfileImage} resizeMode="cover" />
-      <View style={styles.settingsProfileScrim} />
-      <View style={styles.settingsProfileCopy}>
-        <Text style={styles.settingsProfileEyebrow}>{eyebrow}</Text>
-        <Text style={styles.settingsProfileTitle}>{title}</Text>
-        <Text style={styles.settingsProfileNote}>{note}</Text>
-      </View>
-    </View>
-  );
+  return <View style={[styles.fieldCard,{backgroundColor:colors.field,borderColor:colors.border}]}><View style={[styles.fieldIcon,{backgroundColor:profile?colors.surface:colors.accent}]}><MaterialIcons name={profile?'fingerprint':'tune'} size={23} color={profile?colors.accent:'#FFFFFF'}/></View><View style={{flex:1}}><Text style={[styles.eyebrow,{color:colors.accent}]}>{profile?'LOCAL IDENTITY':'FIELD CONTROLS'}</Text><Text style={[styles.fieldTitle,{color:colors.text}]}>{profile?'Identity stays with this device.':'Tune the network, not the narrative.'}</Text><Text style={[styles.fieldBody,{color:colors.muted}]}>{profile?'No cloud profile or portrait is used here.':'Permissions, retry policy, and diagnostics stay explicit.'}</Text></View></View>;
 }
 
 export function BootstrapScreen({ colors }: { colors: OnboardingColors }) {
-  return (
-    <ScreenContainer edges={['top', 'bottom', 'left', 'right']}>
-      <View style={[styles.bootstrap, { backgroundColor: colors.bg }]}>
-        <View style={[styles.bootstrapMark, { borderColor: colors.accent }]} />
-        <Text style={[styles.bootstrapTitle, { color: colors.text }]}>Air-Mesh</Text>
-        <Text style={[styles.bootstrapBody, { color: colors.muted }]}>Preparing your local workspace</Text>
-        <ActivityIndicator color={colors.accent} size="small" style={styles.spinner} />
-        <View style={styles.pulseRows}>
-          <View style={[styles.pulseWide, { backgroundColor: colors.field }]} />
-          <View style={[styles.pulseShort, { backgroundColor: colors.field }]} />
-        </View>
-      </View>
-    </ScreenContainer>
-  );
+  return <ScreenContainer edges={['top', 'bottom', 'left', 'right']}><View style={[styles.bootstrap,{backgroundColor:colors.bg}]}><View style={[styles.bootstrapMark,{backgroundColor:colors.accent}]}><MaterialIcons name="hub" size={24} color="#FFFFFF"/></View><Text style={[styles.bootstrapTitle,{color:colors.text}]}>Air-Mesh</Text><Text style={[styles.bootstrapBody,{color:colors.muted}]}>Preparing your local workspace</Text><ActivityIndicator color={colors.accent} size="small" style={styles.spinner}/><View style={styles.pulseRows}><View style={[styles.pulseWide,{backgroundColor:colors.field}]}/><View style={[styles.pulseShort,{backgroundColor:colors.field}]}/></View></View></ScreenContainer>;
 }
 
 const styles = StyleSheet.create({
-  visual: { height: 226, borderWidth: 1, borderRadius: 22, overflow: 'hidden', marginBottom: 22 },
-  image: { width: '100%', height: '100%' },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(4, 16, 13, 0.18)' },
-  caption: { position: 'absolute', left: 14, right: 14, bottom: 14, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12 },
-  captionEyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.3, marginBottom: 4 },
-  captionTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '800', lineHeight: 22 },
-  homeVisual: { height: 158, borderWidth: 1, borderRadius: 18, overflow: 'hidden', marginBottom: 14 },
-  homeImage: { width: '100%', height: '100%' },
-  homeScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(4, 20, 16, 0.34)' },
-  homeCopy: { position: 'absolute', left: 15, right: 15, bottom: 14 },
-  homeEyebrow: { color: '#9FE6D0', fontSize: 10, fontWeight: '800', letterSpacing: 1.15, marginBottom: 3 },
-  homeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', lineHeight: 22, maxWidth: '82%' },
-  homeBody: { color: '#E8F8F2', fontSize: 11, lineHeight: 15, marginTop: 6 },
-  settingsProfileVisual: { height: 148, borderWidth: 1, borderRadius: 18, overflow: 'hidden', marginBottom: 16 },
-  settingsProfileImage: { width: '100%', height: '100%' },
-  settingsProfileScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(5, 20, 16, 0.42)' },
-  settingsProfileCopy: { position: 'absolute', left: 15, right: 15, bottom: 14 },
-  settingsProfileEyebrow: { color: '#9FE6D0', fontSize: 10, fontWeight: '800', letterSpacing: 1.15, marginBottom: 3 },
-  settingsProfileTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', lineHeight: 22 },
-  settingsProfileNote: { color: '#E8F8F2', fontSize: 11, lineHeight: 15, marginTop: 5 },
-  bootstrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  bootstrapMark: { width: 42, height: 42, borderWidth: 3, transform: [{ rotate: '45deg' }], borderRadius: 7, marginBottom: 28 },
-  bootstrapTitle: { fontSize: 27, fontWeight: '800', letterSpacing: -0.6 },
-  bootstrapBody: { marginTop: 8, fontSize: 15 },
-  spinner: { marginTop: 28 },
-  pulseRows: { width: '100%', alignItems: 'center', gap: 10, marginTop: 40 },
-  pulseWide: { width: '74%', height: 9, borderRadius: 8 },
-  pulseShort: { width: '45%', height: 9, borderRadius: 8 },
+  heroCard:{minHeight:194,borderWidth:1,borderRadius:28,padding:19,marginBottom:20,flexDirection:'row',overflow:'hidden'}, eyebrow:{fontSize:10,fontWeight:'800',letterSpacing:1.2,marginBottom:7}, heroTitle:{fontSize:27,lineHeight:29,fontWeight:'800',letterSpacing:-1.1,maxWidth:190}, heroBody:{fontSize:12,lineHeight:17,marginTop:9,maxWidth:185}, heroPill:{alignSelf:'flex-start',flexDirection:'row',alignItems:'center',gap:6,marginTop:14,paddingHorizontal:9,paddingVertical:6,borderRadius:14,backgroundColor:'rgba(255,112,67,0.12)'}, tinyDot:{width:6,height:6,borderRadius:3}, pillText:{fontSize:10,fontWeight:'700'}, signalArea:{width:154,height:150,marginLeft:4,justifyContent:'center',alignItems:'center'}, signalLine:{height:1,position:'absolute',right:6,opacity:.58}, node:{width:10,height:10,borderRadius:5,position:'absolute'}, centerNode:{width:54,height:54,borderRadius:27,alignItems:'center',justifyContent:'center',shadowColor:'#FF5E2C',shadowOpacity:.25,shadowRadius:16,elevation:4}, homeCard:{minHeight:142,borderWidth:1,borderRadius:24,padding:17,marginBottom:15,flexDirection:'row',overflow:'hidden'}, homeTitle:{color:'#FFFFFF',fontSize:19,lineHeight:22,fontWeight:'800',maxWidth:220}, homeBody:{color:'rgba(255,255,255,.68)',fontSize:11,lineHeight:16,marginTop:8,maxWidth:226}, homeMark:{width:54,height:54,borderRadius:20,borderWidth:2,alignItems:'center',justifyContent:'center',alignSelf:'flex-end',marginLeft:6}, fieldCard:{minHeight:124,borderWidth:1,borderRadius:21,padding:15,marginBottom:16,flexDirection:'row',gap:12}, fieldIcon:{width:46,height:46,borderRadius:16,alignItems:'center',justifyContent:'center'}, fieldTitle:{fontSize:16,lineHeight:20,fontWeight:'800'}, fieldBody:{fontSize:11,lineHeight:16,marginTop:5}, bootstrap:{flex:1,alignItems:'center',justifyContent:'center',paddingHorizontal:32}, bootstrapMark:{width:48,height:48,borderRadius:17,alignItems:'center',justifyContent:'center',marginBottom:24}, bootstrapTitle:{fontSize:29,fontWeight:'800',letterSpacing:-.8}, bootstrapBody:{marginTop:8,fontSize:15}, spinner:{marginTop:28}, pulseRows:{width:'100%',alignItems:'center',gap:10,marginTop:40}, pulseWide:{width:'74%',height:9,borderRadius:8}, pulseShort:{width:'45%',height:9,borderRadius:8},
 });
