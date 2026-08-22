@@ -1,5 +1,6 @@
-import { ChunkAssembler, chunkMessage, decodeMessage, decrementTtl, encodeMessage, mergeRoutingTable, shouldForward } from './protocol';
-import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, MeshTransportKind, PeerConnectionState, RoutingEntry, TransmissionMode } from './types';
+import { ChunkAssembler, chunkMessage, decodeMessage, decrementTtl, encodeMessage, mergeRoutingTable } from './protocol';
+import { database, now } from './db';
+import type { Device, EncryptedMessage, MeshServiceApi, MeshStatus, MeshTransport, MeshTransportKind, PeerConnectionState, PeerLinkMetrics, RoutingEntry, TransmissionMode } from './types';
 
 export class UnavailableMeshTransport implements MeshTransport {
   readonly kind = 'unavailable' as const;
@@ -75,6 +76,7 @@ export class MeshService implements MeshServiceApi {
       await this.transport.connect(deviceId);
       this.connectedDevices.add(deviceId);
       this.peerStates.set(deviceId, 'connected');
+      void this.flushRelayQueue();
     } catch (error) {
       this.peerStates.set(deviceId, 'failed');
       throw error;
@@ -120,6 +122,10 @@ export class MeshService implements MeshServiceApi {
   }
 
   getPeerConnectionState(deviceId: string): PeerConnectionState | 'unknown' { return this.peerStates.get(deviceId) ?? 'unknown'; }
+  async getPeerLinkMetrics(deviceId: string): Promise<PeerLinkMetrics> {
+    if (this.transport.getPeerLinkMetrics) return this.transport.getPeerLinkMetrics(deviceId);
+    return { transport: this.transport.kind ?? 'unavailable', strength: 'unavailable', rssi_dbm: null, estimated_distance_m: null, source: 'unavailable', detail: 'The active transport does not provide a peer signal measurement.' };
+  }
 
   async sendWithMode(mode: TransmissionMode, payload: EncryptedMessage): Promise<boolean> {
     if (mode.kind === 'broadcast') return this.broadcastMessage({ ...payload, receiver_id: '*' });
@@ -131,6 +137,22 @@ export class MeshService implements MeshServiceApi {
     const peers = Array.from(this.connectedDevices).filter((peerId) => peerId !== receiverId);
     const results = await Promise.all(peers.map((peerId) => this.sendEncryptedMessage(peerId, payload)));
     return results.some(Boolean);
+  }
+
+  /** Retries opaque transit envelopes only when a route and connected next hop are both available. */
+  async flushRelayQueue(): Promise<{ attempted: number; accepted: number }> {
+    await database.initialize();
+    const queue = await database.getQueuedRelayEnvelopes();
+    let accepted = 0;
+    for (const record of queue) {
+      let payload: EncryptedMessage;
+      try { payload = JSON.parse(record.opaque_envelope) as EncryptedMessage; } catch { continue; }
+      const nextHop = this.routing.find((entry) => entry.destination_device_id === record.destination_id)?.next_hop_device_id ?? null;
+      const forwarded = Boolean(nextHop && this.connectedDevices.has(nextHop) && await this.sendEncryptedMessage(nextHop, payload));
+      await database.updateRelayQueueEnvelope(record.id, { status: forwarded ? 'accepted' : 'queued', last_attempt_at: now(), attempt_count: record.attempt_count + 1, next_hop_id: nextHop });
+      if (forwarded) accepted += 1;
+    }
+    return { attempted: queue.length, accepted };
   }
 
   async syncReportsFromShelter(_deviceId: string): Promise<never[]> { return []; }
@@ -157,7 +179,7 @@ export class MeshService implements MeshServiceApi {
     };
   }
 
-  updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); }
+  updateRoutingTable(received: RoutingEntry[]): void { this.routing = mergeRoutingTable(this.routing, received); void this.flushRelayQueue(); }
 
   dispose(): void { this.unsubscribeTransport?.(); this.unsubscribeTransport = null; this.unsubscribePeerState?.(); this.unsubscribePeerState = null; this.listeners.clear(); }
 
@@ -172,11 +194,17 @@ export class MeshService implements MeshServiceApi {
         this.listeners.forEach((listener) => listener(message));
         return;
       }
-      if (shouldForward(message, this.routing, this.selfId) && message.ttl > 0) {
-        const nextHop = this.routing.find((entry) => entry.destination_device_id === message.receiver_id)?.next_hop_device_id;
-        if (nextHop && nextHop !== deviceId) void this.sendEncryptedMessage(nextHop, decrementTtl(message));
-      }
+      if (message.ttl > 0) void this.queueOrForwardRelayEnvelope(deviceId, message);
     } catch { /* Ignore incomplete or malformed radio frames. */ }
+  }
+
+  private async queueOrForwardRelayEnvelope(fromDeviceId: string, message: EncryptedMessage): Promise<void> {
+    await database.initialize();
+    const nextHop = this.routing.find((entry) => entry.destination_device_id === message.receiver_id)?.next_hop_device_id ?? null;
+    const forwarded = decrementTtl(message);
+    const id = `relay:${message.message_id}:${message.receiver_id}`;
+    await database.saveRelayQueueEnvelope({ id, message_id: message.message_id, destination_id: message.receiver_id, next_hop_id: nextHop, opaque_envelope: JSON.stringify(forwarded), ttl: forwarded.ttl, created_at: now(), last_attempt_at: null, attempt_count: 0, status: 'queued' });
+    if (nextHop && nextHop !== fromDeviceId && this.connectedDevices.has(nextHop)) await this.flushRelayQueue();
   }
 }
 

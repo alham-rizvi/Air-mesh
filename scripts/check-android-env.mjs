@@ -11,6 +11,8 @@ const required = [
   'android/app/src/main/java/com/app/airmesh/MainApplication.kt',
   'android/app/src/main/java/com/app/airmesh/AirMeshGattModule.kt',
   'android/app/src/main/java/com/app/airmesh/AirMeshGattPackage.kt',
+  'android/app/src/main/java/com/app/airmesh/AirMeshWifiDirectModule.kt',
+  'android/app/src/main/java/com/app/airmesh/AirMeshWifiDirectPackage.kt',
 ];
 
 function command(name, args = ['--version']) {
@@ -31,9 +33,10 @@ if (missing.length) {
 }
 
 const manifest = readFileSync(`${android}/app/src/main/AndroidManifest.xml`, 'utf8');
-for (const permission of ['BLUETOOTH_SCAN', 'BLUETOOTH_CONNECT', 'BLUETOOTH_ADVERTISE', 'NEARBY_WIFI_DEVICES', 'POST_NOTIFICATIONS']) {
+for (const permission of ['BLUETOOTH_SCAN', 'BLUETOOTH_CONNECT', 'BLUETOOTH_ADVERTISE', 'NEARBY_WIFI_DEVICES', 'ACCESS_WIFI_STATE', 'CHANGE_WIFI_STATE', 'CHANGE_NETWORK_STATE', 'INTERNET', 'POST_NOTIFICATIONS']) {
   console.log(`${permission}: ${manifest.includes(permission) ? 'declared' : 'missing'}`);
 }
 const application = readFileSync(`${android}/app/src/main/java/com/app/airmesh/MainApplication.kt`, 'utf8');
 console.log(`AirMeshGattPackage: ${application.includes('AirMeshGattPackage()') ? 'registered' : 'missing'}`);
+console.log(`AirMeshWifiDirectPackage: ${application.includes('AirMeshWifiDirectPackage()') ? 'registered' : 'missing'}`);
 console.log('APK build: use the managed mobile Publish/GitHub Actions release flow; this diagnostic intentionally does not compile an APK.');

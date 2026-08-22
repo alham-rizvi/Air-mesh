@@ -217,3 +217,30 @@
 - [x] Prepare P0 two-phone execution and paired-device audit-log capture procedure; record sandbox hardware limitation
 - [ ] Verify, commit, push, and dispatch a release APK containing the native GATT bridge
 - [x] Add conservative 20-byte ATT framing and per-peer reassembly for both central and peripheral GATT data paths
+- [ ] Define a truthful, country-configurable 700–800 m internet-free neighborhood radio profile; do not present phone BLE as its range mechanism
+- [ ] Implement an external-radio adapter contract for compatible certified LoRa-class hardware connected locally to Android
+- [ ] Add a long-range deployment/setup screen that distinguishes attached hardware, direct-radio reachability, queued local messages, and unverified coverage
+- [ ] Add deterministic protocol/adapter tests and a real neighborhood field-acceptance matrix for two or more radio nodes
+- [ ] Push the long-range implementation to GitHub and publish a hardware-tested APK release
+- [x] Research Android Wi-Fi Aware and Wi-Fi Direct capability, permissions, compatibility, and no-internet constraints for phone-only peer-to-peer messaging
+- [x] Design a phone-only transport hierarchy: Wi-Fi Aware/Direct when supported, BLE GATT fallback, local queue otherwise, and optional external LoRa extension
+- [x] Implement an Android native Wi-Fi peer bridge with real discovery, connection, socket, teardown, and event callbacks
+- [x] Present the phone-only transport state as device-supported best effort; do not promise 200–300 m without field evidence
+- [x] Add deterministic transport tests and a two-phone Wi-Fi P2P acceptance matrix covering offline delivery, reconnect, and no-internet validation
+- [x] Add a live active-peer connection-strength indicator sourced from actual BLE RSSI or Android Wi-Fi Direct link measurements
+- [x] Show estimated distance only when a transport supports a documented measured/derived value, with unavailable states instead of fabricated meters
+- [x] Add deterministic status-model/UI tests and verify the connection indicator update
+- [x] Map the supplied offline encrypted mesh architecture to current Air-Mesh protocol, transport, security, database, and UI implementations
+- [x] Correct unverified claims about BLE range, 500 ms delivery, guaranteed delivery, group encryption, and broadcast confidentiality
+- [x] Implement compatible durable encrypted outbox and immediate-hop acceptance semantics; leave authenticated receipt, group-key, and multi-hop relay work explicitly gated
+- [x] Add deterministic tests and physical acceptance gates for the adopted mesh behavior
+- [x] Design signed or shared-secret-authenticated route advertisements, relay envelopes, and delivery receipts without exposing plaintext to relays
+- [x] Add persistent routing-advertisement, relay-queue, and receipt records to both native SQLite and in-memory stores
+- [x] Implement authenticated route-table exchange, durable multi-hop forwarding, bounded relay retries, and receipt propagation
+- [x] Update chat UI to display truthful Queued, Accepted, and Delivered states from persisted protocol events
+- [x] Add a deterministic two-person, no-internet duplex simulation covering route exchange, multi-hop relay, delivery receipt, duplicate suppression, and queue recovery
+- [ ] Add a Settings diagnostics panel showing current route entries, connected relay peers, and transport status without synthetic values
+- [ ] Add Settings views for pending sender/relay envelopes and a confirmation-protected manual clear action for durable queues
+- [ ] Add accessible distinct icons and colors for Queued, Accepted, Delivered, and Read chat delivery states
+- [ ] Add deterministic diagnostics/queue-control/UI-state coverage and run full verification
+- [ ] Push the verified diagnostics update and dispatch a managed Android release after GitHub authentication is restored

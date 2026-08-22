@@ -3,7 +3,7 @@ import { AIR_MESH_MIN_ANDROID_API, buildNearbyPermissionPlan, evaluateAndroidCom
 import { BOUNDED_BLE_SCAN_WINDOW_MS, scanSecondsRemaining } from '../mobile/src/services/discovery';
 
 describe('Android discovery readiness', () => {
-  it('enforces the documented Android API boundary before BLE discovery', () => {
+  it('enforces the documented Android API boundary before nearby phone discovery', () => {
     expect(AIR_MESH_MIN_ANDROID_API).toBe(24);
     expect(normalizeAndroidApiLevel('31')).toBe(31);
     expect(evaluateAndroidCompatibility('android', 23).status).toBe('unsupported');
@@ -11,10 +11,11 @@ describe('Android discovery readiness', () => {
     expect(evaluateAndroidCompatibility('web').status).toBe('not-android');
   });
 
-  it('uses Nearby permissions on Android 12+ and explains legacy location discovery accurately', () => {
-    const modern = buildNearbyPermissionPlan(31, { scan: 'BLUETOOTH_SCAN', connect: 'BLUETOOTH_CONNECT', advertise: 'BLUETOOTH_ADVERTISE', fineLocation: 'ACCESS_FINE_LOCATION' });
-    expect(modern.permissions).toEqual(['BLUETOOTH_SCAN', 'BLUETOOTH_CONNECT', 'BLUETOOTH_ADVERTISE']);
+  it('uses Wi-Fi and Bluetooth nearby permissions on supported modern Android versions and explains legacy discovery accurately', () => {
+    const modern = buildNearbyPermissionPlan(33, { scan: 'BLUETOOTH_SCAN', connect: 'BLUETOOTH_CONNECT', advertise: 'BLUETOOTH_ADVERTISE', nearbyWifi: 'NEARBY_WIFI_DEVICES', fineLocation: 'ACCESS_FINE_LOCATION' });
+    expect(modern.permissions).toEqual(['BLUETOOTH_SCAN', 'BLUETOOTH_CONNECT', 'BLUETOOTH_ADVERTISE', 'NEARBY_WIFI_DEVICES']);
     expect(modern.rationale).toContain('Nearby devices');
+    expect(modern.rationale).toContain('not an internet connection');
     const legacy = buildNearbyPermissionPlan(30, { fineLocation: 'ACCESS_FINE_LOCATION' });
     expect(legacy.permissions).toEqual(['ACCESS_FINE_LOCATION']);
     expect(legacy.rationale).toContain('does not collect GPS location for discovery');
