@@ -1,4 +1,4 @@
-import type { AuditLog, Chat, Contact, DatabaseService, DeviceRecord, FileMetadata, Message, Report, RoutingEntry } from '../types/security-data';
+import type { AuditLog, Chat, Contact, DatabaseService, DeviceRecord, FileMetadata, Message, OutboxEnvelope, Report, RoutingEntry } from '../types/security-data';
 
 export const USE_MOCK_DB = true;
 export function uuid(): string { return globalThis.crypto?.randomUUID?.() ?? `am-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -9,6 +9,7 @@ export class MemoryDatabase implements DatabaseService {
   private readonly devices = new Map<string, DeviceRecord>();
   private readonly contacts = new Map<string, Contact>();
   private readonly messages = new Map<string, Message>();
+  private readonly outbox = new Map<string, OutboxEnvelope>();
   private readonly chats = new Map<string, Chat>();
   private readonly reports = new Map<string, Report>();
   private readonly auditLogs = new Map<string, AuditLog>();
@@ -18,6 +19,9 @@ export class MemoryDatabase implements DatabaseService {
   private ensure(): void { if (!this.initialized) throw new Error('Database is not initialized. Call initialize() first.'); }
   async saveMessage(value: Message): Promise<void> { this.ensure(); this.messages.set(value.id, { ...value }); }
   async getMessages(chatId: string): Promise<Message[]> { this.ensure(); return Array.from(this.messages.values()).filter((value) => value.chat_id === chatId).sort((a, b) => b.timestamp.localeCompare(a.timestamp)); }
+  async saveOutboxEnvelope(value: OutboxEnvelope): Promise<void> { this.ensure(); this.outbox.set(value.message_id, { ...value }); }
+  async getQueuedOutboxEnvelopes(): Promise<OutboxEnvelope[]> { this.ensure(); return Array.from(this.outbox.values()).filter((value) => value.status === 'queued').sort((a, b) => a.created_at.localeCompare(b.created_at)); }
+  async updateOutboxEnvelope(messageId: string, update: Pick<OutboxEnvelope, 'status' | 'last_attempt_at' | 'attempt_count'>): Promise<void> { this.ensure(); const current = this.outbox.get(messageId); if (current) this.outbox.set(messageId, { ...current, ...update }); }
   async saveReport(value: Report): Promise<void> { this.ensure(); this.reports.set(value.id, { ...value, needs: [...value.needs] }); }
   async updateReportSyncStatus(ids: string[], status: Report['sync_status']): Promise<void> { this.ensure(); ids.forEach((id) => { const report = this.reports.get(id); if (report) this.reports.set(id, { ...report, sync_status: status }); }); }
   async getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]> { this.ensure(); return Array.from(this.reports.values()).filter((value) => !filter || Object.entries(filter).every(([key, expected]) => value[key as keyof Report] === expected)).map((value) => ({ ...value, needs: [...value.needs] })); }

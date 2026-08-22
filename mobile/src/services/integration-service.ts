@@ -4,20 +4,41 @@ import { decryptMessageFromContact, encryptMessageForContact } from './cryptoSer
 import { meshService } from './mesh-service';
 import { captureRescueLocation } from './rescue-location';
 import type { EncryptedMessage, MeshStatus, Report as MeshReport, RoutingEntry as MeshRoutingEntry } from './types';
-import type { Message, Report as StoredReport, RoutingEntry as StoredRoutingEntry } from '../types/security-data';
+import type { Message, OutboxEnvelope, Report as StoredReport, RoutingEntry as StoredRoutingEntry } from '../types/security-data';
 
 function encode(value: unknown): string { return JSON.stringify(value); }
 function decode<T>(value: string): T { return JSON.parse(value) as T; }
 
-export async function sendEncryptedText(input: { chatId: string; contactId: string; receiverId: string; senderId: string; plaintext: string; ttl?: number }): Promise<{ message: Message; delivered: boolean }> {
+export async function sendEncryptedText(input: { chatId: string; contactId: string; receiverId: string; senderId: string; plaintext: string; ttl?: number }): Promise<{ message: Message; delivered: false; accepted: boolean }> {
   const encrypted = await encryptMessageForContact(input.contactId, input.plaintext);
   const messageId = uuid();
   const payload: EncryptedMessage = { message_id: messageId, sender_id: input.senderId, receiver_id: input.receiverId, content_type: 'text', content: encode(encrypted), timestamp: now(), ttl: input.ttl ?? 8 };
-  const delivered = await meshService.sendEncryptedMessage(input.receiverId, payload);
-  const message: Message = { id: messageId, chat_id: input.chatId, sender_id: input.senderId, receiver_id: input.receiverId, content_type: 'text', content: payload.content, timestamp: payload.timestamp, status: delivered ? 'sent' : 'sent', ttl: payload.ttl, message_id_for_dedup: messageId };
+  const envelope: OutboxEnvelope = { message_id: messageId, chat_id: input.chatId, destination_id: input.receiverId, encrypted_payload: JSON.stringify(payload), ttl: payload.ttl, created_at: payload.timestamp, last_attempt_at: null, attempt_count: 0, status: 'queued' };
+  await database.saveOutboxEnvelope(envelope);
+  const accepted = await meshService.sendWithMode({ kind: 'mesh', receiverId: input.receiverId }, payload);
+  const attemptedAt = now();
+  await database.updateOutboxEnvelope(messageId, { status: accepted ? 'sent' : 'queued', last_attempt_at: attemptedAt, attempt_count: 1 });
+  const message: Message = { id: messageId, chat_id: input.chatId, sender_id: input.senderId, receiver_id: input.receiverId, content_type: 'text', content: payload.content, timestamp: payload.timestamp, status: accepted ? 'sent' : 'queued', ttl: payload.ttl, message_id_for_dedup: messageId };
   await database.saveMessage(message);
-  await auditService.logAction(delivered ? 'message_sent' : 'message_queued', { message_id: messageId, receiver_id: input.receiverId, encrypted: true });
-  return { message, delivered };
+  await auditService.logAction(accepted ? 'message_transport_accepted' : 'message_queued', { message_id: messageId, receiver_id: input.receiverId, encrypted: true, recipient_delivery_confirmed: false });
+  return { message, delivered: false, accepted };
+}
+
+/** Attempts durable envelopes only when the caller has established an eligible nearby transport. */
+export async function retryQueuedEncryptedEnvelopes(): Promise<{ attempted: number; accepted: number }> {
+  const queued = await database.getQueuedOutboxEnvelopes();
+  let accepted = 0;
+  for (const envelope of queued) {
+    let payload: EncryptedMessage;
+    try { payload = decode<EncryptedMessage>(envelope.encrypted_payload); }
+    catch { continue; }
+    const sent = await meshService.sendWithMode({ kind: 'mesh', receiverId: envelope.destination_id }, payload);
+    const attemptCount = envelope.attempt_count + 1;
+    await database.updateOutboxEnvelope(envelope.message_id, { status: sent ? 'sent' : 'queued', last_attempt_at: now(), attempt_count: attemptCount });
+    if (sent) accepted += 1;
+  }
+  if (queued.length) await auditService.logAction('outbox_retry_completed', { attempted: queued.length, immediate_transport_accepted: accepted, recipient_delivery_confirmed: false });
+  return { attempted: queued.length, accepted };
 }
 
 export async function receiveEncryptedMessage(contactId: string, payload: EncryptedMessage, chatId: string): Promise<{ message: Message; plaintext: string }> {
@@ -49,4 +70,4 @@ export async function saveLocalReport(report: StoredReport): Promise<void> { awa
 
 export async function syncReportsToBase(reports: MeshReport[], baseUrl?: string): Promise<boolean> { const result = await meshService.syncReportsToBase(reports, baseUrl); await auditService.logAction(result ? 'courier_sync_base_success' : 'courier_sync_base_failed', { report_count: reports.length, base_url_configured: Boolean(baseUrl) }); return result; }
 
-export const airMeshIntegration = { sendEncryptedText, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };
+export const airMeshIntegration = { sendEncryptedText, retryQueuedEncryptedEnvelopes, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };

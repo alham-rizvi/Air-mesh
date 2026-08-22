@@ -230,3 +230,7 @@
 - [x] Add a live active-peer connection-strength indicator sourced from actual BLE RSSI or Android Wi-Fi Direct link measurements
 - [x] Show estimated distance only when a transport supports a documented measured/derived value, with unavailable states instead of fabricated meters
 - [x] Add deterministic status-model/UI tests and verify the connection indicator update
+- [x] Map the supplied offline encrypted mesh architecture to current Air-Mesh protocol, transport, security, database, and UI implementations
+- [x] Correct unverified claims about BLE range, 500 ms delivery, guaranteed delivery, group encryption, and broadcast confidentiality
+- [x] Implement compatible durable encrypted outbox and immediate-hop acceptance semantics; leave authenticated receipt, group-key, and multi-hop relay work explicitly gated
+- [x] Add deterministic tests and physical acceptance gates for the adopted mesh behavior

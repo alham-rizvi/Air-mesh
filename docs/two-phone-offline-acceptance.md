@@ -2,7 +2,7 @@
 
 **Purpose:** This is the release-blocking physical-device acceptance procedure for genuine Air-Mesh offline communication. It is designed to verify the whole process—not merely that two APKs launch or that a QR code is readable.
 
-**Status at document creation:** **Blocked by native peripheral/GATT-server implementation.** The present `react-native-ble-plx` adapter scans and connects as a BLE central, but it does not make either Air-Mesh phone advertise the Air-Mesh GATT service. QR pairing is local identity/key exchange only and cannot create a radio link.
+**Current source status:** The Android peripheral/GATT-server bridge and Wi-Fi Direct bridge are implemented in source and generated Android code. This matrix remains **physically blocked** until two actual Android phones complete the P0 evidence rows. QR pairing is local identity/key exchange only and cannot create a radio link.
 
 > A passing two-phone test may be recorded only after at least one participating phone exposes the Air-Mesh service as a Bluetooth LE advertiser/GATT server and the other phone discovers that real service. Android’s own guidance distinguishes scanning, advertising, and connecting permissions, and describes GATT clients connecting to a GATT server hosted by the other device. [1] [2]
 
@@ -52,7 +52,7 @@ The application must **not** be described as phone-to-phone offline mesh-capable
 
 ### 3.1 Required native implementation before this procedure can pass
 
-The native Android transport must add a bridge for all of the following:
+The native Android transport includes a bridge for the following, which must be proven during the physical run:
 
 | Native capability | Air-Mesh requirement | Observable evidence |
 |---|---|---|
@@ -118,7 +118,7 @@ If P0-00 fails because no advertiser/GATT implementation exists, stop the accept
 | P0-40 | P0 | A → B encrypted text | Connect Device A to B; send a short text. | B receives plaintext after local decrypt; both audit logs record the appropriate send/receive event. |
 | P0-41 | P0 | B → A encrypted text | Send reply. | A receives plaintext; no internet is enabled. |
 | P0-42 | P0 | Message while disconnected | Disconnect and send from A. | Message is queued/persisted locally; UI does not claim delivery. |
-| P0-43 | P0 | Delivery after reconnect | Reconnect and retry/flush supported queue. | Delivery becomes recorded only after transport accepts it. |
+| P0-43 | P0 | Outbox retry after reconnect | Disconnect, send from A, then reconnect and observe the automatic retry. | The durable encrypted envelope is retried and records immediate-hop acceptance only if the local transport accepts it. It is **not** recipient delivery without a future authenticated receipt. |
 | P1-44 | P1 | 512-byte chunk boundary | Send text or fixture payload longer than 512 bytes. | Receiver reassembles exact content once. |
 | P1-45 | P1 | Duplicate suppression | Re-send same envelope/message ID using test control. | Receiver stores/displays one copy and records dedupe behavior if exposed. |
 | P1-46 | P1 | Corrupt/incomplete frame | Inject malformed or incomplete test frame through native harness. | Receiver fails closed; no crash, plaintext corruption, or false success. |
@@ -193,10 +193,10 @@ For P0-40, P0-41, and P0-60, attach evidence from both phones showing the peer s
 | Symptom | Most likely cause | Required next check |
 |---|---|---|
 | Scan ends with no peer | No Air-Mesh advertiser/GATT server, wrong service UUID, denied scan permission, Bluetooth off, or out of range. | Confirm Device B advertiser state and service UUID before changing UI. |
-| QR succeeds but no connection | Expected with current build: QR stores identity/key material but does not advertise/connect Bluetooth. | Implement/enable native advertiser + GATT server; run P0-00. |
+| QR succeeds but no connection | QR stores identity/key material only; nearby transport still needs discovery and an actual Wi-Fi Direct or BLE/GATT connection. | Enable nearby permissions and run P0-00/P0-W2 before changing pairing logic. |
 | Connection fails after peer appears | GATT service/characteristics absent, permission missing, callback failure, or incompatible UUID. | Capture service discovery and native connection callback logs. |
 | “Connected” but message not received | Characteristic write/notification mapping, encryption/key mismatch, MTU/chunk issue, or callback bridge problem. | Run P1-47 then P1-44 with logs on both devices. |
-| Message says delivered offline without peer | Product defect. | File a blocking bug; delivery must require accepted transport evidence. |
+| Message says recipient delivered after only a local send | Product defect. | File a blocking bug; immediate-hop acceptance and recipient receipt must remain distinct. |
 | SOS says sent without evidence | Product defect. | Validate audit/event outcome and distinguish queued from accepted. |
 | Works with Wi-Fi but not Airplane Mode | Hidden network dependency or incomplete peripheral BLE path. | Run P0-60 with both radios/data states recorded. |
 
