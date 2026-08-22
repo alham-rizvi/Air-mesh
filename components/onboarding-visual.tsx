@@ -1,110 +1,45 @@
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '@/components/screen-container';
 
 type OnboardingColors = { bg: string; surface: string; text: string; muted: string; border: string; field: string; accent: string };
+const launchArt = Platform.OS === 'web' ? { uri: '/manus-storage/air-mesh-launch-art_ccb12f65.png' } : require('../assets/images/onboarding-hiker-phone.jpg');
+
+function MeshMark({ accent, size = 38 }: { accent: string; size?: number }) {
+  return <View style={[styles.meshMark,{width:size,height:size,borderRadius:size/2,borderColor:accent}]}><View style={[styles.meshCore,{backgroundColor:accent}]}/><View style={[styles.meshNode,{backgroundColor:accent,top:size*.18,left:size*.18}]}/><View style={[styles.meshNode,{backgroundColor:accent,bottom:size*.18,right:size*.18}]}/></View>;
+}
+
+function SignalNebula({ accent }: { accent: string }) {
+  return <View pointerEvents="none" style={styles.nebula}><View style={[styles.orbitWide,{borderColor:'rgba(244,247,236,.18)'}]}/><View style={[styles.orbitTall,{borderColor:'rgba(200,244,74,.52)'}]}/><View style={[styles.nebulaCore,{backgroundColor:accent}]}><MaterialIcons name="wifi-tethering" size={28} color="#080908"/></View><View style={[styles.nebulaNode,{backgroundColor:accent,top:20,left:45}]}/><View style={[styles.nebulaNode,{backgroundColor:'#F4F7EC',top:98,left:186}]}/><View style={[styles.nebulaNode,{backgroundColor:accent,top:148,left:18}]}/><View style={[styles.nebulaNode,{backgroundColor:'#F4F7EC',top:182,left:154}]}/></View>;
+}
+
+function SignalBeaconLoader({ accent }: { accent: string }) {
+  const pulse = useRef(new Animated.Value(0)).current;
+  useEffect(()=>{const loop=Animated.loop(Animated.sequence([Animated.timing(pulse,{toValue:1,duration:900,useNativeDriver:true}),Animated.timing(pulse,{toValue:0,duration:900,useNativeDriver:true})]));loop.start();return()=>loop.stop();},[pulse]);
+  const scale=pulse.interpolate({inputRange:[0,1],outputRange:[.7,1.45]});
+  const opacity=pulse.interpolate({inputRange:[0,1],outputRange:[.66,0]});
+  return <View style={styles.loaderWrap}><Animated.View style={[styles.loaderRing,{borderColor:accent,opacity,transform:[{scale}]}]}/><View style={[styles.loaderCore,{backgroundColor:accent}]}><MaterialIcons name="wifi-tethering" size={16} color="#000000"/></View></View>;
+}
 
 export function OnboardingVisual({ colors }: { colors: OnboardingColors }) {
-  return (
-    <View style={[styles.visual, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-      <Image source={require('../assets/images/onboarding-hiker-phone.jpg')} style={styles.image} resizeMode="cover" />
-      <View style={styles.scrim} />
-      <View style={[styles.caption, { backgroundColor: 'rgba(7, 30, 25, 0.86)' }]}>
-        <Text style={[styles.captionEyebrow, { color: '#9FE6D0' }]}>AIR-MESH OFFLINE</Text>
-        <Text style={styles.captionTitle}>Prepared before the signal disappears.</Text>
-      </View>
-    </View>
-  );
+  return <View style={[styles.launchVisual,{borderColor:colors.border}]}><Image source={launchArt} style={styles.launchImage} resizeMode="cover"/><View style={styles.launchShade}/><SignalNebula accent={colors.accent}/><View style={styles.brandRow}><MeshMark accent={colors.accent}/><Text style={styles.brandName}>airmesh</Text></View><View style={styles.launchCopy}><Text style={[styles.eyebrow,{color:colors.accent}]}>OFFLINE / ONLINE WITH PEOPLE</Text><Text style={styles.launchTitle}>Signal is a{`\n`}shared resource.</Text><Text style={styles.launchBody}>Private local identity, prepared routes, and resilient messages for when the network falls away.</Text></View><View style={[styles.launchStatus,{borderColor:'rgba(200,244,74,.45)'}]}><View style={[styles.statusDot,{backgroundColor:colors.accent}]}/><Text style={styles.launchStatusText}>LOCAL WORKSPACE READY</Text></View></View>;
 }
 
 export function HomePreparednessVisual({ colors }: { colors: OnboardingColors }) {
-  return (
-    <View style={[styles.homeVisual, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-      <Image source={require('../assets/images/onboarding-hiker-phone.jpg')} style={styles.homeImage} resizeMode="cover" />
-      <View style={styles.homeScrim} />
-      <View style={styles.homeCopy}>
-        <Text style={styles.homeEyebrow}>OFFLINE-READY</Text>
-        <Text style={styles.homeTitle}>Prepared before the signal disappears.</Text>
-        <Text style={styles.homeBody}>Decorative field image · not a live coverage map</Text>
-      </View>
-    </View>
-  );
+  return <View style={[styles.homeVisual,{borderColor:colors.border}]}><Image source={launchArt} style={styles.homeImage} resizeMode="cover"/><View style={styles.homeShade}/><View style={styles.homeTop}><MeshMark accent={colors.accent} size={28}/><Text style={styles.homeIndex}>01 / MESH STATUS</Text></View><View style={styles.homeCopy}><Text style={[styles.eyebrow,{color:colors.accent}]}>FIELD NETWORK</Text><Text style={styles.homeTitle}>Your local network begins here.</Text><Text style={styles.homeBody}>Queue securely. Exchange only when a real nearby route is present.</Text></View></View>;
 }
 
-export function SettingsProfileVisual({
-  colors,
-  variant,
-}: {
-  colors: OnboardingColors;
-  variant: 'settings' | 'profile';
-}) {
+export function SettingsProfileVisual({ colors, variant }: { colors: OnboardingColors; variant: 'settings' | 'profile' }) {
   const profile = variant === 'profile';
-  const source = profile
-    ? require('../assets/images/profile-field-backpack.jpg')
-    : require('../assets/images/settings-vintage-radio.jpg');
-  const eyebrow = profile ? 'LOCAL PROFILE' : 'FIELD SETTINGS';
-  const title = profile ? 'Identity stays in your hands.' : 'Controls prepared for the field.';
-  const note = profile
-    ? 'Decorative image · not a profile photo'
-    : 'Decorative image · not a live transport status';
-
-  return (
-    <View style={[styles.settingsProfileVisual, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-      <Image source={source} style={styles.settingsProfileImage} resizeMode="cover" />
-      <View style={styles.settingsProfileScrim} />
-      <View style={styles.settingsProfileCopy}>
-        <Text style={styles.settingsProfileEyebrow}>{eyebrow}</Text>
-        <Text style={styles.settingsProfileTitle}>{title}</Text>
-        <Text style={styles.settingsProfileNote}>{note}</Text>
-      </View>
-    </View>
-  );
+  return <View style={[styles.utilityPanel,{backgroundColor:colors.surface,borderColor:colors.border}]}><View style={[styles.utilityGlyph,{borderColor:colors.accent}]}><MaterialIcons name={profile?'fingerprint':'tune'} size={22} color={colors.accent}/></View><View style={{flex:1}}><Text style={[styles.eyebrow,{color:colors.accent}]}>{profile?'LOCAL IDENTITY':'SYSTEM CONTROLS'}</Text><Text style={[styles.utilityTitle,{color:colors.text}]}>{profile?'Identity stays on your device.':'Control the mesh, not the story.'}</Text><Text style={[styles.utilityBody,{color:colors.muted}]}>{profile?'No cloud profile or portrait is required.':'Every switch reflects a local transport or queue setting.'}</Text></View></View>;
 }
 
 export function BootstrapScreen({ colors }: { colors: OnboardingColors }) {
-  return (
-    <ScreenContainer edges={['top', 'bottom', 'left', 'right']}>
-      <View style={[styles.bootstrap, { backgroundColor: colors.bg }]}>
-        <View style={[styles.bootstrapMark, { borderColor: colors.accent }]} />
-        <Text style={[styles.bootstrapTitle, { color: colors.text }]}>Air-Mesh</Text>
-        <Text style={[styles.bootstrapBody, { color: colors.muted }]}>Preparing your local workspace</Text>
-        <ActivityIndicator color={colors.accent} size="small" style={styles.spinner} />
-        <View style={styles.pulseRows}>
-          <View style={[styles.pulseWide, { backgroundColor: colors.field }]} />
-          <View style={[styles.pulseShort, { backgroundColor: colors.field }]} />
-        </View>
-      </View>
-    </ScreenContainer>
-  );
+  return <ScreenContainer edges={['top', 'bottom', 'left', 'right']}><View style={[styles.bootstrap,{backgroundColor:colors.bg}]}><MeshMark accent={colors.accent} size={54}/><Text style={styles.bootstrapTitle}>airmesh</Text><Text style={[styles.bootstrapBody,{color:colors.muted}]}>Opening your local workspace</Text><SignalBeaconLoader accent={colors.accent}/><View style={[styles.scanline,{backgroundColor:colors.border}]}><View style={[styles.scanPulse,{backgroundColor:colors.accent}]}/></View></View></ScreenContainer>;
 }
 
 const styles = StyleSheet.create({
-  visual: { height: 226, borderWidth: 1, borderRadius: 22, overflow: 'hidden', marginBottom: 22 },
-  image: { width: '100%', height: '100%' },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(4, 16, 13, 0.18)' },
-  caption: { position: 'absolute', left: 14, right: 14, bottom: 14, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12 },
-  captionEyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.3, marginBottom: 4 },
-  captionTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '800', lineHeight: 22 },
-  homeVisual: { height: 158, borderWidth: 1, borderRadius: 18, overflow: 'hidden', marginBottom: 14 },
-  homeImage: { width: '100%', height: '100%' },
-  homeScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(4, 20, 16, 0.34)' },
-  homeCopy: { position: 'absolute', left: 15, right: 15, bottom: 14 },
-  homeEyebrow: { color: '#9FE6D0', fontSize: 10, fontWeight: '800', letterSpacing: 1.15, marginBottom: 3 },
-  homeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', lineHeight: 22, maxWidth: '82%' },
-  homeBody: { color: '#E8F8F2', fontSize: 11, lineHeight: 15, marginTop: 6 },
-  settingsProfileVisual: { height: 148, borderWidth: 1, borderRadius: 18, overflow: 'hidden', marginBottom: 16 },
-  settingsProfileImage: { width: '100%', height: '100%' },
-  settingsProfileScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(5, 20, 16, 0.42)' },
-  settingsProfileCopy: { position: 'absolute', left: 15, right: 15, bottom: 14 },
-  settingsProfileEyebrow: { color: '#9FE6D0', fontSize: 10, fontWeight: '800', letterSpacing: 1.15, marginBottom: 3 },
-  settingsProfileTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', lineHeight: 22 },
-  settingsProfileNote: { color: '#E8F8F2', fontSize: 11, lineHeight: 15, marginTop: 5 },
-  bootstrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  bootstrapMark: { width: 42, height: 42, borderWidth: 3, transform: [{ rotate: '45deg' }], borderRadius: 7, marginBottom: 28 },
-  bootstrapTitle: { fontSize: 27, fontWeight: '800', letterSpacing: -0.6 },
-  bootstrapBody: { marginTop: 8, fontSize: 15 },
-  spinner: { marginTop: 28 },
-  pulseRows: { width: '100%', alignItems: 'center', gap: 10, marginTop: 40 },
-  pulseWide: { width: '74%', height: 9, borderRadius: 8 },
-  pulseShort: { width: '45%', height: 9, borderRadius: 8 },
+  launchVisual:{height:390,marginBottom:25,overflow:'hidden',borderBottomWidth:1,backgroundColor:'#000000'}, launchImage:{...StyleSheet.absoluteFillObject,width:'100%',height:'100%',opacity:.9}, launchShade:{...StyleSheet.absoluteFillObject,backgroundColor:'rgba(0,0,0,.38)'}, nebula:{position:'absolute',right:12,top:62,width:240,height:220,alignItems:'center',justifyContent:'center',opacity:.94}, orbitWide:{position:'absolute',width:208,height:95,borderWidth:1,borderRadius:130,transform:[{rotate:'-18deg'}]}, orbitTall:{position:'absolute',width:112,height:202,borderWidth:1.2,borderRadius:110,transform:[{rotate:'41deg'}]}, nebulaCore:{width:62,height:62,borderRadius:31,alignItems:'center',justifyContent:'center',shadowColor:'#C8F44A',shadowOpacity:.4,shadowRadius:22,elevation:4}, nebulaNode:{position:'absolute',width:8,height:8,borderRadius:4}, brandRow:{position:'absolute',top:22,left:20,flexDirection:'row',alignItems:'center',gap:9}, brandName:{color:'#F4F7EC',fontSize:19,fontWeight:'800',letterSpacing:-.7}, meshMark:{borderWidth:1.5,alignItems:'center',justifyContent:'center'}, meshCore:{width:10,height:10,borderRadius:5}, meshNode:{position:'absolute',width:5,height:5,borderRadius:3}, launchCopy:{position:'absolute',left:20,right:28,bottom:64}, eyebrow:{fontSize:10,fontWeight:'800',letterSpacing:1.4,marginBottom:8}, launchTitle:{color:'#F4F7EC',fontSize:34,lineHeight:35,fontWeight:'900',letterSpacing:-1.65}, launchBody:{color:'rgba(244,247,236,.72)',fontSize:13,lineHeight:19,marginTop:12,maxWidth:310}, launchStatus:{position:'absolute',left:20,bottom:20,flexDirection:'row',alignItems:'center',gap:7,borderWidth:1,borderRadius:20,paddingHorizontal:10,paddingVertical:7,backgroundColor:'rgba(0,0,0,.72)'}, statusDot:{width:6,height:6,borderRadius:3}, launchStatusText:{color:'#E9F0D5',fontSize:9,fontWeight:'800',letterSpacing:.9}, homeVisual:{height:204,marginBottom:17,overflow:'hidden',borderRadius:22,borderWidth:1,backgroundColor:'#000000'}, homeImage:{...StyleSheet.absoluteFillObject,width:'100%',height:'100%',opacity:.68}, homeShade:{...StyleSheet.absoluteFillObject,backgroundColor:'rgba(0,0,0,.31)'}, homeTop:{position:'absolute',top:17,left:16,right:16,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}, homeIndex:{color:'rgba(244,247,236,.65)',fontSize:10,fontWeight:'800',letterSpacing:1}, homeCopy:{position:'absolute',left:17,right:22,bottom:17}, homeTitle:{color:'#F4F7EC',fontSize:22,lineHeight:24,fontWeight:'900',letterSpacing:-.8,maxWidth:248}, homeBody:{color:'rgba(244,247,236,.72)',fontSize:11,lineHeight:16,marginTop:6,maxWidth:260}, utilityPanel:{minHeight:126,borderWidth:1,borderRadius:18,padding:16,marginBottom:16,flexDirection:'row',gap:13}, utilityGlyph:{width:44,height:44,borderRadius:22,borderWidth:1,alignItems:'center',justifyContent:'center'}, utilityTitle:{fontSize:16,lineHeight:20,fontWeight:'800'}, utilityBody:{fontSize:11,lineHeight:16,marginTop:5}, bootstrap:{flex:1,alignItems:'center',justifyContent:'center',paddingHorizontal:32}, bootstrapTitle:{color:'#F4F7EC',fontSize:31,fontWeight:'900',letterSpacing:-1.3,marginTop:17}, bootstrapBody:{marginTop:8,fontSize:14}, loaderWrap:{width:44,height:44,alignItems:'center',justifyContent:'center',marginTop:28}, loaderRing:{position:'absolute',width:36,height:36,borderRadius:18,borderWidth:1.5}, loaderCore:{width:26,height:26,borderRadius:13,alignItems:'center',justifyContent:'center'}, scanline:{width:'72%',height:3,borderRadius:2,marginTop:28,overflow:'hidden'}, scanPulse:{width:'32%',height:'100%',borderRadius:2},
 });

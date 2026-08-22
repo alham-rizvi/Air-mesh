@@ -255,9 +255,32 @@
 - [x] Add a manual retry action for queued messages paused at the automatic retry limit
 - [x] Add a privacy-preserving mesh diagnostics export containing observed topology, routing, connection, and queue metadata without plaintext or secrets
 - [x] Add deterministic retry-preference, manual-retry, and export-redaction tests and run full verification
-- [ ] Add durable per-message retry-history records for automatic and manual attempts, including timestamp, outcome, and non-sensitive reason
-- [ ] Render detailed retry history directly within outgoing chat messages
-- [ ] Add strict support-bundle JSON import and validation for redacted diagnostic reproduction without changing live mesh state
-- [ ] Add deterministic retry-history and malformed/unsafe support-bundle import tests
-- [ ] Verify v1.4.0 Android share/export prerequisites, push the release source, and dispatch the managed APK workflow
+- [x] Add durable per-message retry-history records for automatic and manual attempts, including timestamp, outcome, and non-sensitive reason
+- [x] Render detailed retry history directly within outgoing chat messages
+- [x] Add strict support-bundle JSON import and validation for redacted diagnostic reproduction without changing live mesh state
+- [x] Add deterministic retry-history and malformed/unsafe support-bundle import tests
+- [x] Verify v1.4.0 Android share/export prerequisites, push the release source, and dispatch the managed APK workflow
 - [ ] Perform physical Android share-sheet validation after the release APK is installed and record the result
+- [x] Add Diagnostics search and filter controls for peer identifiers, destinations, and next-hop route entries
+- [x] Add read-only visual differences between imported redacted topology and the current locally observed topology
+- [x] Record and show exact retry timestamps plus specific non-sensitive failed-attempt reasons in chat retry history
+- [x] Add deterministic filtering, topology-difference, and retry-detail tests and run full verification
+- [x] Add persistent saved Diagnostics filter presets and fast switching between common peer/route searches
+- [x] Add a redacted export file for live-versus-imported topology differences without identifiers, payloads, or secrets
+- [x] Add deterministic preset persistence and topology-difference export redaction tests and run full verification
+- [x] Provide an Android physical share-sheet test procedure for the installed v1.4.0 APK; pending user-supplied physical result
+- [x] Define and apply a refined light/dark editorial theme with soft surfaces, near-black typography, rounded layers, and a deliberate orange signal accent
+- [x] Restyle onboarding, primary tabs, message states, and Mesh Diagnostics using the new visual primitives without changing offline semantics
+- [x] Verify the redesigned screens at mobile portrait dimensions and run full functional verification
+- [x] Create original Air-Mesh logo, launch artwork, and signal-lime visual assets for the rebuilt product identity
+- [x] Replace the warm card-led interface with a dark immersive Air-Mesh UI: strong type, sparse signal-lime actions, compact navigation, and high-contrast system states
+- [x] Rebuild onboarding, Home, Messages, Rescue, Settings, and Diagnostics visual hierarchy without altering local-only mesh, queue, route, receipt, or retry semantics
+- [x] Verify the new dark product experience at mobile portrait dimensions and run the full cross-stack suite
+- [x] Make the dark Air-Mesh experience pure black across app chrome, surfaces, and installed splash treatment
+- [x] Apply the mesh-beacon signal-lime product language to signed-in Chat and Diagnostics states without changing delivery or diagnostic semantics
+- [x] Replace the installed app icon, adaptive foreground, favicon, and splash icon with the signal-lime mesh-beacon brand asset
+- [x] Add restrained loading motion and navigation/surface interaction feedback with accessible fallbacks
+- [x] Verify the pure-black signed-in visual system and full cross-stack suite
+- [x] Add a clearly labeled local-only signed-in visual QA demo mode for Chat and Diagnostics without inventing real mesh state
+- [x] Verify the demo mode, pure-black visuals, and full cross-stack suite
+- [ ] Synchronize the verified demo-mode and pure-black refinement source to GitHub main

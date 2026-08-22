@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type ThemeMode = 'system' | 'dark' | 'light';
-export type AccentColor = '#10A37F' | '#2F80ED' | '#8E5CF6' | '#D97706';
+export type AccentColor = '#C8F44A' | '#F05A28' | '#10A37F' | '#2F80ED' | '#8E5CF6' | '#D97706';
 export type Role = 'User' | 'Shelter' | 'Courier' | 'Base';
 export type Delivery = 'queued' | 'accepted' | 'delivered' | 'read';
 
@@ -14,7 +14,7 @@ export const mockChats: Chat[] = [];
 export const mockContacts: Contact[] = [];
 export const mockReports: Report[] = [];
 
-export const useThemeStore = create<{ mode: ThemeMode; accent: AccentColor; setMode: (mode: ThemeMode) => void; setAccent: (accent: AccentColor) => void }>(((set) => ({ mode: 'dark', accent: '#10A37F', setMode: (mode) => set({ mode }), setAccent: (accent) => set({ accent }) })));
+export const useThemeStore = create<{ mode: ThemeMode; accent: AccentColor; setMode: (mode: ThemeMode) => void; setAccent: (accent: AccentColor) => void }>(((set) => ({ mode: 'dark', accent: '#C8F44A', setMode: (mode) => set({ mode }), setAccent: (accent) => set({ accent }) })));
 export type LocalAccount = { displayName: string; deviceId: string; createdAt: string };
 export const useAccountStore = create<{ account: LocalAccount | null; setAccount: (account: LocalAccount | null) => void }>(((set) => ({ account: null, setAccount: (account) => set({ account }) })));
 export const useDeviceStore = create<{ permissionStatus: 'unknown' | 'granted' | 'denied' | 'unsupported'; platform: string; model: string; setPermissionStatus: (status: 'unknown' | 'granted' | 'denied' | 'unsupported') => void; setDevice: (platform: string, model: string) => void; reset: () => void }>(((set) => ({ permissionStatus: 'unknown', platform: 'unknown', model: 'unknown', setPermissionStatus: (permissionStatus) => set({ permissionStatus }), setDevice: (platform, model) => set({ platform, model }), reset: () => set({ permissionStatus: 'unknown', platform: 'unknown', model: 'unknown' }) })));
