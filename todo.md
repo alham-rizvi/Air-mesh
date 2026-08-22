@@ -265,3 +265,7 @@
 - [x] Add read-only visual differences between imported redacted topology and the current locally observed topology
 - [x] Record and show exact retry timestamps plus specific non-sensitive failed-attempt reasons in chat retry history
 - [x] Add deterministic filtering, topology-difference, and retry-detail tests and run full verification
+- [x] Add persistent saved Diagnostics filter presets and fast switching between common peer/route searches
+- [x] Add a redacted export file for live-versus-imported topology differences without identifiers, payloads, or secrets
+- [x] Add deterministic preset persistence and topology-difference export redaction tests and run full verification
+- [x] Provide an Android physical share-sheet test procedure for the installed v1.4.0 APK; pending user-supplied physical result
