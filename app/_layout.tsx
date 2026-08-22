@@ -21,6 +21,8 @@ import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-run
 import { database } from "@/mobile/src/services/db";
 import { auditService } from "@/mobile/src/services/auditService";
 import { initializeMeshRuntime } from "@/mobile/src/services/runtime-transport";
+import { registerBestEffortBackgroundRetry } from "@/mobile/src/services/background-retry";
+import { enableAutomaticRetry } from "@/mobile/src/services/integration-service";
 import { AndroidStartupGate } from "@/components/android-startup-gate";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -44,6 +46,8 @@ export default function RootLayout() {
       await database.initialize();
       await auditService.logAction("app_started", { platform: Platform.OS });
       await initializeMeshRuntime();
+      enableAutomaticRetry();
+      void registerBestEffortBackgroundRetry();
     })();
   }, []);
 

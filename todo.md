@@ -245,3 +245,9 @@
 - [x] Add deterministic diagnostics/queue-control/UI-state coverage and run full verification
 - [x] Push the verified diagnostics update and dispatch the v1.2.0 managed Android release after GitHub authentication was restored
 - [ ] Verify the v1.2.0 GitHub Actions result and published APK asset
+- [x] Add a diagnostics topology graph derived only from current local route-table and connected-peer data
+- [x] Add bounded automatic retry on eligible connection/route events with durable attempt counts and stale-route detection
+- [x] Add truthful local notification when an eligible peer returns and pending envelopes are retried
+- [x] Add chat warnings for stale routes and retry-limit-exhausted messages
+- [x] Add deterministic topology/retry/notification/warning tests and verify the enhancement
+- [x] Implement the approved hybrid retry policy: immediate eligible-peer/route event retries plus optional best-effort Android background queue maintenance

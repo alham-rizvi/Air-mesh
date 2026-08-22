@@ -41,7 +41,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.2.0",
+  version: "1.3.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -88,6 +88,8 @@ const config: ExpoConfig = {
     require("./plugins/with-air-mesh-gatt"),
     require("./plugins/with-air-mesh-wifi-direct"),
     "expo-router",
+    "expo-background-task",
+    "expo-notifications",
     "expo-asset",
     "expo-font",
     "expo-sqlite",
