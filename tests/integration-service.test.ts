@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { auditService } from '../mobile/src/services/auditService';
 import { database } from '../mobile/src/services/db';
 import { generateEphemeralKeyPair, pairWithContact } from '../mobile/src/services/cryptoService';
-import { broadcastSos, recordVerifiedDeliveryReceipt, retryQueuedEncryptedEnvelopes, sendEncryptedText, saveLocalReport, persistRoutingTable } from '../mobile/src/services/integration-service';
+import { broadcastSos, recordVerifiedDeliveryReceipt, retryOutboxEnvelopeNow, retryQueuedEncryptedEnvelopes, sendEncryptedText, saveLocalReport, persistRoutingTable } from '../mobile/src/services/integration-service';
 import { meshService, MockLoopbackTransport, UnavailableMeshTransport } from '../mobile/src/services/mesh-service';
 
 describe('Air-Mesh integration facade', () => {
@@ -43,6 +43,18 @@ describe('Air-Mesh integration facade', () => {
     await recordVerifiedDeliveryReceipt({ messageId: sent.message.id, recipientId: contact.device_id, receiptPayload: 'authenticated-mac-verified-by-mesh-engine' });
     expect((await database.getMessages('chat-receipt'))[0].status).toBe('delivered');
     expect((await auditService.getLogs('message_delivery_receipt_verified'))[0].details).toMatchObject({ message_id: sent.message.id, recipient_id: contact.device_id });
+  });
+
+  it('allows a user-requested retry after automatic attempts are exhausted without claiming recipient delivery', async () => {
+    const own = await generateEphemeralKeyPair(); const peer = await generateEphemeralKeyPair();
+    const contact = await pairWithContact('peer-manual-retry', 'Peer manual retry', peer.publicKey, own);
+    const initial = await sendEncryptedText({ chatId: 'chat-manual-retry', contactId: contact.id, receiverId: contact.device_id, senderId: 'local-device', plaintext: 'retry me manually' });
+    await database.updateOutboxEnvelope(initial.message.id, { attempt_count: 8, status: 'queued', last_attempt_at: null });
+    const transport = new MockLoopbackTransport(); meshService.setTransport(transport); await meshService.connect(contact.device_id);
+    const retried = await retryOutboxEnvelopeNow(initial.message.id);
+    expect(retried.accepted).toBe(true);
+    expect(initial.delivered).toBe(false);
+    expect((await database.getQueuedOutboxEnvelopes()).some((entry) => entry.message_id === initial.message.id)).toBe(false);
   });
 
   it('persists rescue reports, routing entries, and SOS audit events', async () => {

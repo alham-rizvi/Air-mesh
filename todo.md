@@ -251,3 +251,7 @@
 - [x] Add chat warnings for stale routes and retry-limit-exhausted messages
 - [x] Add deterministic topology/retry/notification/warning tests and verify the enhancement
 - [x] Implement the approved hybrid retry policy: immediate eligible-peer/route event retries plus optional best-effort Android background queue maintenance
+- [x] Add persistent user controls for automatic retry limit and retry interval in Settings options
+- [x] Add a manual retry action for queued messages paused at the automatic retry limit
+- [x] Add a privacy-preserving mesh diagnostics export containing observed topology, routing, connection, and queue metadata without plaintext or secrets
+- [x] Add deterministic retry-preference, manual-retry, and export-redaction tests and run full verification

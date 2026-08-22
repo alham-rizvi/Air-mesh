@@ -21,6 +21,11 @@ describe('bounded mesh retry policy', () => {
     expect(pendingMessageWarning(queued(), [], now)).toMatchObject({ kind: 'waiting-peer' });
   });
 
+  it('applies a user-selected retry limit and minimum retry interval', () => {
+    expect(shouldAttemptEnvelope(queued({ attempt_count: 3 }), [freshRoute], now, { maxAttempts: 3 })).toBe(false);
+    expect(shouldAttemptEnvelope(queued({ last_attempt_at: new Date(now).toISOString() }), [freshRoute], now, { minIntervalMs: 60_000 })).toBe(false);
+  });
+
   it('emits immediate retry opportunities when a peer connects or routing changes', async () => {
     const mesh = new MeshService(new MockLoopbackTransport(), 'retry-policy-self');
     const events: string[] = [];

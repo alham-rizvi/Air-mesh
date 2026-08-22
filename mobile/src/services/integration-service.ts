@@ -5,6 +5,8 @@ import { meshService } from './mesh-service';
 import { captureRescueLocation } from './rescue-location';
 import { notifyPeerEligibleForRetry } from './retry-notifier';
 import { pendingMessageWarning, shouldAttemptEnvelope, type PendingMessageWarning } from './retry-policy';
+import { getRetryPreferences } from './retry-preferences';
+import { buildRedactedDiagnosticsExport } from './diagnostics-export';
 import type { EncryptedMessage, MeshStatus, Report as MeshReport, RoutingEntry as MeshRoutingEntry } from './types';
 import type { Message, OutboxEnvelope, Report as StoredReport, RoutingEntry as StoredRoutingEntry } from '../types/security-data';
 
@@ -30,11 +32,12 @@ export async function sendEncryptedText(input: { chatId: string; contactId: stri
 export async function retryQueuedEncryptedEnvelopes(): Promise<{ attempted: number; accepted: number; skipped: number }> {
   const queued = await database.getQueuedOutboxEnvelopes();
   const routes = await meshService.getRoutingTable();
+  const preferences = await getRetryPreferences();
   let accepted = 0;
   let attempted = 0;
   for (const envelope of queued) {
     const directlyConnected = meshService.isPeerConnected(envelope.destination_id);
-    if (!directlyConnected && !shouldAttemptEnvelope(envelope, routes)) continue;
+    if (!directlyConnected && !shouldAttemptEnvelope(envelope, routes, Date.now(), { maxAttempts: preferences.maxAttempts, minIntervalMs: preferences.retryIntervalMinutes * 60_000 })) continue;
     let payload: EncryptedMessage;
     try { payload = decode<EncryptedMessage>(envelope.encrypted_payload); }
     catch { continue; }
@@ -49,8 +52,26 @@ export async function retryQueuedEncryptedEnvelopes(): Promise<{ attempted: numb
 }
 
 export async function getPendingMessageWarnings(): Promise<Record<string, PendingMessageWarning>> {
-  const [queued, routes] = await Promise.all([database.getQueuedOutboxEnvelopes(), meshService.getRoutingTable()]);
-  return Object.fromEntries(queued.map((envelope) => [envelope.message_id, pendingMessageWarning(envelope, routes)]).filter((entry): entry is [string, PendingMessageWarning] => entry[1] !== null));
+  const [queued, routes, preferences] = await Promise.all([database.getQueuedOutboxEnvelopes(), meshService.getRoutingTable(), getRetryPreferences()]);
+  return Object.fromEntries(queued.map((envelope) => [envelope.message_id, pendingMessageWarning(envelope, routes, Date.now(), preferences.maxAttempts)]).filter((entry): entry is [string, PendingMessageWarning] => entry[1] !== null));
+}
+
+/** A user-requested retry can exceed automatic limits but still never becomes a delivery claim without a verified receipt. */
+export async function retryOutboxEnvelopeNow(messageId: string): Promise<{ accepted: boolean; reason?: string }> {
+  const envelope = (await database.getQueuedOutboxEnvelopes()).find((entry) => entry.message_id === messageId);
+  if (!envelope) return { accepted: false, reason: 'The message is no longer queued locally.' };
+  let payload: EncryptedMessage;
+  try { payload = decode<EncryptedMessage>(envelope.encrypted_payload); } catch { return { accepted: false, reason: 'The queued envelope is corrupted.' }; }
+  const accepted = await meshService.sendWithMode({ kind: 'mesh', receiverId: envelope.destination_id }, payload);
+  await database.updateOutboxEnvelope(envelope.message_id, { status: accepted ? 'sent' : 'queued', last_attempt_at: now(), attempt_count: envelope.attempt_count + 1 });
+  await auditService.logAction('outbox_manual_retry', { message_id: envelope.message_id, destination_id: envelope.destination_id, immediate_transport_accepted: accepted, recipient_delivery_confirmed: false });
+  return { accepted };
+}
+
+export async function createRedactedDiagnosticsExport(): Promise<string> {
+  await database.initialize();
+  const [mesh_status, routes, outbox, relay_queue] = await Promise.all([meshService.getMeshStatus(), meshService.getRoutingTable(), database.getQueuedOutboxEnvelopes(), database.getQueuedRelayEnvelopes()]);
+  return buildRedactedDiagnosticsExport({ generated_at: now(), mesh_status, routes, connected_peers: meshService.getConnectedPeerIds(), outbox, relay_queue });
 }
 
 let retryEventsWired = false;
@@ -97,4 +118,4 @@ export async function saveLocalReport(report: StoredReport): Promise<void> { awa
 
 export async function syncReportsToBase(reports: MeshReport[], baseUrl?: string): Promise<boolean> { const result = await meshService.syncReportsToBase(reports, baseUrl); await auditService.logAction(result ? 'courier_sync_base_success' : 'courier_sync_base_failed', { report_count: reports.length, base_url_configured: Boolean(baseUrl) }); return result; }
 
-export const airMeshIntegration = { sendEncryptedText, retryQueuedEncryptedEnvelopes, getPendingMessageWarnings, enableAutomaticRetry, recordVerifiedDeliveryReceipt, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };
+export const airMeshIntegration = { sendEncryptedText, retryQueuedEncryptedEnvelopes, retryOutboxEnvelopeNow, getPendingMessageWarnings, createRedactedDiagnosticsExport, enableAutomaticRetry, recordVerifiedDeliveryReceipt, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };

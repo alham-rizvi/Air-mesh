@@ -15,8 +15,8 @@ export function routeIsStale(route: RoutingEntry | undefined, at = Date.now()): 
   return !Number.isFinite(updatedAt) || at - updatedAt > STALE_ROUTE_AFTER_MS;
 }
 
-export function pendingMessageWarning(envelope: OutboxEnvelope, routes: RoutingEntry[], at = Date.now()): PendingMessageWarning | null {
-  if (envelope.attempt_count >= MAX_AUTOMATIC_RETRY_ATTEMPTS) {
+export function pendingMessageWarning(envelope: OutboxEnvelope, routes: RoutingEntry[], at = Date.now(), maxAttempts = MAX_AUTOMATIC_RETRY_ATTEMPTS): PendingMessageWarning | null {
+  if (envelope.attempt_count >= maxAttempts) {
     return { kind: 'retry-limit', title: 'Retry limit reached', detail: `Automatic retry paused after ${envelope.attempt_count} attempts. Retry manually after checking nearby peers.` };
   }
   const route = routes.find((entry) => entry.destination_device_id === envelope.destination_id);
@@ -27,6 +27,10 @@ export function pendingMessageWarning(envelope: OutboxEnvelope, routes: RoutingE
   return null;
 }
 
-export function shouldAttemptEnvelope(envelope: OutboxEnvelope, routes: RoutingEntry[], at = Date.now()): boolean {
-  return envelope.attempt_count < MAX_AUTOMATIC_RETRY_ATTEMPTS && !routeIsStale(routes.find((entry) => entry.destination_device_id === envelope.destination_id), at);
+export function shouldAttemptEnvelope(envelope: OutboxEnvelope, routes: RoutingEntry[], at = Date.now(), options: { maxAttempts?: number; minIntervalMs?: number } = {}): boolean {
+  const maxAttempts = options.maxAttempts ?? MAX_AUTOMATIC_RETRY_ATTEMPTS;
+  const minIntervalMs = options.minIntervalMs ?? 0;
+  const lastAttempt = envelope.last_attempt_at ? Date.parse(envelope.last_attempt_at) : null;
+  const insideRetryInterval = lastAttempt !== null && Number.isFinite(lastAttempt) && at - lastAttempt < minIntervalMs;
+  return envelope.attempt_count < maxAttempts && !insideRetryInterval && !routeIsStale(routes.find((entry) => entry.destination_device_id === envelope.destination_id), at);
 }
