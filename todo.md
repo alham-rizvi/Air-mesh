@@ -281,3 +281,6 @@
 - [x] Replace the installed app icon, adaptive foreground, favicon, and splash icon with the signal-lime mesh-beacon brand asset
 - [x] Add restrained loading motion and navigation/surface interaction feedback with accessible fallbacks
 - [x] Verify the pure-black signed-in visual system and full cross-stack suite
+- [x] Add a clearly labeled local-only signed-in visual QA demo mode for Chat and Diagnostics without inventing real mesh state
+- [x] Verify the demo mode, pure-black visuals, and full cross-stack suite
+- [x] Synchronize the verified demo-mode and pure-black refinement source to GitHub main
