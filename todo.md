@@ -276,3 +276,8 @@
 - [x] Replace the warm card-led interface with a dark immersive Air-Mesh UI: strong type, sparse signal-lime actions, compact navigation, and high-contrast system states
 - [x] Rebuild onboarding, Home, Messages, Rescue, Settings, and Diagnostics visual hierarchy without altering local-only mesh, queue, route, receipt, or retry semantics
 - [x] Verify the new dark product experience at mobile portrait dimensions and run the full cross-stack suite
+- [x] Make the dark Air-Mesh experience pure black across app chrome, surfaces, and installed splash treatment
+- [x] Apply the mesh-beacon signal-lime product language to signed-in Chat and Diagnostics states without changing delivery or diagnostic semantics
+- [x] Replace the installed app icon, adaptive foreground, favicon, and splash icon with the signal-lime mesh-beacon brand asset
+- [x] Add restrained loading motion and navigation/surface interaction feedback with accessible fallbacks
+- [x] Verify the pure-black signed-in visual system and full cross-stack suite
