@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 
 export type ThemeMode = 'system' | 'dark' | 'light';
-export type AccentColor = '#C8F44A' | '#F05A28' | '#10A37F' | '#2F80ED' | '#8E5CF6' | '#D97706';
+export const ACCENT_COLORS = ['#FFFFFF', '#C8F44A', '#84CC16', '#22C55E', '#10A37F', '#14B8A6', '#06B6D4', '#38BDF8', '#2F80ED', '#6366F1', '#8E5CF6', '#D946EF', '#EC4899', '#E11D48', '#FF6B6B', '#F05A28', '#F59E0B', '#F2C94C', '#D97706', '#A16207'] as const;
+export type AccentColor = (typeof ACCENT_COLORS)[number];
 export type Role = 'User' | 'Shelter' | 'Courier' | 'Base';
 export type Delivery = 'queued' | 'accepted' | 'delivered' | 'read';
 

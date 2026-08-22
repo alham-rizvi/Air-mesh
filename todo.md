@@ -284,3 +284,6 @@
 - [x] Add a clearly labeled local-only signed-in visual QA demo mode for Chat and Diagnostics without inventing real mesh state
 - [x] Verify the demo mode, pure-black visuals, and full cross-stack suite
 - [x] Synchronize the verified demo-mode and pure-black refinement source to GitHub main
+- [x] Replace the mesh-beacon branding with a simple white triangle on pure black across launch, native icon, splash, and app chrome
+- [x] Expand the Settings accent selector to at least 16 usable accent colors while preserving stored selection and theme behavior
+- [x] Verify minimalist branding, accent selection, and the full cross-stack suite
