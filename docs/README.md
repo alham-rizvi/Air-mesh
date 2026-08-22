@@ -19,5 +19,6 @@ This directory contains the implementation, testing, release, and operational gu
 | [Phone-only Wi-Fi P2P acceptance](two-phone-wifi-p2p-acceptance.md) | Defines the no-external-hardware Android Wi-Fi Direct acceptance gate and field-evidence rules. |
 | [Phone-only P2P transport design](phone-p2p-transport-design.md) | Explains the implemented Wi-Fi Direct bridge, BLE fallback, delivery boundary, permissions, and range limitations. |
 | [Supplied offline-mesh architecture assessment](supplied-offline-mesh-architecture-assessment.md) | Maps the supplied mesh design to Air-Mesh, identifies corrected claims, and records the durable-outbox adoption. |
+| [Authenticated offline mesh protocol](authenticated-mesh-protocol.md) | Defines authenticated route advertisements, opaque durable relay envelopes, delivery receipts, state transitions, and the two-person no-internet simulation boundary. |
 
 The project’s canonical verification command is `pnpm verify:all`. It checks the source and native configuration but does not replace two-device BLE acceptance on physical Android hardware.

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { auditService } from '../mobile/src/services/auditService';
 import { database } from '../mobile/src/services/db';
 import { generateEphemeralKeyPair, pairWithContact } from '../mobile/src/services/cryptoService';
-import { broadcastSos, retryQueuedEncryptedEnvelopes, sendEncryptedText, saveLocalReport, persistRoutingTable } from '../mobile/src/services/integration-service';
+import { broadcastSos, recordVerifiedDeliveryReceipt, retryQueuedEncryptedEnvelopes, sendEncryptedText, saveLocalReport, persistRoutingTable } from '../mobile/src/services/integration-service';
 import { meshService, MockLoopbackTransport, UnavailableMeshTransport } from '../mobile/src/services/mesh-service';
 
 describe('Air-Mesh integration facade', () => {
@@ -33,6 +33,16 @@ describe('Air-Mesh integration facade', () => {
     expect(initial.delivered).toBe(false);
     expect(retried).toMatchObject({ attempted: expect.any(Number), accepted: expect.any(Number) });
     expect((await database.getQueuedOutboxEnvelopes()).some((envelope) => envelope.message_id === initial.message.id)).toBe(false);
+  });
+
+  it('changes a local message to delivered only after an already-verified recipient receipt is persisted', async () => {
+    const own = await generateEphemeralKeyPair(); const peer = await generateEphemeralKeyPair();
+    const contact = await pairWithContact('peer-receipt', 'Peer receipt', peer.publicKey, own);
+    const sent = await sendEncryptedText({ chatId: 'chat-receipt', contactId: contact.id, receiverId: contact.device_id, senderId: 'local-device', plaintext: 'receipt evidence' });
+    expect((await database.getMessages('chat-receipt'))[0].status).not.toBe('delivered');
+    await recordVerifiedDeliveryReceipt({ messageId: sent.message.id, recipientId: contact.device_id, receiptPayload: 'authenticated-mac-verified-by-mesh-engine' });
+    expect((await database.getMessages('chat-receipt'))[0].status).toBe('delivered');
+    expect((await auditService.getLogs('message_delivery_receipt_verified'))[0].details).toMatchObject({ message_id: sent.message.id, recipient_id: contact.device_id });
   });
 
   it('persists rescue reports, routing entries, and SOS audit events', async () => {

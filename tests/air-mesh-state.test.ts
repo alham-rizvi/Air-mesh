@@ -25,6 +25,16 @@ describe('Air-Mesh offline foundation', () => {
     expect(useChatStore.getState().chats).toEqual(expect.arrayContaining([expect.objectContaining({ id: directId, name: 'Peer One', type: 'direct' }), expect.objectContaining({ id: groupId, name: 'Response Team', type: 'group', memberIds: [contact.id] })]));
   });
 
+  it('shows queued, accepted, and delivered states as distinct local message transitions', () => {
+    const chatId = useChatStore.getState().addGroup('Delivery states', []);
+    const messageId = useChatStore.getState().addMessage(chatId, 'status-aware envelope');
+    expect(useChatStore.getState().messages[chatId][0]).toMatchObject({ id: messageId, delivery: 'queued' });
+    useChatStore.getState().updateDelivery(chatId, messageId, 'accepted');
+    expect(useChatStore.getState().messages[chatId][0]).toMatchObject({ delivery: 'accepted' });
+    useChatStore.getState().updateDelivery(chatId, messageId, 'delivered');
+    expect(useChatStore.getState().messages[chatId][0]).toMatchObject({ delivery: 'delivered' });
+  });
+
   it('clears local session data without reseeding fake content', () => {
     useAccountStore.getState().setAccount({ displayName: 'Reset Me', deviceId: 'AM-RESET', createdAt: '2026-08-20T00:00:00Z' });
     useContactStore.getState().addContact({ id: 'reset-peer', name: 'Reset Peer', initials: 'RP', role: 'User', distance: 'Manual', signal: 0, lastSeen: 'Just now' });

@@ -234,3 +234,8 @@
 - [x] Correct unverified claims about BLE range, 500 ms delivery, guaranteed delivery, group encryption, and broadcast confidentiality
 - [x] Implement compatible durable encrypted outbox and immediate-hop acceptance semantics; leave authenticated receipt, group-key, and multi-hop relay work explicitly gated
 - [x] Add deterministic tests and physical acceptance gates for the adopted mesh behavior
+- [x] Design signed or shared-secret-authenticated route advertisements, relay envelopes, and delivery receipts without exposing plaintext to relays
+- [x] Add persistent routing-advertisement, relay-queue, and receipt records to both native SQLite and in-memory stores
+- [x] Implement authenticated route-table exchange, durable multi-hop forwarding, bounded relay retries, and receipt propagation
+- [x] Update chat UI to display truthful Queued, Accepted, and Delivered states from persisted protocol events
+- [x] Add a deterministic two-person, no-internet duplex simulation covering route exchange, multi-hop relay, delivery receipt, duplicate suppression, and queue recovery

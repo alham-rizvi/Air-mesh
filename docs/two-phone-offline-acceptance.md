@@ -118,7 +118,8 @@ If P0-00 fails because no advertiser/GATT implementation exists, stop the accept
 | P0-40 | P0 | A → B encrypted text | Connect Device A to B; send a short text. | B receives plaintext after local decrypt; both audit logs record the appropriate send/receive event. |
 | P0-41 | P0 | B → A encrypted text | Send reply. | A receives plaintext; no internet is enabled. |
 | P0-42 | P0 | Message while disconnected | Disconnect and send from A. | Message is queued/persisted locally; UI does not claim delivery. |
-| P0-43 | P0 | Outbox retry after reconnect | Disconnect, send from A, then reconnect and observe the automatic retry. | The durable encrypted envelope is retried and records immediate-hop acceptance only if the local transport accepts it. It is **not** recipient delivery without a future authenticated receipt. |
+| P0-43 | P0 | Outbox retry after reconnect | Disconnect, send from A, then reconnect and observe the automatic retry. | The durable encrypted envelope is retried and records immediate-hop acceptance only if the local transport accepts it. It is **not** recipient delivery without a valid authenticated receipt. |
+| P0-44 | P0 | Authenticated recipient receipt | Complete an A → B encrypted message exchange with local logs enabled. | A changes from **Accepted** to **Delivered** only after receiving and verifying B’s authenticated receipt. A forged or malformed receipt must not update delivery state. |
 | P1-44 | P1 | 512-byte chunk boundary | Send text or fixture payload longer than 512 bytes. | Receiver reassembles exact content once. |
 | P1-45 | P1 | Duplicate suppression | Re-send same envelope/message ID using test control. | Receiver stores/displays one copy and records dedupe behavior if exposed. |
 | P1-46 | P1 | Corrupt/incomplete frame | Inject malformed or incomplete test frame through native harness. | Receiver fails closed; no crash, plaintext corruption, or false success. |
@@ -133,6 +134,9 @@ If P0-00 fails because no advertiser/GATT implementation exists, stop the accept
 | P1-52 | P1 | Mesh relay | Arrange A ↔ B ↔ C with no A ↔ C link. | A message destined for C is forwarded through B with TTL decrement. |
 | P1-53 | P1 | TTL stop | Use a message with TTL 1 in a relay-only path. | B does not forward after TTL reaches zero. |
 | P1-54 | P1 | Routing update | Change path availability. | Routing table changes do not create duplicate delivery or stale false route. |
+| P1-55 | P1 | Authenticated route advertisement | Exchange route tables between paired direct neighbors and inject an invalid tag in a test harness. | Valid neighbor-authenticated routes merge with an added hop; the invalid advertisement is rejected. |
+| P1-56 | P1 | Durable relay queue | Arrange A ↔ B ↔ C, disconnect B ↔ C after B stores A’s envelope, then restore the link. | B retains only opaque ciphertext, retries under TTL/retry bounds, and C receives at most one copy. |
+| P1-57 | P1 | Receipt return path | Arrange A ↔ B ↔ C and deliver A’s message to C through B. | C’s authenticated receipt returns through B and changes A’s state to Delivered only after verification. |
 
 ### 4.6 Strict offline network test
 

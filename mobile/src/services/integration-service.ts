@@ -41,6 +41,14 @@ export async function retryQueuedEncryptedEnvelopes(): Promise<{ attempted: numb
   return { attempted: queued.length, accepted };
 }
 
+/** Call only after the authenticated mesh engine verifies the recipient’s end-to-end receipt MAC. */
+export async function recordVerifiedDeliveryReceipt(input: { messageId: string; recipientId: string; receiptPayload: string; verifiedAt?: string }): Promise<void> {
+  const verifiedAt = input.verifiedAt ?? now();
+  await database.saveDeliveryReceipt({ message_id: input.messageId, recipient_id: input.recipientId, receipt_payload: input.receiptPayload, verified_at: verifiedAt });
+  await database.updateMessageStatus(input.messageId, 'delivered');
+  await auditService.logAction('message_delivery_receipt_verified', { message_id: input.messageId, recipient_id: input.recipientId, verified_at: verifiedAt });
+}
+
 export async function receiveEncryptedMessage(contactId: string, payload: EncryptedMessage, chatId: string): Promise<{ message: Message; plaintext: string }> {
   const encrypted = decode<Parameters<typeof decryptMessageFromContact>[1]>(payload.content);
   const plaintext = await decryptMessageFromContact(contactId, encrypted);
@@ -70,4 +78,4 @@ export async function saveLocalReport(report: StoredReport): Promise<void> { awa
 
 export async function syncReportsToBase(reports: MeshReport[], baseUrl?: string): Promise<boolean> { const result = await meshService.syncReportsToBase(reports, baseUrl); await auditService.logAction(result ? 'courier_sync_base_success' : 'courier_sync_base_failed', { report_count: reports.length, base_url_configured: Boolean(baseUrl) }); return result; }
 
-export const airMeshIntegration = { sendEncryptedText, retryQueuedEncryptedEnvelopes, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };
+export const airMeshIntegration = { sendEncryptedText, retryQueuedEncryptedEnvelopes, recordVerifiedDeliveryReceipt, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };
