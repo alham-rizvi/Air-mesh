@@ -22,6 +22,7 @@ export async function sendEncryptedText(input: { chatId: string; contactId: stri
   const accepted = await meshService.sendWithMode({ kind: 'mesh', receiverId: input.receiverId }, payload);
   const attemptedAt = now();
   await database.updateOutboxEnvelope(messageId, { status: accepted ? 'sent' : 'queued', last_attempt_at: attemptedAt, attempt_count: 1 });
+  await database.saveRetryHistory({ id: uuid(), message_id: messageId, attempted_at: attemptedAt, trigger: 'automatic', outcome: accepted ? 'accepted' : 'queued', reason: 'Initial local transport attempt' });
   const message: Message = { id: messageId, chat_id: input.chatId, sender_id: input.senderId, receiver_id: input.receiverId, content_type: 'text', content: payload.content, timestamp: payload.timestamp, status: accepted ? 'sent' : 'queued', ttl: payload.ttl, message_id_for_dedup: messageId };
   await database.saveMessage(message);
   await auditService.logAction(accepted ? 'message_transport_accepted' : 'message_queued', { message_id: messageId, receiver_id: input.receiverId, encrypted: true, recipient_delivery_confirmed: false });
@@ -44,7 +45,9 @@ export async function retryQueuedEncryptedEnvelopes(): Promise<{ attempted: numb
     attempted += 1;
     const sent = await meshService.sendWithMode({ kind: 'mesh', receiverId: envelope.destination_id }, payload);
     const attemptCount = envelope.attempt_count + 1;
-    await database.updateOutboxEnvelope(envelope.message_id, { status: sent ? 'sent' : 'queued', last_attempt_at: now(), attempt_count: attemptCount });
+    const attemptedAt = now();
+    await database.updateOutboxEnvelope(envelope.message_id, { status: sent ? 'sent' : 'queued', last_attempt_at: attemptedAt, attempt_count: attemptCount });
+    await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: attemptedAt, trigger: 'automatic', outcome: sent ? 'accepted' : 'queued', reason: sent ? 'Eligible transport accepted the envelope' : 'No eligible transport accepted the envelope' });
     if (sent) accepted += 1;
   }
   if (attempted) await auditService.logAction('outbox_retry_completed', { attempted, immediate_transport_accepted: accepted, recipient_delivery_confirmed: false });
@@ -56,6 +59,8 @@ export async function getPendingMessageWarnings(): Promise<Record<string, Pendin
   return Object.fromEntries(queued.map((envelope) => [envelope.message_id, pendingMessageWarning(envelope, routes, Date.now(), preferences.maxAttempts)]).filter((entry): entry is [string, PendingMessageWarning] => entry[1] !== null));
 }
 
+export async function getMessageRetryHistory(messageId: string) { return database.getRetryHistory(messageId); }
+
 /** A user-requested retry can exceed automatic limits but still never becomes a delivery claim without a verified receipt. */
 export async function retryOutboxEnvelopeNow(messageId: string): Promise<{ accepted: boolean; reason?: string }> {
   const envelope = (await database.getQueuedOutboxEnvelopes()).find((entry) => entry.message_id === messageId);
@@ -63,7 +68,9 @@ export async function retryOutboxEnvelopeNow(messageId: string): Promise<{ accep
   let payload: EncryptedMessage;
   try { payload = decode<EncryptedMessage>(envelope.encrypted_payload); } catch { return { accepted: false, reason: 'The queued envelope is corrupted.' }; }
   const accepted = await meshService.sendWithMode({ kind: 'mesh', receiverId: envelope.destination_id }, payload);
-  await database.updateOutboxEnvelope(envelope.message_id, { status: accepted ? 'sent' : 'queued', last_attempt_at: now(), attempt_count: envelope.attempt_count + 1 });
+  const attemptedAt = now();
+  await database.updateOutboxEnvelope(envelope.message_id, { status: accepted ? 'sent' : 'queued', last_attempt_at: attemptedAt, attempt_count: envelope.attempt_count + 1 });
+  await database.saveRetryHistory({ id: uuid(), message_id: envelope.message_id, attempted_at: attemptedAt, trigger: 'manual', outcome: accepted ? 'accepted' : 'queued', reason: accepted ? 'User retry accepted by eligible transport' : 'User retry was not accepted by an eligible transport' });
   await auditService.logAction('outbox_manual_retry', { message_id: envelope.message_id, destination_id: envelope.destination_id, immediate_transport_accepted: accepted, recipient_delivery_confirmed: false });
   return { accepted };
 }
@@ -71,7 +78,8 @@ export async function retryOutboxEnvelopeNow(messageId: string): Promise<{ accep
 export async function createRedactedDiagnosticsExport(): Promise<string> {
   await database.initialize();
   const [mesh_status, routes, outbox, relay_queue] = await Promise.all([meshService.getMeshStatus(), meshService.getRoutingTable(), database.getQueuedOutboxEnvelopes(), database.getQueuedRelayEnvelopes()]);
-  return buildRedactedDiagnosticsExport({ generated_at: now(), mesh_status, routes, connected_peers: meshService.getConnectedPeerIds(), outbox, relay_queue });
+  const retry_history = (await Promise.all(outbox.map((envelope) => database.getRetryHistory(envelope.message_id)))).flat();
+  return buildRedactedDiagnosticsExport({ generated_at: now(), mesh_status, routes, connected_peers: meshService.getConnectedPeerIds(), outbox, relay_queue, retry_history });
 }
 
 let retryEventsWired = false;
@@ -118,4 +126,4 @@ export async function saveLocalReport(report: StoredReport): Promise<void> { awa
 
 export async function syncReportsToBase(reports: MeshReport[], baseUrl?: string): Promise<boolean> { const result = await meshService.syncReportsToBase(reports, baseUrl); await auditService.logAction(result ? 'courier_sync_base_success' : 'courier_sync_base_failed', { report_count: reports.length, base_url_configured: Boolean(baseUrl) }); return result; }
 
-export const airMeshIntegration = { sendEncryptedText, retryQueuedEncryptedEnvelopes, retryOutboxEnvelopeNow, getPendingMessageWarnings, createRedactedDiagnosticsExport, enableAutomaticRetry, recordVerifiedDeliveryReceipt, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };
+export const airMeshIntegration = { sendEncryptedText, retryQueuedEncryptedEnvelopes, retryOutboxEnvelopeNow, getPendingMessageWarnings, getMessageRetryHistory, createRedactedDiagnosticsExport, enableAutomaticRetry, recordVerifiedDeliveryReceipt, receiveEncryptedMessage, broadcastSos, persistRoutingTable, getPersistedMeshStatus, saveLocalReport, syncReportsToBase };

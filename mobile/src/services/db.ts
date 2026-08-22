@@ -1,4 +1,4 @@
-import type { AuditLog, Chat, Contact, DatabaseService, DeliveryReceiptRecord, DeviceRecord, FileMetadata, Message, OutboxEnvelope, RelayQueueEnvelope, Report, RoutingEntry } from '../types/security-data';
+import type { AuditLog, Chat, Contact, DatabaseService, DeliveryReceiptRecord, DeviceRecord, FileMetadata, Message, OutboxEnvelope, RelayQueueEnvelope, Report, RetryHistoryRecord, RoutingEntry } from '../types/security-data';
 
 export const USE_MOCK_DB = true;
 export function uuid(): string { return globalThis.crypto?.randomUUID?.() ?? `am-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -12,6 +12,7 @@ export class MemoryDatabase implements DatabaseService {
   private readonly outbox = new Map<string, OutboxEnvelope>();
   private readonly relayQueue = new Map<string, RelayQueueEnvelope>();
   private readonly receipts = new Map<string, DeliveryReceiptRecord>();
+  private readonly retryHistory = new Map<string, RetryHistoryRecord>();
   private readonly chats = new Map<string, Chat>();
   private readonly reports = new Map<string, Report>();
   private readonly auditLogs = new Map<string, AuditLog>();
@@ -31,6 +32,8 @@ export class MemoryDatabase implements DatabaseService {
   async updateRelayQueueEnvelope(id: string, update: Pick<RelayQueueEnvelope, 'status' | 'last_attempt_at' | 'attempt_count' | 'next_hop_id'>): Promise<void> { this.ensure(); const current = this.relayQueue.get(id); if (current) this.relayQueue.set(id, { ...current, ...update }); }
   async clearQueuedRelayEnvelopes(): Promise<number> { this.ensure(); const queued = await this.getQueuedRelayEnvelopes(); queued.forEach((entry) => this.relayQueue.delete(entry.id)); return queued.length; }
   async saveDeliveryReceipt(value: DeliveryReceiptRecord): Promise<void> { this.ensure(); this.receipts.set(value.message_id, { ...value }); }
+  async saveRetryHistory(value: RetryHistoryRecord): Promise<void> { this.ensure(); this.retryHistory.set(value.id, { ...value }); }
+  async getRetryHistory(messageId: string): Promise<RetryHistoryRecord[]> { this.ensure(); return Array.from(this.retryHistory.values()).filter((value) => value.message_id === messageId).sort((a, b) => b.attempted_at.localeCompare(a.attempted_at)); }
   async saveReport(value: Report): Promise<void> { this.ensure(); this.reports.set(value.id, { ...value, needs: [...value.needs] }); }
   async updateReportSyncStatus(ids: string[], status: Report['sync_status']): Promise<void> { this.ensure(); ids.forEach((id) => { const report = this.reports.get(id); if (report) this.reports.set(id, { ...report, sync_status: status }); }); }
   async getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]> { this.ensure(); return Array.from(this.reports.values()).filter((value) => !filter || Object.entries(filter).every(([key, expected]) => value[key as keyof Report] === expected)).map((value) => ({ ...value, needs: [...value.needs] })); }

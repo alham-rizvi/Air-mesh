@@ -1,4 +1,4 @@
-import type { OutboxEnvelope, RelayQueueEnvelope } from '../types/security-data';
+import type { OutboxEnvelope, RelayQueueEnvelope, RetryHistoryRecord } from '../types/security-data';
 import type { MeshStatus, RoutingEntry } from './types';
 import { buildObservedTopology } from './topology-model';
 
@@ -8,7 +8,7 @@ function redactIdentifier(value: string | null | undefined): string | null {
   return `${value.slice(0, 4)}…${value.slice(-2)}`;
 }
 
-export type MeshDiagnosticsSnapshot = { generated_at: string; mesh_status: MeshStatus; routes: RoutingEntry[]; connected_peers: string[]; outbox: OutboxEnvelope[]; relay_queue: RelayQueueEnvelope[] };
+export type MeshDiagnosticsSnapshot = { generated_at: string; mesh_status: MeshStatus; routes: RoutingEntry[]; connected_peers: string[]; outbox: OutboxEnvelope[]; relay_queue: RelayQueueEnvelope[]; retry_history: RetryHistoryRecord[] };
 
 export function buildRedactedDiagnosticsExport(snapshot: MeshDiagnosticsSnapshot): string {
   const topology = buildObservedTopology(snapshot.routes, snapshot.connected_peers);
@@ -21,5 +21,6 @@ export function buildRedactedDiagnosticsExport(snapshot: MeshDiagnosticsSnapshot
     routes: snapshot.routes.map((route) => ({ destination: redactIdentifier(route.destination_device_id), next_hop: redactIdentifier(route.next_hop_device_id), hop_count: route.hop_count, updated_at: route.updated_at })),
     pending_sender_outbox: snapshot.outbox.map((entry) => ({ message_id: redactIdentifier(entry.message_id), destination: redactIdentifier(entry.destination_id), ttl: entry.ttl, created_at: entry.created_at, last_attempt_at: entry.last_attempt_at, attempt_count: entry.attempt_count, status: entry.status })),
     pending_relay_queue: snapshot.relay_queue.map((entry) => ({ queue_id: redactIdentifier(entry.id), message_id: redactIdentifier(entry.message_id), destination: redactIdentifier(entry.destination_id), next_hop: redactIdentifier(entry.next_hop_id), ttl: entry.ttl, created_at: entry.created_at, last_attempt_at: entry.last_attempt_at, attempt_count: entry.attempt_count, status: entry.status })),
+    retry_history: snapshot.retry_history.map((entry) => ({ message_id: redactIdentifier(entry.message_id), attempted_at: entry.attempted_at, trigger: entry.trigger, outcome: entry.outcome, reason: entry.reason })),
   }, null, 2);
 }

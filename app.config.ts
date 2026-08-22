@@ -90,6 +90,7 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-background-task",
     "expo-notifications",
+    "expo-document-picker",
     "expo-asset",
     "expo-font",
     "expo-sqlite",

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { auditService } from '../mobile/src/services/auditService';
 import { database } from '../mobile/src/services/db';
 import { generateEphemeralKeyPair, pairWithContact } from '../mobile/src/services/cryptoService';
-import { broadcastSos, recordVerifiedDeliveryReceipt, retryOutboxEnvelopeNow, retryQueuedEncryptedEnvelopes, sendEncryptedText, saveLocalReport, persistRoutingTable } from '../mobile/src/services/integration-service';
+import { broadcastSos, getMessageRetryHistory, recordVerifiedDeliveryReceipt, retryOutboxEnvelopeNow, retryQueuedEncryptedEnvelopes, sendEncryptedText, saveLocalReport, persistRoutingTable } from '../mobile/src/services/integration-service';
 import { meshService, MockLoopbackTransport, UnavailableMeshTransport } from '../mobile/src/services/mesh-service';
 
 describe('Air-Mesh integration facade', () => {
@@ -55,6 +55,7 @@ describe('Air-Mesh integration facade', () => {
     expect(retried.accepted).toBe(true);
     expect(initial.delivered).toBe(false);
     expect((await database.getQueuedOutboxEnvelopes()).some((entry) => entry.message_id === initial.message.id)).toBe(false);
+    expect((await getMessageRetryHistory(initial.message.id)).map((entry) => entry.trigger)).toContain('manual');
   });
 
   it('persists rescue reports, routing entries, and SOS audit events', async () => {

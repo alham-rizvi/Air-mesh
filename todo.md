@@ -255,3 +255,9 @@
 - [x] Add a manual retry action for queued messages paused at the automatic retry limit
 - [x] Add a privacy-preserving mesh diagnostics export containing observed topology, routing, connection, and queue metadata without plaintext or secrets
 - [x] Add deterministic retry-preference, manual-retry, and export-redaction tests and run full verification
+- [x] Add durable per-message retry-history records for automatic and manual attempts, including timestamp, outcome, and non-sensitive reason
+- [x] Render detailed retry history directly within outgoing chat messages
+- [x] Add strict support-bundle JSON import and validation for redacted diagnostic reproduction without changing live mesh state
+- [x] Add deterministic retry-history and malformed/unsafe support-bundle import tests
+- [x] Verify v1.4.0 Android share/export prerequisites, push the release source, and dispatch the managed APK workflow
+- [ ] Perform physical Android share-sheet validation after the release APK is installed and record the result
