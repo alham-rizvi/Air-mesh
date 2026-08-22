@@ -25,9 +25,11 @@ export class MemoryDatabase implements DatabaseService {
   async saveOutboxEnvelope(value: OutboxEnvelope): Promise<void> { this.ensure(); this.outbox.set(value.message_id, { ...value }); }
   async getQueuedOutboxEnvelopes(): Promise<OutboxEnvelope[]> { this.ensure(); return Array.from(this.outbox.values()).filter((value) => value.status === 'queued').sort((a, b) => a.created_at.localeCompare(b.created_at)); }
   async updateOutboxEnvelope(messageId: string, update: Pick<OutboxEnvelope, 'status' | 'last_attempt_at' | 'attempt_count'>): Promise<void> { this.ensure(); const current = this.outbox.get(messageId); if (current) this.outbox.set(messageId, { ...current, ...update }); }
+  async clearQueuedOutboxEnvelopes(): Promise<number> { this.ensure(); const queued = await this.getQueuedOutboxEnvelopes(); queued.forEach((entry) => this.outbox.delete(entry.message_id)); return queued.length; }
   async saveRelayQueueEnvelope(value: RelayQueueEnvelope): Promise<void> { this.ensure(); this.relayQueue.set(value.id, { ...value }); }
   async getQueuedRelayEnvelopes(): Promise<RelayQueueEnvelope[]> { this.ensure(); return Array.from(this.relayQueue.values()).filter((value) => value.status === 'queued').sort((a, b) => a.created_at.localeCompare(b.created_at)); }
   async updateRelayQueueEnvelope(id: string, update: Pick<RelayQueueEnvelope, 'status' | 'last_attempt_at' | 'attempt_count' | 'next_hop_id'>): Promise<void> { this.ensure(); const current = this.relayQueue.get(id); if (current) this.relayQueue.set(id, { ...current, ...update }); }
+  async clearQueuedRelayEnvelopes(): Promise<number> { this.ensure(); const queued = await this.getQueuedRelayEnvelopes(); queued.forEach((entry) => this.relayQueue.delete(entry.id)); return queued.length; }
   async saveDeliveryReceipt(value: DeliveryReceiptRecord): Promise<void> { this.ensure(); this.receipts.set(value.message_id, { ...value }); }
   async saveReport(value: Report): Promise<void> { this.ensure(); this.reports.set(value.id, { ...value, needs: [...value.needs] }); }
   async updateReportSyncStatus(ids: string[], status: Report['sync_status']): Promise<void> { this.ensure(); ids.forEach((id) => { const report = this.reports.get(id); if (report) this.reports.set(id, { ...report, sync_status: status }); }); }

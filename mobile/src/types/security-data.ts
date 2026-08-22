@@ -30,9 +30,11 @@ export interface DatabaseService {
   saveOutboxEnvelope(envelope: OutboxEnvelope): Promise<void>;
   getQueuedOutboxEnvelopes(): Promise<OutboxEnvelope[]>;
   updateOutboxEnvelope(messageId: string, update: Pick<OutboxEnvelope, 'status' | 'last_attempt_at' | 'attempt_count'>): Promise<void>;
+  clearQueuedOutboxEnvelopes(): Promise<number>;
   saveRelayQueueEnvelope(envelope: RelayQueueEnvelope): Promise<void>;
   getQueuedRelayEnvelopes(): Promise<RelayQueueEnvelope[]>;
   updateRelayQueueEnvelope(id: string, update: Pick<RelayQueueEnvelope, 'status' | 'last_attempt_at' | 'attempt_count' | 'next_hop_id'>): Promise<void>;
+  clearQueuedRelayEnvelopes(): Promise<number>;
   saveDeliveryReceipt(receipt: DeliveryReceiptRecord): Promise<void>;
   saveReport(report: Report): Promise<void>;
   getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]>;

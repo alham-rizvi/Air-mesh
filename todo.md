@@ -239,3 +239,8 @@
 - [x] Implement authenticated route-table exchange, durable multi-hop forwarding, bounded relay retries, and receipt propagation
 - [x] Update chat UI to display truthful Queued, Accepted, and Delivered states from persisted protocol events
 - [x] Add a deterministic two-person, no-internet duplex simulation covering route exchange, multi-hop relay, delivery receipt, duplicate suppression, and queue recovery
+- [ ] Add a Settings diagnostics panel showing current route entries, connected relay peers, and transport status without synthetic values
+- [ ] Add Settings views for pending sender/relay envelopes and a confirmation-protected manual clear action for durable queues
+- [ ] Add accessible distinct icons and colors for Queued, Accepted, Delivered, and Read chat delivery states
+- [ ] Add deterministic diagnostics/queue-control/UI-state coverage and run full verification
+- [ ] Push the verified diagnostics update and dispatch a managed Android release after GitHub authentication is restored
