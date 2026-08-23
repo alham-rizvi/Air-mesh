@@ -30,7 +30,7 @@ const env = {
   // App branding - update these values directly (do not use env vars)
   appName: "Air-Mesh",
   appSlug: "air-mesh",
-  // The installed icon is the local white triangle on a black background.
+  // The installed icon uses the supplied teal Air-Mesh mark on its authored dark field.
   logoUrl: "",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
@@ -40,11 +40,11 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.4.0",
+  version: "1.5.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
-  userInterfaceStyle: "automatic",
+  userInterfaceStyle: "dark",
   newArchEnabled: true,
   ios: {
     supportsTablet: true,

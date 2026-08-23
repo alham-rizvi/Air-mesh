@@ -290,3 +290,9 @@
 - [x] Make disaster-alert and offline coordination the primary Air-Mesh product mission in launch and product messaging
 - [x] Apply the supplied core motto with truthful nearby-transport and delivery-boundary language
 - [x] Verify mission messaging and the full cross-stack suite
+- [x] Make the supplied dark mobile navigation the default and replace the Home destination with a central Alerts destination
+- [x] Add a local-first Alerts center with truthful severity states, local persistence, in-app presentation, and notification permission flow
+- [x] Add a controlled server alert-ingestion contract with explicit external-provider configuration boundaries and no invented live government/IoT connectivity
+- [x] Replace current branding with the supplied teal triangular logo across launch and installed native assets
+- [x] Verify Alerts, notification behavior, backend-ready contracts, theme, and the full cross-stack suite
+- [ ] Synchronize verified source to GitHub main and start a new managed Android release workflow
