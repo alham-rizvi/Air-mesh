@@ -295,4 +295,4 @@
 - [x] Add a controlled server alert-ingestion contract with explicit external-provider configuration boundaries and no invented live government/IoT connectivity
 - [x] Replace current branding with the supplied teal triangular logo across launch and installed native assets
 - [x] Verify Alerts, notification behavior, backend-ready contracts, theme, and the full cross-stack suite
-- [ ] Synchronize verified source to GitHub main and start a new managed Android release workflow
+- [x] Synchronize verified source to GitHub main and start a new managed Android release workflow
