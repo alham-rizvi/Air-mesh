@@ -287,3 +287,6 @@
 - [x] Replace the mesh-beacon branding with a simple white triangle on pure black across launch, native icon, splash, and app chrome
 - [x] Expand the Settings accent selector to at least 16 usable accent colors while preserving stored selection and theme behavior
 - [x] Verify minimalist branding, accent selection, and the full cross-stack suite
+- [x] Make disaster-alert and offline coordination the primary Air-Mesh product mission in launch and product messaging
+- [x] Apply the supplied core motto with truthful nearby-transport and delivery-boundary language
+- [x] Verify mission messaging and the full cross-stack suite

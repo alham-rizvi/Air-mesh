@@ -11,11 +11,11 @@ function MeshMark({ size = 38 }: { size?: number }) {
 }
 
 export function OnboardingVisual({ colors }: { colors: OnboardingColors }) {
-  return <View style={[styles.launchVisual,{borderColor:colors.border}]}><View style={styles.brandRow}><MeshMark size={22}/></View><View style={styles.launchCopy}><Text style={[styles.eyebrow,{color:'#FFFFFF'}]}>AIR-MESH</Text><Text style={styles.launchTitle}>Ready when{`\n`}networks are not.</Text><Text style={styles.launchBody}>A local-first workspace for messages, routes, and rescue coordination.</Text></View><View style={styles.launchStatus}><View style={styles.statusDot}/><Text style={styles.launchStatusText}>LOCAL WORKSPACE</Text></View></View>;
+  return <View style={[styles.launchVisual,{borderColor:colors.border}]}><View style={styles.brandRow}><MeshMark size={22}/></View><View style={styles.launchCopy}><Text style={[styles.eyebrow,{color:'#FFFFFF'}]}>DISASTER ALERT / OFFLINE COORDINATION</Text><Text style={styles.launchTitle}>When the internet fails,{`\n`}Air-Mesh keeps you connected.</Text><Text style={styles.launchBody}>No cell towers, no infrastructure—only supported nearby routes when compatible devices can connect.</Text></View><View style={styles.launchStatus}><View style={styles.statusDot}/><Text style={styles.launchStatusText}>LOCAL DISASTER WORKSPACE</Text></View></View>;
 }
 
 export function HomePreparednessVisual({ colors }: { colors: OnboardingColors }) {
-  return <View style={[styles.homeVisual,{borderColor:colors.border}]}><View style={styles.homeTop}><MeshMark size={25}/><Text style={styles.homeIndex}>LOCAL STATUS</Text></View><View style={styles.homeCopy}><Text style={styles.homeTitle}>Private, local, and ready.</Text><Text style={styles.homeBody}>Messages remain on-device until a real nearby route is present.</Text></View></View>;
+  return <View style={[styles.homeVisual,{borderColor:colors.border}]}><View style={styles.homeTop}><MeshMark size={25}/><Text style={styles.homeIndex}>DISASTER COORDINATION</Text></View><View style={styles.homeCopy}><Text style={styles.homeTitle}>Local devices. Real routes. Clear status.</Text><Text style={styles.homeBody}>Alerts and messages stay on-device until a supported nearby route is present.</Text></View></View>;
 }
 
 function AccentPalette({ colors }: { colors: OnboardingColors }) {
@@ -30,7 +30,7 @@ export function SettingsProfileVisual({ colors, variant }: { colors: OnboardingC
 }
 
 export function BootstrapScreen({ colors }: { colors: OnboardingColors }) {
-  return <ScreenContainer edges={['top', 'bottom', 'left', 'right']}><View style={[styles.bootstrap,{backgroundColor:'#000000'}]}><MeshMark size={54}/><Text style={styles.bootstrapTitle}>airmesh</Text><Text style={[styles.bootstrapBody,{color:colors.muted}]}>Opening your local workspace</Text><View style={[styles.scanline,{backgroundColor:colors.border}]}><View style={styles.scanPulse}/></View></View></ScreenContainer>;
+  return <ScreenContainer edges={['top', 'bottom', 'left', 'right']}><View style={[styles.bootstrap,{backgroundColor:'#000000'}]}><MeshMark size={54}/><Text style={styles.bootstrapTitle}>airmesh</Text><Text style={[styles.bootstrapBody,{color:colors.muted}]}>Opening disaster coordination workspace</Text><View style={[styles.scanline,{backgroundColor:colors.border}]}><View style={styles.scanPulse}/></View></View></ScreenContainer>;
 }
 
 const styles = StyleSheet.create({
