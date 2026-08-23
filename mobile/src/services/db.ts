@@ -1,4 +1,4 @@
-import type { AuditLog, Chat, Contact, DatabaseService, DeliveryReceiptRecord, DeviceRecord, FileMetadata, Message, OutboxEnvelope, RelayQueueEnvelope, Report, RetryHistoryRecord, RoutingEntry } from '../types/security-data';
+import type { AuditLog, Chat, Contact, DatabaseService, DeliveryReceiptRecord, DeviceRecord, DisasterAlert, FileMetadata, Message, OutboxEnvelope, RelayQueueEnvelope, Report, RetryHistoryRecord, RoutingEntry } from '../types/security-data';
 
 export const USE_MOCK_DB = true;
 export function uuid(): string { return globalThis.crypto?.randomUUID?.() ?? `am-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -15,6 +15,7 @@ export class MemoryDatabase implements DatabaseService {
   private readonly retryHistory = new Map<string, RetryHistoryRecord>();
   private readonly chats = new Map<string, Chat>();
   private readonly reports = new Map<string, Report>();
+  private readonly alerts = new Map<string, DisasterAlert>();
   private readonly auditLogs = new Map<string, AuditLog>();
   private readonly routing = new Map<string, RoutingEntry>();
   private readonly files = new Map<string, FileMetadata>();
@@ -37,6 +38,9 @@ export class MemoryDatabase implements DatabaseService {
   async saveReport(value: Report): Promise<void> { this.ensure(); this.reports.set(value.id, { ...value, needs: [...value.needs] }); }
   async updateReportSyncStatus(ids: string[], status: Report['sync_status']): Promise<void> { this.ensure(); ids.forEach((id) => { const report = this.reports.get(id); if (report) this.reports.set(id, { ...report, sync_status: status }); }); }
   async getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]> { this.ensure(); return Array.from(this.reports.values()).filter((value) => !filter || Object.entries(filter).every(([key, expected]) => value[key as keyof Report] === expected)).map((value) => ({ ...value, needs: [...value.needs] })); }
+  async saveAlert(value: DisasterAlert): Promise<void> { this.ensure(); this.alerts.set(value.id, { ...value }); }
+  async listAlerts(filter?: Partial<Pick<DisasterAlert, 'status' | 'severity'>>): Promise<DisasterAlert[]> { this.ensure(); return Array.from(this.alerts.values()).filter((value) => !filter || Object.entries(filter).every(([key, expected]) => value[key as keyof DisasterAlert] === expected)).sort((a, b) => b.issued_at.localeCompare(a.issued_at)).map((value) => ({ ...value })); }
+  async acknowledgeAlert(alertId: string, acknowledgedAt: string): Promise<void> { this.ensure(); const current = this.alerts.get(alertId); if (current) this.alerts.set(alertId, { ...current, status: 'acknowledged', acknowledged_at: acknowledgedAt }); }
   async saveAuditLog(value: AuditLog): Promise<void> { this.ensure(); this.auditLogs.set(value.id, { ...value, details: { ...value.details } }); }
   async getAuditLogs(filter?: string): Promise<AuditLog[]> { this.ensure(); return Array.from(this.auditLogs.values()).filter((value) => !filter || value.action === filter).sort((a, b) => b.timestamp.localeCompare(a.timestamp)); }
   async updateRoutingTable(entries: RoutingEntry[]): Promise<void> { this.ensure(); entries.forEach((entry) => this.routing.set(entry.device_id, { ...entry })); }

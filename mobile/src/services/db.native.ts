@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
-import type { AuditLog, Chat, Contact, DatabaseService, DeliveryReceiptRecord, DeviceRecord, FileMetadata, Message, OutboxEnvelope, RelayQueueEnvelope, Report, RetryHistoryRecord, RoutingEntry } from '../types/security-data';
+import type { AuditLog, Chat, Contact, DatabaseService, DeliveryReceiptRecord, DeviceRecord, DisasterAlert, FileMetadata, Message, OutboxEnvelope, RelayQueueEnvelope, Report, RetryHistoryRecord, RoutingEntry } from '../types/security-data';
 
 const USE_MOCK_DB = process.env.EXPO_PUBLIC_USE_MOCK_DB === '1' || Platform.OS === 'web';
 
@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS delivery_receipts (message_id TEXT PRIMARY KEY, recip
 CREATE TABLE IF NOT EXISTS retry_history (id TEXT PRIMARY KEY, message_id TEXT NOT NULL, attempted_at TEXT NOT NULL, trigger TEXT NOT NULL, outcome TEXT NOT NULL, reason TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS chats (id TEXT PRIMARY KEY, type TEXT NOT NULL, name TEXT NOT NULL, member_ids TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS reports (id TEXT PRIMARY KEY, shelter_id TEXT NOT NULL, timestamp TEXT NOT NULL, people_count INTEGER NOT NULL, needs TEXT NOT NULL, notes TEXT NOT NULL, severity TEXT NOT NULL, status TEXT NOT NULL, sync_status TEXT NOT NULL, origin_device_id TEXT NOT NULL, location_latitude REAL, location_longitude REAL, location_accuracy_m REAL, location_captured_at TEXT, location_source TEXT);
+CREATE TABLE IF NOT EXISTS alerts (id TEXT PRIMARY KEY, title TEXT NOT NULL, summary TEXT NOT NULL, type TEXT NOT NULL, severity TEXT NOT NULL, source TEXT NOT NULL, issued_at TEXT NOT NULL, expires_at TEXT, status TEXT NOT NULL, origin_device_id TEXT NOT NULL, acknowledged_at TEXT);
 CREATE TABLE IF NOT EXISTS audit_logs (id TEXT PRIMARY KEY, device_id TEXT NOT NULL, timestamp TEXT NOT NULL, action TEXT NOT NULL, details TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS routing_table (device_id TEXT PRIMARY KEY, next_hop_id TEXT NOT NULL, hop_count INTEGER NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS files (id TEXT PRIMARY KEY, message_id TEXT NOT NULL, local_path TEXT NOT NULL, size INTEGER NOT NULL, checksum TEXT NOT NULL);
@@ -23,6 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_outbox_status_created ON outbox_envelopes(status,
 CREATE INDEX IF NOT EXISTS idx_relay_queue_status_created ON relay_queue(status, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_retry_history_message_attempted ON retry_history(message_id, attempted_at DESC);
 CREATE INDEX IF NOT EXISTS idx_reports_sync_status ON reports(sync_status, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_alerts_status_issued ON alerts(status, issued_at DESC);
 CREATE INDEX IF NOT EXISTS idx_contacts_last_seen ON contacts(last_seen DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_action_timestamp ON audit_logs(action, timestamp DESC);
 `;
@@ -41,6 +43,7 @@ class MemoryDatabase implements DatabaseService {
   private readonly retryHistory = new Map<string, RetryHistoryRecord>();
   private readonly chats = new Map<string, Chat>();
   private readonly reports = new Map<string, Report>();
+  private readonly alerts = new Map<string, DisasterAlert>();
   private readonly auditLogs = new Map<string, AuditLog>();
   private readonly routing = new Map<string, RoutingEntry>();
   private readonly files = new Map<string, FileMetadata>();
@@ -63,6 +66,9 @@ class MemoryDatabase implements DatabaseService {
   async saveReport(value: Report): Promise<void> { this.ensure(); this.reports.set(value.id, { ...value, needs: [...value.needs] }); }
   async updateReportSyncStatus(ids: string[], status: Report['sync_status']): Promise<void> { this.ensure(); ids.forEach((id) => { const report = this.reports.get(id); if (report) this.reports.set(id, { ...report, sync_status: status }); }); }
   async getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]> { this.ensure(); return Array.from(this.reports.values()).filter((value) => !filter || Object.entries(filter).every(([key, expected]) => value[key as keyof Report] === expected)).map((value) => ({ ...value, needs: [...value.needs] })); }
+  async saveAlert(value: DisasterAlert): Promise<void> { this.ensure(); this.alerts.set(value.id, { ...value }); }
+  async listAlerts(filter?: Partial<Pick<DisasterAlert, 'status' | 'severity'>>): Promise<DisasterAlert[]> { this.ensure(); return Array.from(this.alerts.values()).filter((value) => !filter || Object.entries(filter).every(([key, expected]) => value[key as keyof DisasterAlert] === expected)).sort((a, b) => b.issued_at.localeCompare(a.issued_at)).map((value) => ({ ...value })); }
+  async acknowledgeAlert(alertId: string, acknowledgedAt: string): Promise<void> { this.ensure(); const current = this.alerts.get(alertId); if (current) this.alerts.set(alertId, { ...current, status: 'acknowledged', acknowledged_at: acknowledgedAt }); }
   async saveAuditLog(value: AuditLog): Promise<void> { this.ensure(); this.auditLogs.set(value.id, { ...value, details: { ...value.details } }); }
   async getAuditLogs(filter?: string): Promise<AuditLog[]> { this.ensure(); return Array.from(this.auditLogs.values()).filter((value) => !filter || value.action === filter).sort((a, b) => b.timestamp.localeCompare(a.timestamp)); }
   async updateRoutingTable(entries: RoutingEntry[]): Promise<void> { this.ensure(); entries.forEach((entry) => this.routing.set(entry.device_id, { ...entry })); }
@@ -97,6 +103,9 @@ class SQLiteDatabaseService implements DatabaseService {
   async saveReport(value: Report): Promise<void> { const db = await this.db(); await db.runAsync('INSERT OR REPLACE INTO reports (id, shelter_id, timestamp, people_count, needs, notes, severity, status, sync_status, origin_device_id, location_latitude, location_longitude, location_accuracy_m, location_captured_at, location_source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', value.id, value.shelter_id, value.timestamp, value.people_count, value.needs.join(','), value.notes, value.severity, value.status, value.sync_status, value.origin_device_id, value.location?.latitude ?? null, value.location?.longitude ?? null, value.location?.accuracy_m ?? null, value.location?.captured_at ?? null, value.location?.source ?? null); }
   async updateReportSyncStatus(ids: string[], status: Report['sync_status']): Promise<void> { if (!ids.length) return; const db = await this.db(); const placeholders = ids.map(() => '?').join(','); await db.runAsync(`UPDATE reports SET sync_status = ? WHERE id IN (${placeholders})`, status, ...ids); }
   async getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]> { const db = await this.db(); const where = Object.keys(filter ?? {}); const values = Object.values(filter ?? {}); const columns = { status: 'status', sync_status: 'sync_status', shelter_id: 'shelter_id' } as const; const clause = where.length ? ` WHERE ${where.map((key) => `${columns[key as keyof typeof columns]} = ?`).join(' AND ')}` : ''; const rows = await db.getAllAsync<Omit<Report, 'needs' | 'location'> & { needs: string; location_latitude: number | null; location_longitude: number | null; location_accuracy_m: number | null; location_captured_at: string | null; location_source: 'device' | null }>(`SELECT * FROM reports${clause} ORDER BY timestamp DESC`, ...values); return rows.map(({ location_latitude, location_longitude, location_accuracy_m, location_captured_at, location_source, ...row }) => ({ ...row, needs: row.needs ? row.needs.split(',').filter(Boolean) : [], ...(location_latitude !== null && location_longitude !== null && location_captured_at && location_source ? { location: { latitude: location_latitude, longitude: location_longitude, accuracy_m: location_accuracy_m, captured_at: location_captured_at, source: location_source } } : {}) })); }
+  async saveAlert(value: DisasterAlert): Promise<void> { const db = await this.db(); await db.runAsync('INSERT OR REPLACE INTO alerts (id, title, summary, type, severity, source, issued_at, expires_at, status, origin_device_id, acknowledged_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', value.id, value.title, value.summary, value.type, value.severity, value.source, value.issued_at, value.expires_at, value.status, value.origin_device_id, value.acknowledged_at); }
+  async listAlerts(filter?: Partial<Pick<DisasterAlert, 'status' | 'severity'>>): Promise<DisasterAlert[]> { const db = await this.db(); const where = Object.keys(filter ?? {}); const values = Object.values(filter ?? {}); const columns = { status: 'status', severity: 'severity' } as const; const clause = where.length ? ` WHERE ${where.map((key) => `${columns[key as keyof typeof columns]} = ?`).join(' AND ')}` : ''; return db.getAllAsync<DisasterAlert>(`SELECT * FROM alerts${clause} ORDER BY issued_at DESC`, ...values); }
+  async acknowledgeAlert(alertId: string, acknowledgedAt: string): Promise<void> { const db = await this.db(); await db.runAsync("UPDATE alerts SET status = 'acknowledged', acknowledged_at = ? WHERE id = ?", acknowledgedAt, alertId); }
   async saveAuditLog(value: AuditLog): Promise<void> { const db = await this.db(); await db.runAsync('INSERT OR REPLACE INTO audit_logs (id, device_id, timestamp, action, details) VALUES (?, ?, ?, ?, ?)', value.id, value.device_id, value.timestamp, value.action, JSON.stringify(value.details)); }
   async getAuditLogs(filter?: string): Promise<AuditLog[]> { const db = await this.db(); const rows = filter ? await db.getAllAsync<Omit<AuditLog, 'details'> & { details: string }>('SELECT * FROM audit_logs WHERE action = ? ORDER BY timestamp DESC', filter) : await db.getAllAsync<Omit<AuditLog, 'details'> & { details: string }>('SELECT * FROM audit_logs ORDER BY timestamp DESC'); return rows.map((row) => ({ ...row, details: JSON.parse(row.details || '{}') })); }
   async updateRoutingTable(entries: RoutingEntry[]): Promise<void> { const db = await this.db(); await db.withTransactionAsync(async () => { for (const entry of entries) await db.runAsync('INSERT OR REPLACE INTO routing_table (device_id, next_hop_id, hop_count, updated_at) VALUES (?, ?, ?, ?)', entry.device_id, entry.next_hop_id, entry.hop_count, entry.updated_at); }); }

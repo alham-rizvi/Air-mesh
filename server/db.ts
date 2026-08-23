@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { disasterAlerts, InsertDisasterAlertRow, InsertUser, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,14 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function createDisasterAlert(alert: InsertDisasterAlertRow): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Server alert storage is unavailable.");
+  await db.insert(disasterAlerts).values(alert);
+}
+
+export async function listDisasterAlerts(limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(disasterAlerts).orderBy(desc(disasterAlerts.issuedAt)).limit(limit);
+}

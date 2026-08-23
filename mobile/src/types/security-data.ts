@@ -4,6 +4,9 @@ export type OutboxStatus = 'queued' | 'sent';
 export type ChatType = 'direct' | 'group' | 'broadcast';
 export type ReportSyncStatus = 'local' | 'synced_to_courier' | 'synced_to_base';
 export type ReportSeverity = 'low' | 'medium' | 'high';
+export type AlertSeverity = 'critical' | 'high' | 'moderate' | 'low';
+export type AlertSource = 'local_report' | 'controlled_publisher' | 'mesh_relay';
+export type AlertStatus = 'active' | 'acknowledged' | 'expired';
 
 export interface RescueLocation { latitude: number; longitude: number; accuracy_m: number | null; captured_at: string; source: 'device'; }
 
@@ -17,6 +20,7 @@ export interface DeliveryReceiptRecord { message_id: string; recipient_id: strin
 export interface RetryHistoryRecord { id: string; message_id: string; attempted_at: string; trigger: 'automatic' | 'manual'; outcome: 'accepted' | 'queued' | 'skipped'; reason: string; }
 export interface Chat { id: string; type: ChatType; name: string; member_ids: string[]; created_at: string; }
 export interface Report { id: string; shelter_id: string; timestamp: string; people_count: number; needs: string[]; notes: string; severity: ReportSeverity; status: 'active' | 'resolved'; sync_status: ReportSyncStatus; origin_device_id: string; location?: RescueLocation; }
+export interface DisasterAlert { id: string; title: string; summary: string; type: string; severity: AlertSeverity; source: AlertSource; issued_at: string; expires_at: string | null; status: AlertStatus; origin_device_id: string; acknowledged_at: string | null; }
 export interface AuditLog { id: string; device_id: string; timestamp: string; action: string; details: Record<string, unknown>; }
 export interface RoutingEntry { device_id: string; next_hop_id: string; hop_count: number; updated_at: string; }
 export interface FileMetadata { id: string; message_id: string; local_path: string; size: number; checksum: string; }
@@ -42,6 +46,9 @@ export interface DatabaseService {
   saveReport(report: Report): Promise<void>;
   getReports(filter?: Partial<Pick<Report, 'status' | 'sync_status' | 'shelter_id'>>): Promise<Report[]>;
   updateReportSyncStatus(ids: string[], status: ReportSyncStatus): Promise<void>;
+  saveAlert(alert: DisasterAlert): Promise<void>;
+  listAlerts(filter?: Partial<Pick<DisasterAlert, 'status' | 'severity'>>): Promise<DisasterAlert[]>;
+  acknowledgeAlert(alertId: string, acknowledgedAt: string): Promise<void>;
   saveAuditLog(log: AuditLog): Promise<void>;
   getAuditLogs(filter?: string): Promise<AuditLog[]>;
   updateRoutingTable(entries: RoutingEntry[]): Promise<void>;

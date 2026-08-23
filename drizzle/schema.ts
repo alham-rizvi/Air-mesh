@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -25,4 +25,18 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+export const disasterAlerts = mysqlTable("disaster_alerts", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  title: varchar("title", { length: 180 }).notNull(),
+  summary: text("summary").notNull(),
+  type: varchar("type", { length: 80 }).notNull(),
+  severity: mysqlEnum("severity", ["critical", "high", "moderate", "low"]).notNull(),
+  source: mysqlEnum("source", ["controlled_publisher", "local_report", "mesh_relay"]).notNull(),
+  issuedAt: timestamp("issued_at").notNull(),
+  expiresAt: timestamp("expires_at"),
+  originDeviceId: varchar("origin_device_id", { length: 128 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [index("idx_disaster_alerts_issued").on(table.issuedAt), index("idx_disaster_alerts_severity").on(table.severity)]);
+
+export type DisasterAlertRow = typeof disasterAlerts.$inferSelect;
+export type InsertDisasterAlertRow = typeof disasterAlerts.$inferInsert;
