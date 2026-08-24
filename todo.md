@@ -313,3 +313,6 @@
 - [x] Add compact status filters and a multi-field search bar to the Alerts Dashboard
 - [x] Add deterministic search/filter regression coverage for alert records
 - [x] Verify and checkpoint the Alerts Dashboard discovery controls
+- [x] Make disaster-alert management the primary navigation and move Chat to the second-to-last destination
+- [x] Create a grounded disaster-response feature specification with architecture diagrams, UI flows, roadmap, and demo scripts
+- [x] Add navigation coverage, run cross-stack verification, and checkpoint the disaster-alert prioritization update

@@ -97,9 +97,9 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
         <View><Text style={[styles.brand, { color: colors.text }]}>Air-Mesh</Text><Text style={[styles.micro, { color: colors.accent }]}>LOCAL ALERTS</Text></View>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.kicker, { color: colors.accent }]}>DISASTER ALERT / OFFLINE COORDINATION</Text>
-        <Text style={[styles.title, { color: colors.text }]}>Alerts that stay{`\n`}with your device.</Text>
-        <Text style={[styles.body, { color: colors.muted }]}>Local alert records are available offline. This build has no live official-feed connection; a controlled publisher endpoint is configured separately.</Text>
+        <Text style={[styles.kicker, { color: colors.accent }]}>PRIMARY WORKSPACE · DISASTER ALERT MANAGEMENT</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Manage alerts{`\n`}when networks fail.</Text>
+        <Text style={[styles.body, { color: colors.muted }]}>Review, search, acknowledge, and retain local alert records offline. This build has no live official-feed connection; a controlled publisher endpoint is configured separately.</Text>
         <Text style={[styles.section, { color: colors.muted, marginTop: 18 }]}>ALERT TYPES</Text>
         <Text style={[styles.caption, { color: colors.muted }]}>Choose which controlled alert types may raise an in-app banner or native notification while Air-Mesh is active.</Text>
         <View style={styles.categoryGrid}>{ALERT_CATEGORIES.map((category) => <Pressable key={category} onPress={() => void toggleCategory(category)} style={({ pressed }) => [styles.category, { borderColor: categories.includes(category) ? colors.accent : colors.border, backgroundColor: categories.includes(category) ? colors.accent : "transparent", opacity: pressed ? 0.75 : 1 }]}><Text style={[styles.categoryText, { color: categories.includes(category) ? (colors.onAccent ?? "#000") : colors.text }]}>{category}</Text></Pressable>)}</View>
