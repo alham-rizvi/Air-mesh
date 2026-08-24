@@ -336,3 +336,7 @@
 - [x] Diagnose and remove the native font-loader startup timeout
 - [x] Preserve safe display typography using a non-blocking native fallback strategy
 - [x] Add startup safety coverage, run verification, and checkpoint the crash fix
+- [x] Inspect GitHub main, release tags, and Android workflow state after the native crash fix
+- [x] Synchronize the latest verified source to GitHub main
+- [x] Record the managed Android release-build handoff without overwriting an existing release
+- [x] Prepare the next non-conflicting Android version for the managed release build
