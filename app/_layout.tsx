@@ -1,7 +1,6 @@
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -35,9 +34,6 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    ArchivoExpanded: require("@/assets/fonts/ArchivoExpanded-ExtraBold.ttf"),
-  });
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
   const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
 
@@ -95,8 +91,6 @@ export default function RootLayout() {
       },
     };
   }, [initialInsets, initialFrame]);
-
-  if (!fontsLoaded && !fontError) return null;
 
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -333,3 +333,6 @@
 - [x] Repair any concrete alert integration or filter gaps found in the audit
 - [x] Refine Alerts command blocks with minimal glass styling and remote-image fallback behavior
 - [x] Add regressions, run full verification, and checkpoint the live-alert refinement
+- [x] Diagnose and remove the native font-loader startup timeout
+- [x] Preserve safe display typography using a non-blocking native fallback strategy
+- [x] Add startup safety coverage, run verification, and checkpoint the crash fix

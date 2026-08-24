@@ -93,6 +93,19 @@ const config: ExpoConfig = {
       "expo-font",
       {
         fonts: ["./assets/fonts/ArchivoExpanded-ExtraBold.ttf"],
+        android: {
+          fonts: [
+            {
+              fontFamily: "ArchivoExpanded",
+              fontDefinitions: [
+                {
+                  path: "./assets/fonts/ArchivoExpanded-ExtraBold.ttf",
+                  weight: 800,
+                },
+              ],
+            },
+          ],
+        },
       },
     ],
     "expo-sqlite",
