@@ -1,4 +1,4 @@
-import { Alert, ImageBackground, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Animated, ImageBackground, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -17,6 +17,21 @@ const ALERT_COMMAND_HERO = { uri: "https://images.unsplash.com/photo-17584049585
 
 function severityColor(severity: DisasterAlert["severity"], accent: string) {
   return severity === "critical" ? "#FF5964" : severity === "high" ? "#FFB34D" : severity === "moderate" ? "#EACB5B" : accent;
+}
+
+function GlassMetricBlock({ label, value, valueColor, colors }: { label: string; value: string; valueColor: string; colors: Colors }) {
+  const interaction = useRef(new Animated.Value(0)).current;
+  const animateTo = (toValue: number, duration = 150) => {
+    Animated.timing(interaction, { toValue, duration, useNativeDriver: true }).start();
+  };
+  const transform = [{ scale: interaction.interpolate({ inputRange: [0, 1], outputRange: [1, 1.018] }) }, { translateY: interaction.interpolate({ inputRange: [0, 1], outputRange: [0, -2] }) }];
+
+  return <Pressable accessibilityLabel={`${label}: ${value}`} onHoverIn={() => animateTo(1)} onHoverOut={() => animateTo(0)} onFocus={() => animateTo(1)} onBlur={() => animateTo(0)} onPressIn={() => animateTo(0.55, 90)} onPressOut={() => animateTo(0)} style={styles.glassPressable}>
+    <Animated.View style={[styles.glassBlock, styles.glassSurface, { borderColor: "rgba(255,255,255,0.16)", backgroundColor: "rgba(255,255,255,0.065)", transform }]}>
+      <Text style={[styles.glassLabel, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>{label}</Text>
+      <Text style={[label === "SOURCE" ? styles.glassSource : styles.glassValue, { color: valueColor, fontFamily: DISPLAY_FONT }]}>{value}</Text>
+    </Animated.View>
+  </Pressable>;
 }
 
 export function AlertsCenter({ colors }: { colors: Colors }) {
@@ -120,9 +135,9 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
 
         <View style={[styles.commandLine, styles.glassSurface, { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.065)" }]}><View style={[styles.commandIcon, { backgroundColor: active.length ? severityColor(active[0].severity, colors.accent) : "rgba(255,255,255,0.08)" }]}><MaterialIcons name={active.length ? "notification-important" : "verified-user"} size={18} color={active.length ? "#000" : colors.accent} /></View><View style={{ flex: 1 }}><Text style={[styles.micro, { color: active.length ? severityColor(active[0].severity, colors.accent) : colors.accent, fontFamily: DISPLAY_FONT }]}>{active.length ? `${active.length} ACTION REQUIRED` : "SYSTEM READY"}</Text><Text style={[styles.commandText, { color: colors.text }]}>{active.length ? "Local alerts need a review." : "No local alert needs action."}</Text></View><Text style={[styles.commandTime, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>{remoteAlerts.isFetching ? "SYNCING" : "LOCAL"}</Text></View>
         <View style={styles.glassGrid}>
-          <View style={[styles.glassBlock, styles.glassSurface, { borderColor: "rgba(255,255,255,0.16)", backgroundColor: "rgba(255,255,255,0.065)" }]}><Text style={[styles.glassLabel, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>ACTIVE</Text><Text style={[styles.glassValue, { color: colors.text, fontFamily: DISPLAY_FONT }]}>{active.length.toString().padStart(2, "0")}</Text></View>
-          <View style={[styles.glassBlock, styles.glassSurface, { borderColor: "rgba(255,255,255,0.16)", backgroundColor: "rgba(255,255,255,0.065)" }]}><Text style={[styles.glassLabel, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>CHANNELS</Text><Text style={[styles.glassValue, { color: colors.text, fontFamily: DISPLAY_FONT }]}>{categories.length.toString().padStart(2, "0")}</Text></View>
-          <View style={[styles.glassBlock, styles.glassSurface, { borderColor: "rgba(255,255,255,0.16)", backgroundColor: "rgba(255,255,255,0.065)" }]}><Text style={[styles.glassLabel, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>SOURCE</Text><Text style={[styles.glassSource, { color: remoteAlerts.isError ? "#FFB34D" : colors.accent, fontFamily: DISPLAY_FONT }]}>{remoteAlerts.isError ? "LOCAL" : "READY"}</Text></View>
+          <GlassMetricBlock label="ACTIVE" value={active.length.toString().padStart(2, "0")} valueColor={colors.text} colors={colors} />
+          <GlassMetricBlock label="CHANNELS" value={categories.length.toString().padStart(2, "0")} valueColor={colors.text} colors={colors} />
+          <GlassMetricBlock label="SOURCE" value={remoteAlerts.isError ? "LOCAL" : "READY"} valueColor={remoteAlerts.isError ? "#FFB34D" : colors.accent} colors={colors} />
         </View>
 
         <Text style={[styles.section, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>ALERT CHANNELS</Text>
@@ -164,9 +179,9 @@ const styles = StyleSheet.create({
   logo: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center", borderWidth: 1 },
   brand: { fontSize: 18, fontWeight: "900", letterSpacing: -0.7 }, micro: { fontSize: 10, fontWeight: "900", letterSpacing: 1.15 }, menuButton: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 1 },
   content: { padding: 18, paddingBottom: 32 }, hero: { minHeight: 260, borderRadius: 22, overflow: "hidden", borderWidth: 1, marginTop: 2 }, heroImage: { opacity: 0.74, resizeMode: "cover" }, hiddenHeroImage: { opacity: 0 }, heroShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.4)" }, heroContent: { flex: 1, minHeight: 260, justifyContent: "space-between", padding: 18 }, heroEyebrow: { alignSelf: "flex-start", flexDirection: "row", gap: 7, alignItems: "center", borderWidth: 1, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 6, backgroundColor: "rgba(0,0,0,0.55)" }, pulse: { width: 7, height: 7, borderRadius: 4 }, heroEyebrowText: { color: "#FFFFFF", fontSize: 9, fontWeight: "900", letterSpacing: 1 }, heroTitle: { color: "#FFFFFF", fontSize: 39, lineHeight: 38, fontWeight: "900", letterSpacing: -1.6, marginTop: 16 }, heroCopy: { color: "#D1D7CB", fontSize: 13, lineHeight: 19, maxWidth: "76%", marginTop: 12 }, heroFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  glassSurface: { shadowColor: "#000000", shadowOpacity: 0.28, shadowRadius: 14, shadowOffset: { width: 0, height: 7 }, elevation: 4 }, commandLine: { minHeight: 68, borderRadius: 16, borderWidth: 1, padding: 12, marginTop: 14, flexDirection: "row", alignItems: "center", gap: 10 }, commandIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" }, commandText: { fontSize: 13, fontWeight: "800", marginTop: 2 }, commandTime: { fontSize: 9, fontWeight: "900", letterSpacing: 0.7 },
+  glassSurface: { boxShadow: "0px 7px 14px rgba(0, 0, 0, 0.28)", elevation: 4 }, commandLine: { minHeight: 68, borderRadius: 16, borderWidth: 1, padding: 12, marginTop: 14, flexDirection: "row", alignItems: "center", gap: 10 }, commandIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" }, commandText: { fontSize: 13, fontWeight: "800", marginTop: 2 }, commandTime: { fontSize: 9, fontWeight: "900", letterSpacing: 0.7 },
   status: { borderWidth: 1, borderRadius: 16, padding: 14, marginTop: 18, flexDirection: "row", alignItems: "center", gap: 11 }, statusIcon: { width: 42, height: 42, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  glassGrid: { flexDirection: "row", gap: 8, marginTop: 10 }, glassBlock: { flex: 1, minHeight: 76, borderWidth: 1, borderRadius: 15, padding: 10, justifyContent: "space-between" }, glassLabel: { fontSize: 8, fontWeight: "900", letterSpacing: 0.7 }, glassValue: { fontSize: 23, lineHeight: 24, fontWeight: "900", letterSpacing: -0.8 }, glassSource: { fontSize: 12, lineHeight: 16, fontWeight: "900", letterSpacing: -0.2 },
+  glassGrid: { flexDirection: "row", gap: 8, marginTop: 10 }, glassPressable: { flex: 1 }, glassBlock: { flex: 1, minHeight: 76, borderWidth: 1, borderRadius: 15, padding: 10, justifyContent: "space-between" }, glassLabel: { fontSize: 8, fontWeight: "900", letterSpacing: 0.7 }, glassValue: { fontSize: 23, lineHeight: 24, fontWeight: "900", letterSpacing: -0.8 }, glassSource: { fontSize: 12, lineHeight: 16, fontWeight: "900", letterSpacing: -0.2 },
   caption: { fontSize: 12, lineHeight: 17 }, categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 }, category: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 11, paddingVertical: 8 }, categoryText: { fontSize: 12, fontWeight: "800", textTransform: "capitalize" }, actions: { flexDirection: "row", gap: 9, marginTop: 14 }, primary: { flex: 1, height: 43, borderRadius: 13, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }, primaryText: { fontSize: 13, fontWeight: "900" }, secondary: { flex: 1, height: 43, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }, secondaryText: { fontSize: 13, fontWeight: "800" },
   section: { fontSize: 10, fontWeight: "900", letterSpacing: 1.25, marginTop: 22, marginBottom: 9 }, empty: { minHeight: 130, borderWidth: 1, borderRadius: 16, alignItems: "center", justifyContent: "center", gap: 7, padding: 18 }, emptyTitle: { fontSize: 14, fontWeight: "800" },
   alert: { borderWidth: 1, borderRadius: 16, padding: 14, marginBottom: 10, flexDirection: "row", gap: 10 }, dot: { width: 8, height: 8, borderRadius: 4, marginTop: 5 }, alertTitle: { fontSize: 15, fontWeight: "800", marginTop: 4, marginBottom: 4 }, ack: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 5, marginTop: 9 }, ackText: { fontSize: 12, fontWeight: "800" },

@@ -336,7 +336,13 @@
 - [x] Diagnose and remove the native font-loader startup timeout
 - [x] Preserve safe display typography using a non-blocking native fallback strategy
 - [x] Add startup safety coverage, run verification, and checkpoint the crash fix
-- [ ] Inspect GitHub main, release tags, and Android workflow state after the native crash fix
-- [ ] Synchronize the latest verified source to GitHub main
-- [ ] Record the managed Android release-build handoff without overwriting an existing release
-- [ ] Prepare the next non-conflicting Android version for the managed release build
+- [x] Inspect GitHub main, release tags, and Android workflow state after the native crash fix
+- [x] Synchronize the latest verified source to GitHub main
+- [x] Record the managed Android release-build handoff without overwriting an existing release
+- [x] Prepare the next non-conflicting Android version for the managed release build
+- [x] Add subtle hover, press, focus, and transition feedback to glass command blocks
+- [x] Add interaction regression coverage and verify the glass animation refinement
+- [x] Add live-alert urgency filters and stable sorting options for critical updates
+- [x] Integrate concise alert filter and sort controls into the Alerts Dashboard
+- [x] Add filter-sort regression coverage, verify the workflow, and checkpoint the enhancement
+- [ ] Synchronize the complete latest verified source tree to GitHub main and confirm the commit
