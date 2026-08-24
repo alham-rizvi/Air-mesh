@@ -40,7 +40,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.5.2",
+  version: "1.5.3",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -49,6 +49,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
+    buildNumber: "153",
     "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -61,6 +62,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
+    versionCode: 153,
     permissions: ["POST_NOTIFICATIONS", "ACCESS_FINE_LOCATION", "ACCESS_WIFI_STATE", "CHANGE_WIFI_STATE", "CHANGE_NETWORK_STATE", "INTERNET", "BLUETOOTH_SCAN", "BLUETOOTH_CONNECT", "BLUETOOTH_ADVERTISE", "NEARBY_WIFI_DEVICES"],
     intentFilters: [
       {
