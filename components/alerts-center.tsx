@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertsDashboard } from "@/components/alerts-dashboard";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
+import { DISPLAY_FONT } from "@/lib/typography";
 import { acknowledgeLocalAlert, createLocalAlert, listLocalAlerts, mirrorControlledAlert, subscribeToAlerts } from "@/mobile/src/services/alert-service";
 import { notifyLocalAlert, requestLocalAlertPermission } from "@/mobile/src/services/alert-notifier";
 import { ALERT_CATEGORIES, loadAlertCategories, saveAlertCategories, type AlertCategory } from "@/mobile/src/services/alert-preferences";
@@ -102,23 +103,23 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
       <View style={[styles.header, { borderBottomColor: colors.border }]}> 
         <View style={[styles.logo, { borderColor: colors.accent }]}><MaterialIcons name="warning-amber" size={18} color={colors.accent} /></View>
-        <View style={{ flex: 1 }}><Text style={[styles.brand, { color: colors.text }]}>Air-Mesh</Text><Text style={[styles.micro, { color: colors.accent }]}>ALERT COMMAND</Text></View>
+        <View style={{ flex: 1 }}><Text style={[styles.brand, { color: colors.text, fontFamily: DISPLAY_FONT }]}>Air-Mesh</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>ALERT COMMAND</Text></View>
         <Pressable accessibilityRole="button" accessibilityLabel="Open Air-Mesh menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <ImageBackground source={{ uri: ALERT_COMMAND_HERO }} imageStyle={styles.heroImage} style={[styles.hero, { borderColor: colors.border, backgroundColor: "#050605" }]}>
           <View style={styles.heroShade} />
           <View style={styles.heroContent}>
-            <View style={[styles.heroEyebrow, { borderColor: "rgba(255,255,255,0.2)" }]}><View style={[styles.pulse, { backgroundColor: colors.accent }]} /><Text style={styles.heroEyebrowText}>DISASTER RESPONSE SYSTEM</Text></View>
-            <Text style={styles.heroTitle}>TRIAGE{`\n`}THE SIGNAL.</Text>
+            <View style={[styles.heroEyebrow, { borderColor: "rgba(255,255,255,0.2)" }]}><View style={[styles.pulse, { backgroundColor: colors.accent }]} /><Text style={[styles.heroEyebrowText, { fontFamily: DISPLAY_FONT }]}>DISASTER RESPONSE SYSTEM</Text></View>
+            <Text style={[styles.heroTitle, { fontFamily: DISPLAY_FONT }]}>TRIAGE{`\n`}THE SIGNAL.</Text>
             <Text style={styles.heroCopy}>Review incoming notices, set device preferences, and retain your response record when networks fail.</Text>
-            <View style={styles.heroFooter}><Text style={[styles.micro, { color: colors.accent }]}>LOCAL-FIRST · AUDITABLE</Text><MaterialIcons name="arrow-downward" size={16} color="#FFFFFF" /></View>
+            <View style={styles.heroFooter}><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>LOCAL-FIRST · AUDITABLE</Text><MaterialIcons name="arrow-downward" size={16} color="#FFFFFF" /></View>
           </View>
         </ImageBackground>
 
-        <View style={[styles.commandLine, { borderColor: colors.border, backgroundColor: colors.surface }]}><View style={[styles.commandIcon, { backgroundColor: active.length ? severityColor(active[0].severity, colors.accent) : colors.field }]}><MaterialIcons name={active.length ? "notification-important" : "verified-user"} size={18} color={active.length ? "#000" : colors.accent} /></View><View style={{ flex: 1 }}><Text style={[styles.micro, { color: active.length ? severityColor(active[0].severity, colors.accent) : colors.accent }]}>{active.length ? `${active.length} ACTION REQUIRED` : "SYSTEM READY"}</Text><Text style={[styles.commandText, { color: colors.text }]}>{active.length ? "Local alerts need a review." : "No local alert needs action."}</Text></View><Text style={[styles.commandTime, { color: colors.muted }]}>{remoteAlerts.isFetching ? "SYNCING" : "LOCAL"}</Text></View>
+        <View style={[styles.commandLine, { borderColor: colors.border, backgroundColor: colors.surface }]}><View style={[styles.commandIcon, { backgroundColor: active.length ? severityColor(active[0].severity, colors.accent) : colors.field }]}><MaterialIcons name={active.length ? "notification-important" : "verified-user"} size={18} color={active.length ? "#000" : colors.accent} /></View><View style={{ flex: 1 }}><Text style={[styles.micro, { color: active.length ? severityColor(active[0].severity, colors.accent) : colors.accent, fontFamily: DISPLAY_FONT }]}>{active.length ? `${active.length} ACTION REQUIRED` : "SYSTEM READY"}</Text><Text style={[styles.commandText, { color: colors.text }]}>{active.length ? "Local alerts need a review." : "No local alert needs action."}</Text></View><Text style={[styles.commandTime, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>{remoteAlerts.isFetching ? "SYNCING" : "LOCAL"}</Text></View>
 
-        <Text style={[styles.section, { color: colors.muted }]}>ALERT CHANNELS</Text>
+        <Text style={[styles.section, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>ALERT CHANNELS</Text>
         <Text style={[styles.caption, { color: colors.muted }]}>Choose which controlled alert types can raise an in-app banner or native notification while Air-Mesh is active.</Text>
         <View style={styles.categoryGrid}>{ALERT_CATEGORIES.map((category) => <Pressable key={category} onPress={() => void toggleCategory(category)} style={({ pressed }) => [styles.category, { borderColor: categories.includes(category) ? colors.accent : colors.border, backgroundColor: categories.includes(category) ? colors.accent : "transparent", opacity: pressed ? 0.75 : 1 }]}><Text style={[styles.categoryText, { color: categories.includes(category) ? (colors.onAccent ?? "#000") : colors.text }]}>{category}</Text></Pressable>)}</View>
 
@@ -139,7 +140,7 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
         <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
           <Pressable style={[styles.menuSheet, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => undefined}>
-            <View style={styles.menuSheetTop}><View><Text style={[styles.menuTitle, { color: colors.text }]}>AIR-MESH</Text><Text style={[styles.micro, { color: colors.accent }]}>COMMAND MENU</Text></View><Pressable accessibilityLabel="Close menu" onPress={() => setMenuOpen(false)} style={styles.closeMenu}><MaterialIcons name="close" size={22} color={colors.muted} /></Pressable></View>
+            <View style={styles.menuSheetTop}><View><Text style={[styles.menuTitle, { color: colors.text, fontFamily: DISPLAY_FONT }]}>AIR-MESH</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>COMMAND MENU</Text></View><Pressable accessibilityLabel="Close menu" onPress={() => setMenuOpen(false)} style={styles.closeMenu}><MaterialIcons name="close" size={22} color={colors.muted} /></Pressable></View>
             <Text style={[styles.menuIntro, { color: colors.muted }]}>Local-first alert management and disaster coordination support.</Text>
             <Pressable onPress={() => openSupportLink("https://github.com/alham-rizvi/Air-mesh")} style={[styles.menuItem, { borderBottomColor: colors.border }]}><MaterialIcons name="account-tree" size={20} color={colors.accent} /><View style={{ flex: 1 }}><Text style={[styles.menuItemTitle, { color: colors.text }]}>Project</Text><Text style={[styles.caption, { color: colors.muted }]}>Review source and project status.</Text></View><MaterialIcons name="north-east" size={18} color={colors.muted} /></Pressable>
             <Pressable onPress={() => openSupportLink("https://github.com/alham-rizvi/Air-mesh/issues")} style={[styles.menuItem, { borderBottomColor: colors.border }]}><MaterialIcons name="support-agent" size={20} color={colors.accent} /><View style={{ flex: 1 }}><Text style={[styles.menuItemTitle, { color: colors.text }]}>Contact support</Text><Text style={[styles.caption, { color: colors.muted }]}>Open an issue with diagnostic details.</Text></View><MaterialIcons name="north-east" size={18} color={colors.muted} /></Pressable>

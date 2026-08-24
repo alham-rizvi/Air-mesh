@@ -320,3 +320,6 @@
 - [x] Make the three-line menu unmistakable and verify its support, project, and service links
 - [x] Audit and strengthen concrete backend alert-service gaps without claiming unavailable providers or hardware delivery
 - [x] Add regression coverage, run cross-stack verification, and checkpoint the alert-command experience
+- [x] Bundle and configure Archivo Expanded for native and web rendering
+- [x] Apply Archivo Expanded to alert-command display text and navigation headings with readable body fallback
+- [x] Verify and checkpoint the branded typography update

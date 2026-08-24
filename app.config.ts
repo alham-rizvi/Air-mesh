@@ -89,7 +89,12 @@ const config: ExpoConfig = {
     "expo-notifications",
     "expo-document-picker",
     "expo-asset",
-    "expo-font",
+    [
+      "expo-font",
+      {
+        fonts: ["./assets/fonts/ArchivoExpanded-ExtraBold.ttf"],
+      },
+    ],
     "expo-sqlite",
     "expo-web-browser",
     "react-native-quick-crypto",
