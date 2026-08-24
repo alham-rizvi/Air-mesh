@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { vi } from 'vitest';
 import { database } from '../mobile/src/services/db';
-import { acknowledgeLocalAlert, createLocalAlert, listLocalAlerts, mirrorControlledAlert, subscribeToAlerts } from '../mobile/src/services/alert-service';
+import { acknowledgeLocalAlert, createLocalAlert, listLocalAlerts, mirrorControlledAlert, mirrorControlledAlerts, subscribeToAlerts } from '../mobile/src/services/alert-service';
 import { dashboardAlertState, filterDashboardAlerts } from '../mobile/src/services/alert-dashboard-state';
 
 describe('local disaster alerts', () => {
@@ -34,6 +35,20 @@ describe('local disaster alerts', () => {
     await acknowledgeLocalAlert(record.id);
     await mirrorControlledAlert(record);
     expect((await listLocalAlerts()).find((entry) => entry.id === record.id)?.status).toBe('acknowledged');
+  });
+
+  it('mirrors a controlled refresh with one local read while preserving an acknowledged record', async () => {
+    const preserved = { id: 'controlled-batch-preserved', title: 'Old controlled notice', summary: 'Existing controlled record.', type: 'safety' as const, severity: 'high' as const, source: 'controlled_publisher' as const, issued_at: '2026-08-24T00:00:00.000Z', expires_at: null, status: 'active' as const, origin_device_id: 'publisher-2', acknowledged_at: null };
+    await mirrorControlledAlert(preserved);
+    await acknowledgeLocalAlert(preserved.id);
+    const list = vi.spyOn(database, 'listAlerts');
+    await mirrorControlledAlerts([
+      { ...preserved, title: 'Updated controlled notice', summary: 'Publisher refresh must retain local acknowledgement.' },
+      { ...preserved, id: 'controlled-batch-new', title: 'New controlled notice', origin_device_id: 'publisher-3' },
+    ]);
+    expect(list).toHaveBeenCalledTimes(1);
+    expect((await listLocalAlerts()).find((entry) => entry.id === preserved.id)).toMatchObject({ title: 'Updated controlled notice', status: 'acknowledged' });
+    expect((await listLocalAlerts()).some((entry) => entry.id === 'controlled-batch-new')).toBe(true);
   });
 
   it('classifies dashboard records as active, acknowledged, or expired deterministically', () => {

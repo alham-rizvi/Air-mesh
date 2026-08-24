@@ -43,17 +43,31 @@ export async function listLocalAlerts(): Promise<DisasterAlert[]> {
 }
 
 export async function mirrorControlledAlert(alert: DisasterAlert): Promise<DisasterAlert> {
-  const existing = (await database.listAlerts()).find((entry) => entry.id === alert.id);
-  const next: DisasterAlert = {
-    ...alert,
-    status: existing?.status ?? 'active',
-    acknowledged_at: existing?.acknowledged_at ?? null,
-  };
-  await database.saveAlert(next);
-  if (!existing) {
-    await auditService.logAction('controlled_alert_mirrored', { alert_id: next.id, type: next.type, severity: next.severity, source: next.source });
+  return (await mirrorControlledAlerts([alert]))[0];
+}
+
+/**
+ * Mirrors one controlled server refresh with a single local read. Local acknowledgement
+ * fields always win because they record an on-device operator action, not a publisher state.
+ */
+export async function mirrorControlledAlerts(alerts: DisasterAlert[]): Promise<DisasterAlert[]> {
+  if (alerts.length === 0) return [];
+  const existingById = new Map((await database.listAlerts()).map((entry) => [entry.id, entry]));
+  const mirrored: DisasterAlert[] = [];
+  for (const alert of alerts) {
+    const existing = existingById.get(alert.id);
+    const next: DisasterAlert = {
+      ...alert,
+      status: existing?.status ?? 'active',
+      acknowledged_at: existing?.acknowledged_at ?? null,
+    };
+    await database.saveAlert(next);
+    if (!existing) {
+      await auditService.logAction('controlled_alert_mirrored', { alert_id: next.id, type: next.type, severity: next.severity, source: next.source });
+    }
+    mirrored.push(next);
   }
-  return next;
+  return mirrored;
 }
 
 export async function acknowledgeLocalAlert(alertId: string): Promise<void> {

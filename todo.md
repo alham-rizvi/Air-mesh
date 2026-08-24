@@ -329,3 +329,7 @@
 - [x] Replace checkpoint-blocking bundled response photos with a lightweight online editorial image
 - [x] Add restrained cross-platform glass-style command blocks to the Alerts home
 - [x] Verify, checkpoint, and deliver the minimal imagery refinement
+- [x] Audit controlled live-alert synchronization, local mirroring, and all dashboard filter paths
+- [x] Repair any concrete alert integration or filter gaps found in the audit
+- [x] Refine Alerts command blocks with minimal glass styling and remote-image fallback behavior
+- [x] Add regressions, run full verification, and checkpoint the live-alert refinement
