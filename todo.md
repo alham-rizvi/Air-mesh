@@ -316,3 +316,7 @@
 - [x] Make disaster-alert management the primary navigation and move Chat to the second-to-last destination
 - [x] Create a grounded disaster-response feature specification with architecture diagrams, UI flows, roadmap, and demo scripts
 - [x] Add navigation coverage, run cross-stack verification, and checkpoint the disaster-alert prioritization update
+- [x] Redesign the signed-in alert-management home with an original visual asset and stronger editorial type hierarchy
+- [x] Make the three-line menu unmistakable and verify its support, project, and service links
+- [x] Audit and strengthen concrete backend alert-service gaps without claiming unavailable providers or hardware delivery
+- [x] Add regression coverage, run cross-stack verification, and checkpoint the alert-command experience

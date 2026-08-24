@@ -44,4 +44,14 @@ describe("controlled alert router hardening", () => {
     vi.spyOn(db, "listDisasterAlerts").mockRejectedValue(new Error("connection refused"));
     await expect(caller().alerts.list({ limit: 10 })).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE", message: "Controlled alert service unavailable." });
   });
+
+  it("rejects an implausibly future-dated controlled alert before storage", async () => {
+    process.env.ALERT_INGESTION_TOKEN = "unit-test-publisher-token";
+    const create = vi.spyOn(db, "createDisasterAlert").mockResolvedValue();
+    await expect(caller("unit-test-publisher-token").alerts.ingest({
+      ...validAlert,
+      issuedAt: new Date(Date.now() + 6 * 60 * 1000),
+    })).rejects.toMatchObject({ code: "BAD_REQUEST", message: "issuedAt is too far in the future." });
+    expect(create).not.toHaveBeenCalled();
+  });
 });

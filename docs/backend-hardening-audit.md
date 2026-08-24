@@ -13,6 +13,7 @@
 | Cookie behavior | Missing request hosts caused logout to throw; insecure local cookies used `SameSite=None`. | Host parsing is defensive; HTTPS uses `SameSite=None; Secure`, while local HTTP uses host-only `SameSite=Lax`. |
 | Server exposure | CORS reflected every requesting origin and request parsers accepted 50 MB bodies. | CORS now allows configured, Manus, and localhost origins only; body parsing is limited to 1 MB. |
 | Web-memory state | Callers could mutate saved chat, contact, or audit values returned by the memory database. | Returned values are copied before exposure. |
+| Publisher clock abuse | A controlled publisher could submit an implausibly future-dated alert that would remain top-ranked in the feed. | The ingest route rejects issue times more than five minutes ahead of server time before storage. |
 
 ## Verification evidence
 

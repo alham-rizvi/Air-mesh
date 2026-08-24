@@ -37,6 +37,8 @@ const controlledAlertInput = z.object({
   originDeviceId: z.string().trim().min(1).max(128),
 });
 
+const MAX_CONTROLLED_ALERT_FUTURE_SKEW_MS = 5 * 60 * 1000;
+
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -72,6 +74,9 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         requirePublisherToken(ctx.req.headers as Record<string, unknown>);
         if (input.expiresAt && input.expiresAt <= input.issuedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "expiresAt must be after issuedAt." });
+        if (input.issuedAt.getTime() > Date.now() + MAX_CONTROLLED_ALERT_FUTURE_SKEW_MS) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "issuedAt is too far in the future." });
+        }
         try {
           await db.createDisasterAlert({ id: input.id, title: input.title, summary: input.summary, type: input.type, severity: input.severity, source: "controlled_publisher", issuedAt: input.issuedAt, expiresAt: input.expiresAt ?? null, originDeviceId: input.originDeviceId });
         } catch (error) {
