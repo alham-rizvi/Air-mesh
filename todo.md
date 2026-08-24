@@ -323,3 +323,9 @@
 - [x] Bundle and configure Archivo Expanded for native and web rendering
 - [x] Apply Archivo Expanded to alert-command display text and navigation headings with readable body fallback
 - [x] Verify and checkpoint the branded typography update
+- [x] Source licensed real editorial disaster-response images from the web for focused app surfaces
+- [x] Integrate selected real images into the alert-command and Response layouts without obscuring operations
+- [x] Verify asset attribution/handling, regressions, and checkpoint the imagery enhancement
+- [x] Replace checkpoint-blocking bundled response photos with a lightweight online editorial image
+- [x] Add restrained cross-platform glass-style command blocks to the Alerts home
+- [x] Verify, checkpoint, and deliver the minimal imagery refinement
