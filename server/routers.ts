@@ -15,6 +15,28 @@ function hasValidPublisherToken(candidate: string): boolean {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
+function publisherTokenFromRequestHeaders(headers: Record<string, unknown>): string {
+  const value = headers["x-airmesh-publisher-token"];
+  return Array.isArray(value) ? String(value[0] ?? "") : typeof value === "string" ? value : "";
+}
+
+function requirePublisherToken(headers: Record<string, unknown>): void {
+  if (!hasValidPublisherToken(publisherTokenFromRequestHeaders(headers))) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Authorized alert publisher token required." });
+  }
+}
+
+const controlledAlertInput = z.object({
+  id: z.string().trim().min(1).max(64),
+  title: z.string().trim().min(1).max(180),
+  summary: z.string().trim().min(1).max(4000),
+  type: z.string().trim().min(1).max(80),
+  severity: z.enum(["critical", "high", "moderate", "low"]),
+  issuedAt: z.coerce.date(),
+  expiresAt: z.coerce.date().nullable().optional(),
+  originDeviceId: z.string().trim().min(1).max(128),
+});
+
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -31,25 +53,30 @@ export const appRouter = router({
 
   alerts: router({
     publisherHealth: publicProcedure
-      .input(z.object({ token: z.string().min(1).max(512) }))
-      .query(({ input }) => {
-        if (!hasValidPublisherToken(input.token)) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Authorized alert publisher token required." });
-        }
+      .query(({ ctx }) => {
+        requirePublisherToken(ctx.req.headers as Record<string, unknown>);
         return { accepted: true, mode: "controlled-ingestion", externalFeedsConfigured: false } as const;
       }),
     list: publicProcedure
       .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
-      .query(({ input }) => db.listDisasterAlerts(input?.limit ?? 50)),
+      .query(async ({ input }) => {
+        try {
+          return await db.listDisasterAlerts(input?.limit ?? 50);
+        } catch (error) {
+          console.error("[Alerts] Controlled alert list unavailable", error instanceof Error ? error.message : "unknown");
+          throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Controlled alert service unavailable." });
+        }
+      }),
     ingest: publicProcedure
-      .input(z.object({ token: z.string().min(1).max(512), id: z.string().min(1).max(64), title: z.string().min(1).max(180), summary: z.string().min(1).max(4000), type: z.string().min(1).max(80), severity: z.enum(["critical", "high", "moderate", "low"]), issuedAt: z.coerce.date(), expiresAt: z.coerce.date().nullable().optional(), originDeviceId: z.string().min(1).max(128) }))
-      .mutation(async ({ input }) => {
-        if (!hasValidPublisherToken(input.token)) throw new TRPCError({ code: "UNAUTHORIZED", message: "Authorized alert publisher token required." });
+      .input(controlledAlertInput)
+      .mutation(async ({ ctx, input }) => {
+        requirePublisherToken(ctx.req.headers as Record<string, unknown>);
         if (input.expiresAt && input.expiresAt <= input.issuedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "expiresAt must be after issuedAt." });
         try {
           await db.createDisasterAlert({ id: input.id, title: input.title, summary: input.summary, type: input.type, severity: input.severity, source: "controlled_publisher", issuedAt: input.issuedAt, expiresAt: input.expiresAt ?? null, originDeviceId: input.originDeviceId });
         } catch (error) {
-          throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: error instanceof Error ? error.message : "Server alert storage is unavailable." });
+          console.error("[Alerts] Controlled alert ingestion unavailable", error instanceof Error ? error.message : "unknown");
+          throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Server alert storage is unavailable." });
         }
         return { accepted: true, source: "controlled_publisher" } as const;
       }),

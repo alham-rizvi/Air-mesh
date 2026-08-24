@@ -42,16 +42,16 @@ export class MemoryDatabase implements DatabaseService {
   async listAlerts(filter?: Partial<Pick<DisasterAlert, 'status' | 'severity'>>): Promise<DisasterAlert[]> { this.ensure(); return Array.from(this.alerts.values()).filter((value) => !filter || Object.entries(filter).every(([key, expected]) => value[key as keyof DisasterAlert] === expected)).sort((a, b) => b.issued_at.localeCompare(a.issued_at)).map((value) => ({ ...value })); }
   async acknowledgeAlert(alertId: string, acknowledgedAt: string): Promise<void> { this.ensure(); const current = this.alerts.get(alertId); if (current) this.alerts.set(alertId, { ...current, status: 'acknowledged', acknowledged_at: acknowledgedAt }); }
   async saveAuditLog(value: AuditLog): Promise<void> { this.ensure(); this.auditLogs.set(value.id, { ...value, details: { ...value.details } }); }
-  async getAuditLogs(filter?: string): Promise<AuditLog[]> { this.ensure(); return Array.from(this.auditLogs.values()).filter((value) => !filter || value.action === filter).sort((a, b) => b.timestamp.localeCompare(a.timestamp)); }
+  async getAuditLogs(filter?: string): Promise<AuditLog[]> { this.ensure(); return Array.from(this.auditLogs.values()).filter((value) => !filter || value.action === filter).sort((a, b) => b.timestamp.localeCompare(a.timestamp)).map((value) => ({ ...value, details: { ...value.details } })); }
   async updateRoutingTable(entries: RoutingEntry[]): Promise<void> { this.ensure(); entries.forEach((entry) => this.routing.set(entry.device_id, { ...entry })); }
   async getRoutingTable(): Promise<RoutingEntry[]> { this.ensure(); return Array.from(this.routing.values()); }
   async saveFile(value: FileMetadata): Promise<void> { this.ensure(); this.files.set(value.id, { ...value }); }
   async getFile(messageId: string): Promise<FileMetadata | null> { this.ensure(); return Array.from(this.files.values()).find((value) => value.message_id === messageId) ?? null; }
   async saveContact(value: Contact): Promise<void> { this.ensure(); this.contacts.set(value.id, { ...value }); }
   async getContact(contactId: string): Promise<Contact | null> { this.ensure(); return this.contacts.get(contactId) ?? null; }
-  async listContacts(): Promise<Contact[]> { this.ensure(); return Array.from(this.contacts.values()); }
+  async listContacts(): Promise<Contact[]> { this.ensure(); return Array.from(this.contacts.values()).map((value) => ({ ...value })); }
   async saveChat(value: Chat): Promise<void> { this.ensure(); this.chats.set(value.id, { ...value, member_ids: [...value.member_ids] }); }
-  async listChats(): Promise<Chat[]> { this.ensure(); return Array.from(this.chats.values()); }
+  async listChats(): Promise<Chat[]> { this.ensure(); return Array.from(this.chats.values()).map((value) => ({ ...value, member_ids: [...value.member_ids] })); }
 }
 
 export const database: DatabaseService = new MemoryDatabase();

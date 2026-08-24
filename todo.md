@@ -303,3 +303,7 @@
 - [x] Add drawer routes for About, Project, Android requirements, GitHub Issues, GitHub Pull Requests, and Contact Support
 - [x] Verify mobile responsive layout, alert/backend boundaries, Android flows, and the full cross-stack suite
 - [x] Synchronize the mobile-quality repair to GitHub main and start the v1.5.1 managed Android release workflow
+- [x] Map and audit all backend routes, database access, alert ingestion, local queues, auth boundaries, and service failure paths
+- [x] Harden discovered backend/database/service dead ends with validation, bounds, idempotency, observability, and safe error handling
+- [x] Add regression tests for hardened failure and authorization paths
+- [x] Run full cross-stack verification and document residual hardware, provider, and operational boundaries

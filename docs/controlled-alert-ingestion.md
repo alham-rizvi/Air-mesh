@@ -7,15 +7,15 @@ The optional server path is intended for an **authorized publisher operated by t
 | Capability | Current behavior | Boundary |
 |---|---|---|
 | Local alert creation | Durable local record, in-app prompt, optional native notification | Works without server connectivity after app initialization. |
-| Controlled server ingestion | Validated tRPC `alerts.ingest` mutation with a configured publisher token | Requires server database availability and the deployment-owned token. |
+| Controlled server ingestion | Validated, idempotent tRPC `alerts.ingest` mutation with a configured publisher token supplied only in the `X-AirMesh-Publisher-Token` request header | Requires server database availability and the deployment-owned token. Duplicate stable IDs update the same durable alert record. |
 | Server alert listing | `alerts.list` returns durable controlled-publisher records | The app reports service unavailability rather than inventing alerts. |
 | Official/provider feed | Not enabled | Provider approval, credentials, terms, payload validation, and operational monitoring are still required. |
 
 ## Publisher payload
 
-The publisher supplies the configured `ALERT_INGESTION_TOKEN` only to the server endpoint. It must never be bundled into the mobile app. A valid payload includes a unique ID, title, summary, type, severity, issue time, optional expiry, and an origin identifier. The server rejects invalid tokens and rejects expiry times before issue times.
+The publisher supplies the configured `ALERT_INGESTION_TOKEN` only in the `X-AirMesh-Publisher-Token` request header. It must never be bundled into the mobile app or placed in a tRPC payload, URL, analytics event, or log. A valid payload includes a unique ID, title, summary, type, severity, issue time, optional expiry, and an origin identifier. The server trims text fields, rejects invalid tokens, bounds payload sizes, and rejects expiry times before issue times.
 
-> **Operational rule:** A publisher should use stable alert IDs and publish only reviewed, authorized alerts. Air-Mesh does not verify the factual accuracy of an external publisher’s content.
+> **Operational rule:** A publisher should use stable alert IDs and publish only reviewed, authorized alerts. The server reports a degraded service when durable storage is unavailable rather than returning a misleading empty feed. Air-Mesh does not verify the factual accuracy of an external publisher’s content.
 
 ## Release and device validation
 
