@@ -302,4 +302,4 @@
 - [x] Add persistent alert-category choices, notification permission, and native-notification plus in-app-banner behavior without a floating overlay
 - [x] Add drawer routes for About, Project, Android requirements, GitHub Issues, GitHub Pull Requests, and Contact Support
 - [x] Verify mobile responsive layout, alert/backend boundaries, Android flows, and the full cross-stack suite
-- [ ] Synchronize the mobile-quality repair to GitHub main and start the v1.5.1 managed Android release workflow
+- [x] Synchronize the mobile-quality repair to GitHub main and start the v1.5.1 managed Android release workflow
