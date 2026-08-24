@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Linking, PermissionsAndroid, Platform } from 'react-native';
 import * as Device from 'expo-device';
 import { useDeviceStore } from '@/lib/air-mesh-store';
 import { buildNearbyPermissionPlan, evaluateAndroidCompatibility } from '@/mobile/src/services/android-readiness';
@@ -37,5 +37,19 @@ export function useDeviceReadiness() {
       return false;
     }
   }, [compatibility.status, permissionPlan.permissions, setPermissionStatus]);
-  return { permissionStatus, platform, model, compatibility, permissionRationale: permissionPlan.rationale, requestPermissions };
+  const openBluetoothSettings = useCallback(async () => {
+    if (Platform.OS !== 'android') return false;
+    try {
+      await Linking.sendIntent('android.settings.BLUETOOTH_SETTINGS');
+      return true;
+    } catch {
+      try {
+        await Linking.openSettings();
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }, []);
+  return { permissionStatus, platform, model, compatibility, permissionRationale: permissionPlan.rationale, requestPermissions, openBluetoothSettings };
 }

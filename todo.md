@@ -296,3 +296,10 @@
 - [x] Replace current branding with the supplied teal triangular logo across launch and installed native assets
 - [x] Verify Alerts, notification behavior, backend-ready contracts, theme, and the full cross-stack suite
 - [x] Synchronize verified source to GitHub main and start a new managed Android release workflow
+- [x] Fix the reported mobile navigation defects: replace the broken warning-style menu control with a three-line drawer and remove the duplicate Home bar behavior
+- [x] Fix light-mode primary and secondary button contrast so labels remain readable for every selectable accent color
+- [x] Add explicit Android Bluetooth setup guidance and a system-settings handoff without claiming Bluetooth is enabled or scanning has started before confirmation
+- [x] Add persistent alert-category choices, notification permission, and native-notification plus in-app-banner behavior without a floating overlay
+- [x] Add drawer routes for About, Project, Android requirements, GitHub Issues, GitHub Pull Requests, and Contact Support
+- [x] Verify mobile responsive layout, alert/backend boundaries, Android flows, and the full cross-stack suite
+- [ ] Synchronize the mobile-quality repair to GitHub main and start the v1.5.1 managed Android release workflow
