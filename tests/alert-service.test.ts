@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { database } from '../mobile/src/services/db';
 import { acknowledgeLocalAlert, createLocalAlert, listLocalAlerts, mirrorControlledAlert, subscribeToAlerts } from '../mobile/src/services/alert-service';
-import { dashboardAlertState } from '../mobile/src/services/alert-dashboard-state';
+import { dashboardAlertState, filterDashboardAlerts } from '../mobile/src/services/alert-dashboard-state';
 
 describe('local disaster alerts', () => {
   beforeEach(async () => {
@@ -41,5 +41,18 @@ describe('local disaster alerts', () => {
     expect(dashboardAlertState({ ...base, status: 'active', expires_at: '2026-08-25T00:00:00.000Z' }, Date.parse('2026-08-24T12:00:00.000Z'))).toBe('active');
     expect(dashboardAlertState({ ...base, status: 'acknowledged', expires_at: '2026-08-20T00:00:00.000Z', acknowledged_at: '2026-08-24T01:00:00.000Z' }, Date.parse('2026-08-24T12:00:00.000Z'))).toBe('acknowledged');
     expect(dashboardAlertState({ ...base, status: 'active', expires_at: '2026-08-20T00:00:00.000Z' }, Date.parse('2026-08-24T12:00:00.000Z'))).toBe('expired');
+  });
+
+  it('filters dashboard records by status and searchable alert metadata', () => {
+    const now = Date.parse('2026-08-24T12:00:00.000Z');
+    const records = [
+      { id: 'river-safety', title: 'River rise', summary: 'Move away from the north bank.', type: 'safety' as const, severity: 'high' as const, source: 'controlled_publisher' as const, issued_at: '2026-08-24T08:00:00.000Z', expires_at: null, status: 'active' as const, origin_device_id: 'base-camp', acknowledged_at: null },
+      { id: 'clinic-closed', title: 'Clinic closure', summary: 'The field clinic has closed.', type: 'health' as const, severity: 'moderate' as const, source: 'local_report' as const, issued_at: '2026-08-24T08:00:00.000Z', expires_at: null, status: 'acknowledged' as const, origin_device_id: 'local-device', acknowledged_at: '2026-08-24T09:00:00.000Z' },
+      { id: 'old-test', title: 'Old test', summary: 'Expired coverage alert.', type: 'test' as const, severity: 'low' as const, source: 'local_report' as const, issued_at: '2026-08-20T08:00:00.000Z', expires_at: '2026-08-21T08:00:00.000Z', status: 'active' as const, origin_device_id: 'local-device', acknowledged_at: null },
+    ];
+    expect(filterDashboardAlerts(records, 'north bank', 'all', now).map((entry) => entry.id)).toEqual(['river-safety']);
+    expect(filterDashboardAlerts(records, 'BASE-CAMP', 'active', now).map((entry) => entry.id)).toEqual(['river-safety']);
+    expect(filterDashboardAlerts(records, '', 'acknowledged', now).map((entry) => entry.id)).toEqual(['clinic-closed']);
+    expect(filterDashboardAlerts(records, '', 'expired', now).map((entry) => entry.id)).toEqual(['old-test']);
   });
 });

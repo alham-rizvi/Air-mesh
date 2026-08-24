@@ -310,3 +310,6 @@
 - [x] Add an Alerts Dashboard that separates active, acknowledged, and expired local/server alert records with visible counts and sources
 - [x] Add dashboard regression coverage and verify acknowledgement-state behavior without inventing alert origins
 - [x] Run the full cross-stack suite and checkpoint the verified Alerts Dashboard
+- [x] Add compact status filters and a multi-field search bar to the Alerts Dashboard
+- [x] Add deterministic search/filter regression coverage for alert records
+- [x] Verify and checkpoint the Alerts Dashboard discovery controls
