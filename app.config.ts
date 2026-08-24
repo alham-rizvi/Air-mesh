@@ -40,7 +40,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.5.1",
+  version: "1.5.2",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -89,7 +89,25 @@ const config: ExpoConfig = {
     "expo-notifications",
     "expo-document-picker",
     "expo-asset",
-    "expo-font",
+    [
+      "expo-font",
+      {
+        fonts: ["./assets/fonts/ArchivoExpanded-ExtraBold.ttf"],
+        android: {
+          fonts: [
+            {
+              fontFamily: "ArchivoExpanded",
+              fontDefinitions: [
+                {
+                  path: "./assets/fonts/ArchivoExpanded-ExtraBold.ttf",
+                  weight: 800,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
     "expo-sqlite",
     "expo-web-browser",
     "react-native-quick-crypto",

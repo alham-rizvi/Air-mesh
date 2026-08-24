@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { disasterAlerts, InsertDisasterAlertRow, InsertUser, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -16,6 +16,19 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+export async function getDatabaseHealth(): Promise<{ configured: boolean; available: boolean }> {
+  const configured = Boolean(process.env.DATABASE_URL);
+  const db = await getDb();
+  if (!db) return { configured, available: false };
+  try {
+    await db.execute(sql`SELECT 1`);
+    return { configured, available: true };
+  } catch (error) {
+    console.error("[Database] Health probe failed", error instanceof Error ? error.message : "unknown");
+    return { configured, available: false };
+  }
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -92,11 +105,22 @@ export async function getUserByOpenId(openId: string) {
 export async function createDisasterAlert(alert: InsertDisasterAlertRow): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Server alert storage is unavailable.");
-  await db.insert(disasterAlerts).values(alert);
+  await db.insert(disasterAlerts).values(alert).onDuplicateKeyUpdate({
+    set: {
+      title: alert.title,
+      summary: alert.summary,
+      type: alert.type,
+      severity: alert.severity,
+      source: alert.source,
+      issuedAt: alert.issuedAt,
+      expiresAt: alert.expiresAt,
+      originDeviceId: alert.originDeviceId,
+    },
+  });
 }
 
 export async function listDisasterAlerts(limit = 50) {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) throw new Error("Server alert storage is unavailable.");
   return db.select().from(disasterAlerts).orderBy(desc(disasterAlerts.issuedAt)).limit(limit);
 }

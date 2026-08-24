@@ -303,3 +303,40 @@
 - [x] Add drawer routes for About, Project, Android requirements, GitHub Issues, GitHub Pull Requests, and Contact Support
 - [x] Verify mobile responsive layout, alert/backend boundaries, Android flows, and the full cross-stack suite
 - [x] Synchronize the mobile-quality repair to GitHub main and start the v1.5.1 managed Android release workflow
+- [x] Map and audit all backend routes, database access, alert ingestion, local queues, auth boundaries, and service failure paths
+- [x] Harden discovered backend/database/service dead ends with validation, bounds, idempotency, observability, and safe error handling
+- [x] Add regression tests for hardened failure and authorization paths
+- [x] Run full cross-stack verification and document residual hardware, provider, and operational boundaries
+- [x] Add an Alerts Dashboard that separates active, acknowledged, and expired local/server alert records with visible counts and sources
+- [x] Add dashboard regression coverage and verify acknowledgement-state behavior without inventing alert origins
+- [x] Run the full cross-stack suite and checkpoint the verified Alerts Dashboard
+- [x] Add compact status filters and a multi-field search bar to the Alerts Dashboard
+- [x] Add deterministic search/filter regression coverage for alert records
+- [x] Verify and checkpoint the Alerts Dashboard discovery controls
+- [x] Make disaster-alert management the primary navigation and move Chat to the second-to-last destination
+- [x] Create a grounded disaster-response feature specification with architecture diagrams, UI flows, roadmap, and demo scripts
+- [x] Add navigation coverage, run cross-stack verification, and checkpoint the disaster-alert prioritization update
+- [x] Redesign the signed-in alert-management home with an original visual asset and stronger editorial type hierarchy
+- [x] Make the three-line menu unmistakable and verify its support, project, and service links
+- [x] Audit and strengthen concrete backend alert-service gaps without claiming unavailable providers or hardware delivery
+- [x] Add regression coverage, run cross-stack verification, and checkpoint the alert-command experience
+- [x] Bundle and configure Archivo Expanded for native and web rendering
+- [x] Apply Archivo Expanded to alert-command display text and navigation headings with readable body fallback
+- [x] Verify and checkpoint the branded typography update
+- [x] Source licensed real editorial disaster-response images from the web for focused app surfaces
+- [x] Integrate selected real images into the alert-command and Response layouts without obscuring operations
+- [x] Verify asset attribution/handling, regressions, and checkpoint the imagery enhancement
+- [x] Replace checkpoint-blocking bundled response photos with a lightweight online editorial image
+- [x] Add restrained cross-platform glass-style command blocks to the Alerts home
+- [x] Verify, checkpoint, and deliver the minimal imagery refinement
+- [x] Audit controlled live-alert synchronization, local mirroring, and all dashboard filter paths
+- [x] Repair any concrete alert integration or filter gaps found in the audit
+- [x] Refine Alerts command blocks with minimal glass styling and remote-image fallback behavior
+- [x] Add regressions, run full verification, and checkpoint the live-alert refinement
+- [x] Diagnose and remove the native font-loader startup timeout
+- [x] Preserve safe display typography using a non-blocking native fallback strategy
+- [x] Add startup safety coverage, run verification, and checkpoint the crash fix
+- [ ] Inspect GitHub main, release tags, and Android workflow state after the native crash fix
+- [ ] Synchronize the latest verified source to GitHub main
+- [ ] Record the managed Android release-build handoff without overwriting an existing release
+- [ ] Prepare the next non-conflicting Android version for the managed release build

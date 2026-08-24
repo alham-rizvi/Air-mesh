@@ -44,17 +44,26 @@ function getParentDomain(hostname: string): string | undefined {
   return "." + parts.slice(-2).join(".");
 }
 
+function getRequestHostname(req: Request): string {
+  const direct = typeof req.hostname === "string" ? req.hostname : "";
+  const forwarded = req.headers["x-forwarded-host"];
+  const hostHeader = Array.isArray(forwarded) ? forwarded[0] : forwarded ?? req.headers.host;
+  const candidate = direct || (Array.isArray(hostHeader) ? hostHeader[0] : hostHeader) || "";
+  return String(candidate).split(",")[0]?.trim().replace(/^\[/, "").replace(/\]$/, "").replace(/:\d+$/, "") ?? "";
+}
+
 export function getSessionCookieOptions(
   req: Request,
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
-  const hostname = req.hostname;
+  const hostname = getRequestHostname(req);
   const domain = getParentDomain(hostname);
+  const secure = isSecureRequest(req);
 
   return {
     domain,
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req),
+    sameSite: secure ? "none" : "lax",
+    secure,
   };
 }
