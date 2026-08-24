@@ -340,3 +340,5 @@
 - [x] Synchronize the latest verified source to GitHub main
 - [x] Record the managed Android release-build handoff without overwriting an existing release
 - [x] Prepare the next non-conflicting Android version for the managed release build
+- [x] Add subtle hover, press, focus, and transition feedback to glass command blocks
+- [x] Add interaction regression coverage and verify the glass animation refinement
