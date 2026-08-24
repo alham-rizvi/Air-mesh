@@ -307,3 +307,6 @@
 - [x] Harden discovered backend/database/service dead ends with validation, bounds, idempotency, observability, and safe error handling
 - [x] Add regression tests for hardened failure and authorization paths
 - [x] Run full cross-stack verification and document residual hardware, provider, and operational boundaries
+- [x] Add an Alerts Dashboard that separates active, acknowledged, and expired local/server alert records with visible counts and sources
+- [x] Add dashboard regression coverage and verify acknowledgement-state behavior without inventing alert origins
+- [x] Run the full cross-stack suite and checkpoint the verified Alerts Dashboard

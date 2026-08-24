@@ -2,9 +2,10 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { MaterialIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { AlertsDashboard } from "@/components/alerts-dashboard";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
-import { acknowledgeLocalAlert, createLocalAlert, listLocalAlerts, subscribeToAlerts } from "@/mobile/src/services/alert-service";
+import { acknowledgeLocalAlert, createLocalAlert, listLocalAlerts, mirrorControlledAlert, subscribeToAlerts } from "@/mobile/src/services/alert-service";
 import { notifyLocalAlert, requestLocalAlertPermission } from "@/mobile/src/services/alert-notifier";
 import { ALERT_CATEGORIES, loadAlertCategories, saveAlertCategories, type AlertCategory } from "@/mobile/src/services/alert-preferences";
 import type { DisasterAlert } from "@/mobile/src/types/security-data";
@@ -46,6 +47,12 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
     });
   }, [categories, remoteAlerts.data]);
 
+  useEffect(() => {
+    const records: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null }));
+    if (!records.length) return;
+    void Promise.all(records.map(mirrorControlledAlert)).then(refresh).catch(() => undefined);
+  }, [refresh, remoteAlerts.data]);
+
   const enableNotifications = async () => {
     const result = await requestLocalAlertPermission();
     setPermission(result);
@@ -73,6 +80,10 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
     const next = categories.includes(category) ? categories.filter((value) => value !== category) : [...categories, category];
     const saved = await saveAlertCategories(next);
     setCategories(saved);
+  };
+
+  const acknowledge = (alertId: string) => {
+    void acknowledgeLocalAlert(alertId).then(refresh).catch((error) => Alert.alert("Acknowledgement unavailable", error instanceof Error ? error.message : "The local alert record could not be acknowledged."));
   };
 
   const serverAlerts: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null }));
@@ -105,11 +116,7 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
         <Text style={[styles.caption, { color: colors.muted, marginTop: 10 }]}>Notification status: {permission === "unknown" ? "not requested this session" : permission}. Permission is requested only when you select Enable alerts.</Text>
         <Text style={[styles.caption, { color: remoteAlerts.isError ? "#FFB34D" : colors.muted, marginTop: 4 }]}>{remoteAlerts.isLoading ? "Checking controlled alert service…" : remoteAlerts.isError ? "Controlled alert service unavailable. Local alerts remain available." : `Controlled alert service connected · ${serverAlerts.length} server alert${serverAlerts.length === 1 ? "" : "s"}`}</Text>
 
-        <Text style={[styles.section, { color: colors.muted }]}>STORED ALERTS</Text>
-        {mergedAlerts.length === 0 ? <View style={[styles.empty, { borderColor: colors.border, backgroundColor: colors.surface }]}><MaterialIcons name="inbox" size={23} color={colors.muted} /><Text style={[styles.emptyTitle, { color: colors.text }]}>Your local alert inbox is empty</Text><Text style={[styles.caption, { color: colors.muted, textAlign: "center" }]}>This is a real local empty state, not a placeholder feed.</Text></View> : mergedAlerts.map((alert) => {
-          const color = severityColor(alert.severity, colors.accent);
-          return <View key={alert.id} style={[styles.alert, { borderColor: color, backgroundColor: colors.surface }]}><View style={[styles.dot, { backgroundColor: color }]} /><View style={{ flex: 1 }}><Text style={[styles.micro, { color }]}>{alert.severity.toUpperCase()} · {alert.type.toUpperCase()} · {alert.source.replace("_", " ")}</Text><Text style={[styles.alertTitle, { color: colors.text }]}>{alert.title}</Text><Text style={[styles.caption, { color: colors.muted }]}>{alert.summary}</Text><Text style={[styles.caption, { color: colors.muted, marginTop: 7 }]}>Stored {new Date(alert.issued_at).toLocaleString()} · {alert.status}</Text>{alert.status === "active" && <Pressable onPress={() => void acknowledgeLocalAlert(alert.id).then(refresh)} style={[styles.ack, { borderColor: colors.accent }]}><MaterialIcons name="done" size={14} color={colors.accent} /><Text style={[styles.ackText, { color: colors.accent }]}>Acknowledge</Text></Pressable>}</View></View>;
-        })}
+        <AlertsDashboard alerts={mergedAlerts} colors={colors} onAcknowledge={acknowledge} />
       </ScrollView>
     </ScreenContainer>
   );

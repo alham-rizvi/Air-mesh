@@ -42,6 +42,20 @@ export async function listLocalAlerts(): Promise<DisasterAlert[]> {
   return database.listAlerts();
 }
 
+export async function mirrorControlledAlert(alert: DisasterAlert): Promise<DisasterAlert> {
+  const existing = (await database.listAlerts()).find((entry) => entry.id === alert.id);
+  const next: DisasterAlert = {
+    ...alert,
+    status: existing?.status ?? 'active',
+    acknowledged_at: existing?.acknowledged_at ?? null,
+  };
+  await database.saveAlert(next);
+  if (!existing) {
+    await auditService.logAction('controlled_alert_mirrored', { alert_id: next.id, type: next.type, severity: next.severity, source: next.source });
+  }
+  return next;
+}
+
 export async function acknowledgeLocalAlert(alertId: string): Promise<void> {
   const existing = (await database.listAlerts()).find((alert) => alert.id === alertId);
   if (!existing) throw new Error('Local alert was not found.');
