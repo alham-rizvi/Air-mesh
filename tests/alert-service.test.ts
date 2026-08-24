@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { vi } from 'vitest';
 import { database } from '../mobile/src/services/db';
 import { acknowledgeLocalAlert, createLocalAlert, listLocalAlerts, mirrorControlledAlert, mirrorControlledAlerts, subscribeToAlerts } from '../mobile/src/services/alert-service';
-import { dashboardAlertState, filterDashboardAlerts } from '../mobile/src/services/alert-dashboard-state';
+import { dashboardAlertState, filterDashboardAlerts, sortDashboardAlerts } from '../mobile/src/services/alert-dashboard-state';
 
 describe('local disaster alerts', () => {
   beforeEach(async () => {
@@ -69,5 +69,10 @@ describe('local disaster alerts', () => {
     expect(filterDashboardAlerts(records, 'BASE-CAMP', 'active', now).map((entry) => entry.id)).toEqual(['river-safety']);
     expect(filterDashboardAlerts(records, '', 'acknowledged', now).map((entry) => entry.id)).toEqual(['clinic-closed']);
     expect(filterDashboardAlerts(records, '', 'expired', now).map((entry) => entry.id)).toEqual(['old-test']);
+    expect(filterDashboardAlerts(records, '', 'all', 'critical', now)).toEqual([]);
+    expect(filterDashboardAlerts(records, '', 'all', 'high_or_critical', now).map((entry) => entry.id)).toEqual(['river-safety']);
+    expect(sortDashboardAlerts(records, 'severity', now).map((entry) => entry.id)).toEqual(['river-safety', 'clinic-closed', 'old-test']);
+    expect(sortDashboardAlerts(records, 'expiry', now).map((entry) => entry.id)).toEqual(['old-test', 'clinic-closed', 'river-safety']);
+    expect(records.map((entry) => entry.id)).toEqual(['river-safety', 'clinic-closed', 'old-test']);
   });
 });

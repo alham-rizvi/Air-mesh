@@ -342,3 +342,6 @@
 - [x] Prepare the next non-conflicting Android version for the managed release build
 - [x] Add subtle hover, press, focus, and transition feedback to glass command blocks
 - [x] Add interaction regression coverage and verify the glass animation refinement
+- [x] Add live-alert urgency filters and stable sorting options for critical updates
+- [x] Integrate concise alert filter and sort controls into the Alerts Dashboard
+- [x] Add filter-sort regression coverage, verify the workflow, and checkpoint the enhancement
