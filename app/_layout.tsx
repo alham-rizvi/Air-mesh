@@ -24,6 +24,7 @@ import { initializeMeshRuntime } from "@/mobile/src/services/runtime-transport";
 import { registerBestEffortBackgroundRetry } from "@/mobile/src/services/background-retry";
 import { enableAutomaticRetry } from "@/mobile/src/services/integration-service";
 import { AndroidStartupGate } from "@/components/android-startup-gate";
+import { GlobalAlertBanner } from "@/components/global-alert-banner";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -103,6 +104,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="oauth/callback" />
             </Stack>
+            <GlobalAlertBanner />
             <StatusBar style="auto" />
           </AndroidStartupGate>
         </QueryClientProvider>
