@@ -28,7 +28,7 @@ const schemeFromBundleId = `manus${timestamp}`;
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "Sanket Response",
+  appName: "Air Mesh",
   appSlug: "air-mesh",
   // The installed icon uses the supplied teal Air-Mesh mark on its authored dark field.
   logoUrl: "",

@@ -144,11 +144,11 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
 
   const openSupportLink = (url: string) => {
     setMenuOpen(false);
-    void Linking.openURL(url).catch(() => Alert.alert("Link unavailable", "Sanket Response could not open this support link on this device."));
+    void Linking.openURL(url).catch(() => Alert.alert("Link unavailable", "Air Mesh could not open this support link on this device."));
   };
 
   const openProjectWebsite = () => {
-    void Linking.openURL(PROJECT_WEBSITE_URL).catch(() => Alert.alert("Website unavailable", "Sanket Response could not open the public project website on this device."));
+    void Linking.openURL(PROJECT_WEBSITE_URL).catch(() => Alert.alert("Website unavailable", "Air Mesh could not open the public project website on this device."));
   };
 
   const serverAlerts: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: alert.status === "resolved" ? "resolved" : "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, resolved_at: alert.resolvedAt ? new Date(alert.resolvedAt).toISOString() : null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
@@ -159,9 +159,9 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
       <View style={[styles.header, { borderBottomColor: colors.border }]}> 
         <View style={[styles.logo, { borderColor: colors.accent }]}><MaterialIcons name="warning-amber" size={18} color={colors.accent} /></View>
-        <View style={{ flex: 1 }}><Text style={[styles.brand, { color: colors.text, fontFamily: DISPLAY_FONT }]}>Sanket</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>RESPONSE COMMAND</Text></View>
-        <Pressable accessibilityRole="link" accessibilityLabel="Visit Sanket Response website" onPress={openProjectWebsite} style={({ pressed }) => [styles.websiteButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="public" size={18} color={colors.accent} /><Text style={[styles.websiteButtonText, { color: colors.text }]}>Web</Text></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Open Sanket menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
+        <View style={{ flex: 1 }}><Text style={[styles.brand, { color: colors.text, fontFamily: DISPLAY_FONT }]}>Air Mesh</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>RESPONSE COMMAND</Text></View>
+        <Pressable accessibilityRole="link" accessibilityLabel="Visit Air Mesh website" onPress={openProjectWebsite} style={({ pressed }) => [styles.websiteButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="public" size={18} color={colors.accent} /><Text style={[styles.websiteButtonText, { color: colors.text }]}>Web</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open Air Mesh menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <SignalField activeCount={active.length} colors={colors} />
@@ -211,7 +211,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
         <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
           <Pressable style={[styles.menuSheet, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => undefined}>
-            <View style={styles.menuSheetTop}><View><Text style={[styles.menuTitle, { color: colors.text, fontFamily: DISPLAY_FONT }]}>SANKET</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>RESPONSE MENU</Text></View><Pressable accessibilityLabel="Close menu" onPress={() => setMenuOpen(false)} style={styles.closeMenu}><MaterialIcons name="close" size={22} color={colors.muted} /></Pressable></View>
+            <View style={styles.menuSheetTop}><View><Text style={[styles.menuTitle, { color: colors.text, fontFamily: DISPLAY_FONT }]}>AIR MESH</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>RESPONSE MENU</Text></View><Pressable accessibilityLabel="Close menu" onPress={() => setMenuOpen(false)} style={styles.closeMenu}><MaterialIcons name="close" size={22} color={colors.muted} /></Pressable></View>
             <Text style={[styles.menuIntro, { color: colors.muted }]}>Citizen-first alerts, local response tools, and controlled operator workflows.</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Go to home Alert Command" onPress={() => { setMenuOpen(false); onNavigate?.("alerts"); }} style={[styles.menuItem, { borderBottomColor: colors.border }]}><MaterialIcons name="home" size={20} color={colors.accent} /><View style={{ flex: 1 }}><Text style={[styles.menuItemTitle, { color: colors.text }]}>Home</Text><Text style={[styles.caption, { color: colors.muted }]}>Return to the citizen Alert Command.</Text></View><MaterialIcons name="chevron-right" size={18} color={colors.muted} /></Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Open settings" onPress={() => { setMenuOpen(false); onNavigate?.("settings"); }} style={[styles.menuItem, { borderBottomColor: colors.border }]}><MaterialIcons name="settings" size={20} color={colors.accent} /><View style={{ flex: 1 }}><Text style={[styles.menuItemTitle, { color: colors.text }]}>Settings</Text><Text style={[styles.caption, { color: colors.muted }]}>Manage device, appearance, and local preferences.</Text></View><MaterialIcons name="chevron-right" size={18} color={colors.muted} /></Pressable>

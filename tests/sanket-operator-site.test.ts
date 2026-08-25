@@ -4,10 +4,10 @@ import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
-describe("Sanket Response operator and public-site surfaces", () => {
+describe("Air Mesh operator and public-site surfaces", () => {
   it("uses a distinct signed-in operator environment with a dedicated monitoring console", () => {
     const authority = read("components/authority-console.tsx");
-    expect(authority).toContain("SANKET OPS");
+    expect(authority).toContain("AIR MESH OPS");
     expect(authority).toContain("SEPARATE OPERATOR ENVIRONMENT");
     expect(authority).toContain("Monitoring console");
     expect(authority).toContain("MONITOR THE");
@@ -22,7 +22,7 @@ describe("Sanket Response operator and public-site surfaces", () => {
     const site = read("components/public-project-site.tsx");
     const shell = read("app/(tabs)/index.tsx");
     const website = read("app/website.tsx");
-    expect(site).toContain("ABOUT SANKET RESPONSE");
+    expect(site).toContain("ABOUT AIR MESH");
     expect(site).toContain("Published Android releases");
     expect(site).toContain("GitHub Releases page");
     expect(site).toContain("does not pretend that an unpublished APK exists");
@@ -35,8 +35,8 @@ describe("Sanket Response operator and public-site surfaces", () => {
   it("renames the installed product display without changing the established technical slug", () => {
     const config = read("app.config.ts");
     const tab = read("app/(tabs)/_layout.tsx");
-    expect(config).toContain('appName: "Sanket Response"');
+    expect(config).toContain('appName: "Air Mesh"');
     expect(config).toContain('appSlug: "air-mesh"');
-    expect(tab).toContain('title: "Sanket Response"');
+    expect(tab).toContain('title: "Air Mesh"');
   });
 });

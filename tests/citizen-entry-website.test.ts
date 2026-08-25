@@ -14,7 +14,7 @@ describe("citizen-first entry and public website link", () => {
 
   it("adds a top-bar website option while keeping authority as a secondary menu route", () => {
     const center = read("components/alerts-center.tsx");
-    expect(center).toContain("Visit Sanket Response website");
+    expect(center).toContain("Visit Air Mesh website");
     expect(center).toContain("PROJECT_WEBSITE_URL");
     expect(center).toContain("/website");
     expect(center).toContain('onNavigate?.("authority")');
@@ -23,7 +23,7 @@ describe("citizen-first entry and public website link", () => {
     expect(center).toContain('onNavigate?.("settings")');
     expect(center).toContain("Go to home Alert Command");
     expect(center).toContain("Open settings");
-    expect(center).toContain("Open Sanket menu");
+    expect(center).toContain("Open Air Mesh menu");
   });
 
   it("serves public information and release downloads from a dedicated website route", () => {
@@ -35,11 +35,11 @@ describe("citizen-first entry and public website link", () => {
     expect(publicSite).toContain("GitHub Releases page");
   });
 
-  it("uses the Sanket identity consistently in the citizen command and browser companion", () => {
+  it("uses the Air Mesh identity consistently in the citizen command and browser companion", () => {
     const center = read("components/alerts-center.tsx");
     const companion = read("components/web-command-companion.tsx");
-    expect(center).toContain("Sanket Response could not open this support link");
-    expect(companion).toContain("Sanket response desk");
-    expect(companion).not.toContain("Air-Mesh response desk");
+    expect(center).toContain("Air Mesh could not open this support link");
+    expect(companion).toContain("Air Mesh response desk");
+    expect(companion).not.toContain("Sanket response desk");
   });
 });
