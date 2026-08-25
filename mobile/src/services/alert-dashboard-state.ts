@@ -28,7 +28,7 @@ export function filterDashboardAlerts(alerts: DisasterAlert[], query: string, st
     const matchesStatus = status === "all" || dashboardAlertState(alert, now) === status;
     const matchesUrgency = urgency === "all" || alert.severity === "critical" || (urgency === "high_or_critical" && alert.severity === "high");
     if (!matchesStatus || !matchesUrgency || !normalizedQuery) return matchesStatus && matchesUrgency;
-    return [alert.id, alert.title, alert.summary, alert.type, alert.severity, alert.source, alert.origin_device_id]
+    return [alert.id, alert.title, alert.summary, alert.type, alert.severity, alert.source, alert.origin_device_id, alert.hazard, alert.target_label, alert.locale]
       .filter((value): value is string => typeof value === "string")
       .some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
   });

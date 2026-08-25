@@ -3,6 +3,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AlertsDashboard } from "@/components/alerts-dashboard";
+import { WebCommandCompanion } from "@/components/web-command-companion";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { DISPLAY_FONT } from "@/lib/typography";
@@ -61,14 +62,14 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
     incoming.filter((alert) => !knownRemoteAlertIds.current.has(alert.id)).forEach((alert) => {
       knownRemoteAlertIds.current.add(alert.id);
       if (!categories.includes(alert.type as AlertCategory)) return;
-      const presentation: DisasterAlert = { id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null };
+      const presentation: DisasterAlert = { id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale };
       Alert.alert(`${alert.severity.toUpperCase()} alert`, `${alert.title}\n\n${alert.summary}`);
       void notifyLocalAlert(presentation);
     });
   }, [categories, remoteAlerts.data]);
 
   useEffect(() => {
-    const records: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null }));
+    const records: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
     if (!records.length) return;
     void mirrorControlledAlerts(records).then(refresh).catch(() => undefined);
   }, [refresh, remoteAlerts.data]);
@@ -111,7 +112,7 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
     void Linking.openURL(url).catch(() => Alert.alert("Link unavailable", "Air-Mesh could not open this support link on this device."));
   };
 
-  const serverAlerts: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null }));
+  const serverAlerts: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
   const mergedAlerts = [...alerts, ...serverAlerts.filter((remote) => !alerts.some((local) => local.id === remote.id))];
   const active = mergedAlerts.filter((alert) => alert.status === "active" && (alert.type === "test" || categories.includes(alert.type as AlertCategory)));
 
@@ -123,7 +124,7 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
         <Pressable accessibilityRole="button" accessibilityLabel="Open Air-Mesh menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <ImageBackground source={heroImageUnavailable ? undefined : ALERT_COMMAND_HERO} onError={() => setHeroImageUnavailable(true)} imageStyle={[styles.heroImage, heroImageUnavailable && styles.hiddenHeroImage]} style={[styles.hero, { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "#050605" }]}>
+        <ImageBackground source={heroImageUnavailable ? undefined : ALERT_COMMAND_HERO} onError={() => setHeroImageUnavailable(true)} imageStyle={[styles.heroImage, heroImageUnavailable && styles.hiddenHeroImage]} style={[styles.hero, { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "#050605" }]}> 
           <View style={styles.heroShade} />
           <View style={styles.heroContent}>
             <View style={[styles.heroEyebrow, { borderColor: "rgba(255,255,255,0.2)" }]}><View style={[styles.pulse, { backgroundColor: colors.accent }]} /><Text style={[styles.heroEyebrowText, { fontFamily: DISPLAY_FONT }]}>DISASTER RESPONSE SYSTEM</Text></View>
@@ -132,6 +133,8 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
             <View style={styles.heroFooter}><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>{heroImageUnavailable ? "REMOTE IMAGE UNAVAILABLE · LOCAL UI READY" : "LOCAL-FIRST · AUDITABLE"}</Text><MaterialIcons name="arrow-downward" size={16} color="#FFFFFF" /></View>
           </View>
         </ImageBackground>
+
+        <WebCommandCompanion colors={colors} activeAlerts={active.length} serverAlertCount={serverAlerts.length} controlledServiceAvailable={!remoteAlerts.isError} />
 
         <View style={[styles.commandLine, styles.glassSurface, { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.065)" }]}><View style={[styles.commandIcon, { backgroundColor: active.length ? severityColor(active[0].severity, colors.accent) : "rgba(255,255,255,0.08)" }]}><MaterialIcons name={active.length ? "notification-important" : "verified-user"} size={18} color={active.length ? "#000" : colors.accent} /></View><View style={{ flex: 1 }}><Text style={[styles.micro, { color: active.length ? severityColor(active[0].severity, colors.accent) : colors.accent, fontFamily: DISPLAY_FONT }]}>{active.length ? `${active.length} ACTION REQUIRED` : "SYSTEM READY"}</Text><Text style={[styles.commandText, { color: colors.text }]}>{active.length ? "Local alerts need a review." : "No local alert needs action."}</Text></View><Text style={[styles.commandTime, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>{remoteAlerts.isFetching ? "SYNCING" : "LOCAL"}</Text></View>
         <View style={styles.glassGrid}>

@@ -1,6 +1,6 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { disasterAlerts, InsertDisasterAlertRow, InsertUser, users } from "../drizzle/schema";
+import { disasterAlerts, InsertDisasterAlertRow, InsertSafetyCheckIn, InsertUser, safetyCheckIns, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -115,6 +115,12 @@ export async function createDisasterAlert(alert: InsertDisasterAlertRow): Promis
       issuedAt: alert.issuedAt,
       expiresAt: alert.expiresAt,
       originDeviceId: alert.originDeviceId,
+      hazard: alert.hazard,
+      targetLabel: alert.targetLabel,
+      targetLatitude: alert.targetLatitude,
+      targetLongitude: alert.targetLongitude,
+      targetRadiusM: alert.targetRadiusM,
+      locale: alert.locale,
     },
   });
 }
@@ -123,4 +129,20 @@ export async function listDisasterAlerts(limit = 50) {
   const db = await getDb();
   if (!db) throw new Error("Server alert storage is unavailable.");
   return db.select().from(disasterAlerts).orderBy(desc(disasterAlerts.issuedAt)).limit(limit);
+}
+
+export async function createSafetyCheckIn(checkIn: InsertSafetyCheckIn): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Safety check-in storage is unavailable.");
+  await db.insert(safetyCheckIns).values(checkIn).onDuplicateKeyUpdate({
+    set: {
+      status: checkIn.status,
+      hazard: checkIn.hazard,
+      alertId: checkIn.alertId,
+      note: checkIn.note,
+      latitude: checkIn.latitude,
+      longitude: checkIn.longitude,
+      createdAt: checkIn.createdAt,
+    },
+  });
 }

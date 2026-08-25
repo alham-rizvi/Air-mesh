@@ -1,4 +1,4 @@
-import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { double, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -35,8 +35,29 @@ export const disasterAlerts = mysqlTable("disaster_alerts", {
   issuedAt: timestamp("issued_at").notNull(),
   expiresAt: timestamp("expires_at"),
   originDeviceId: varchar("origin_device_id", { length: 128 }).notNull(),
+  hazard: varchar("hazard", { length: 64 }).notNull().default("other"),
+  targetLabel: varchar("target_label", { length: 180 }),
+  targetLatitude: double("target_latitude"),
+  targetLongitude: double("target_longitude"),
+  targetRadiusM: int("target_radius_m"),
+  locale: varchar("locale", { length: 16 }).notNull().default("en-IN"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [index("idx_disaster_alerts_issued").on(table.issuedAt), index("idx_disaster_alerts_severity").on(table.severity)]);
+}, (table) => [index("idx_disaster_alerts_issued").on(table.issuedAt), index("idx_disaster_alerts_severity").on(table.severity), index("idx_disaster_alerts_hazard").on(table.hazard)]);
 
 export type DisasterAlertRow = typeof disasterAlerts.$inferSelect;
 export type InsertDisasterAlertRow = typeof disasterAlerts.$inferInsert;
+
+export const safetyCheckIns = mysqlTable("safety_checkins", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: int("user_id").notNull(),
+  deviceId: varchar("device_id", { length: 128 }).notNull(),
+  status: mysqlEnum("status", ["safe", "rescue_requested"]).notNull(),
+  hazard: varchar("hazard", { length: 64 }).notNull().default("other"),
+  alertId: varchar("alert_id", { length: 64 }),
+  note: varchar("note", { length: 500 }),
+  latitude: double("latitude"),
+  longitude: double("longitude"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [index("idx_safety_checkins_created").on(table.createdAt), index("idx_safety_checkins_status").on(table.status)]);
+
+export type InsertSafetyCheckIn = typeof safetyCheckIns.$inferInsert;

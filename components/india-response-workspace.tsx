@@ -1,0 +1,45 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { INDIA_HAZARDS, INDIA_PROVIDER_ADAPTERS, INDIA_RESPONSE_GUIDES, type IndiaHazard } from '@/shared/india-response';
+import { airMeshIntegration } from '@/mobile/src/services/integration-service';
+import { auditService } from '@/mobile/src/services/auditService';
+import { useState } from 'react';
+
+type Colors = { bg: string; surface: string; text: string; muted: string; border: string; field: string; accent: string; onAccent: string };
+
+export function IndiaResponseWorkspace({ colors, deviceId, displayName, onBack }: { colors: Colors; deviceId: string; displayName: string; onBack: () => void }) {
+  const [hazard, setHazard] = useState<IndiaHazard>('flood');
+  const [status, setStatus] = useState<'idle' | 'safe' | 'rescue_requested'>('idle');
+  const [providersOpen, setProvidersOpen] = useState(false);
+  const recordCheckIn = async (next: 'safe' | 'rescue_requested') => {
+    setStatus(next);
+    if (next === 'rescue_requested') {
+      const accepted = await airMeshIntegration.broadcastSos(deviceId, displayName, `India response workspace: ${hazard} assistance requested`);
+      await auditService.logAction('india_rescue_request_recorded', { status: next, hazard, device_id: deviceId, local_mesh_accepted: accepted, remote_dispatch_requested: false });
+      Alert.alert(accepted ? 'Nearby peer accepted the local request' : 'Rescue request recorded locally', accepted ? 'This is a local transport acceptance only. It does not confirm ERSS or rescue-team dispatch.' : 'No nearby peer accepted the request. No external emergency service has been contacted.');
+      return;
+    }
+    await auditService.logAction('india_safety_checkin_recorded', { status: next, hazard, device_id: deviceId, remote_dispatch_requested: false });
+    Alert.alert('Safety check-in recorded', 'The check-in is saved in this device’s audit trail. A server check-in requires an authenticated operator connection; no external service was contacted.');
+  };
+  const open112 = async () => {
+    await auditService.logAction('india_112_handoff_requested', { hazard, device_id: deviceId, user_initiated: true });
+    try { await Linking.openURL('tel:112'); }
+    catch { Alert.alert('112 dialer unavailable', 'Air-Mesh could not open the phone dialer. Call 112 manually if you need urgent police, fire, ambulance, or disaster assistance.'); }
+  };
+  return <View style={[styles.root, { backgroundColor: colors.bg }]}>
+    <View style={[styles.topbar, { borderBottomColor: colors.border }]}><Pressable accessibilityRole="button" accessibilityLabel="Back to Rescue" onPress={onBack} style={styles.icon}><MaterialIcons name="arrow-back" size={22} color={colors.text} /></Pressable><Text style={[styles.topTitle, { color: colors.text }]}>India response</Text></View>
+    <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.hero}><Text style={[styles.kicker, { color: colors.accent }]}>HACKATHON RESPONSE FOUNDATION</Text><Text style={[styles.title, { color: colors.text }]}>Check in.{`\n`}Act early.</Text><Text style={[styles.body, { color: colors.muted }]}>All-hazard tools for floods, cyclones, earthquakes, heatwaves, landslides, lightning, wildfire, industrial incidents, and other hazards.</Text></View>
+      <Text style={[styles.sectionTitle, { color: colors.muted }]}>CURRENT HAZARD</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>{INDIA_HAZARDS.map((value) => <Pressable key={value} accessibilityRole="button" onPress={() => setHazard(value)} style={[styles.chip, { borderColor: hazard === value ? colors.accent : colors.border, backgroundColor: hazard === value ? colors.accent : 'transparent' }]}><Text style={{ color: hazard === value ? colors.onAccent : colors.text, fontWeight: '700', fontSize: 12 }}>{value}</Text></Pressable>)}</ScrollView>
+      <Text style={[styles.sectionTitle, { color: colors.muted }]}>SAFETY AND RESCUE</Text><View style={[styles.card, { backgroundColor: colors.surface, borderColor: status === 'rescue_requested' ? '#E78372' : status === 'safe' ? colors.accent : colors.border }]}><View style={styles.row}><View style={{ flex: 1 }}><Text style={[styles.cardTitle, { color: colors.text }]}>Local response status</Text><Text style={[styles.caption, { color: colors.muted }]}>{status === 'safe' ? 'Safe check-in recorded locally.' : status === 'rescue_requested' ? 'Rescue request is locally audited.' : 'No check-in recorded this session.'}</Text></View><MaterialIcons name={status === 'safe' ? 'verified-user' : status === 'rescue_requested' ? 'sos' : 'shield'} size={25} color={status === 'rescue_requested' ? '#E78372' : colors.accent} /></View><Action label="I am safe" colors={colors} outline onPress={() => void recordCheckIn('safe')} /><Action label="Request nearby rescue" colors={colors} onPress={() => void recordCheckIn('rescue_requested')} /><Action label="Call 112" colors={colors} outline onPress={() => void open112()} /><Text style={[styles.caption, { color: colors.muted, marginTop: 9 }]}>Calling 112 is always your action. Air-Mesh does not contact ERSS, track the call, or claim emergency dispatch.</Text></View>
+      <Text style={[styles.sectionTitle, { color: colors.muted }]}>OFFLINE SURVIVAL GUIDES</Text>{INDIA_RESPONSE_GUIDES.map((guide) => <View key={guide.id} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: 8 }]}><Text style={[styles.cardTitle, { color: colors.text }]}>{guide.title}</Text><Text style={[styles.caption, { color: colors.muted, marginTop: 5 }]}>{guide.summary}</Text></View>)}
+      <Text style={[styles.sectionTitle, { color: colors.muted }]}>PROVIDER READINESS</Text><View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}><Text style={[styles.cardTitle, { color: colors.text }]}>External dissemination is not configured</Text><Text style={[styles.caption, { color: colors.muted, marginTop: 5 }]}>Carrier broadcast, SMS, media, map, translation, and sensor integrations require authorized provider agreements and server-side credentials.</Text><Action label={providersOpen ? 'Hide provider details' : 'View provider details'} colors={colors} outline onPress={() => setProvidersOpen((open) => !open)} />{providersOpen && <View style={{ marginTop: 4 }}>{INDIA_PROVIDER_ADAPTERS.map((adapter) => <View key={adapter.id} style={[styles.provider, { borderBottomColor: colors.border }]}><View style={{ flex: 1 }}><Text style={[styles.providerName, { color: colors.text }]}>{adapter.channel}</Text><Text style={[styles.caption, { color: colors.muted }]}>{adapter.protocol}</Text><Text style={[styles.caption, { color: colors.muted }]}>{adapter.detail}</Text></View><Text style={[styles.status, { color: adapter.status === 'not_configured' ? colors.muted : colors.accent }]}>{adapter.status.replaceAll('_', ' ')}</Text></View>)}</View>}</View>
+    </ScrollView>
+  </View>;
+}
+
+function Action({ label, colors, onPress, outline = false }: { label: string; colors: Colors; onPress: () => void; outline?: boolean }) { return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed, hovered }) => [styles.action, { backgroundColor: outline ? 'transparent' : colors.accent, borderColor: outline ? colors.border : colors.accent, opacity: pressed ? .78 : hovered ? .94 : 1, transform: [{ scale: pressed ? .98 : hovered ? 1.01 : 1 }] }]}><Text style={{ color: outline ? colors.text : colors.onAccent, fontWeight: '800', fontSize: 13 }}>{label}</Text></Pressable>; }
+
+const styles = StyleSheet.create({ root: { flex: 1 }, topbar: { height: 58, paddingHorizontal: 17, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: StyleSheet.hairlineWidth }, icon: { padding: 6 }, topTitle: { fontSize: 20, fontWeight: '800' }, content: { padding: 18, paddingBottom: 30 }, hero: { paddingVertical: 12, paddingBottom: 20 }, kicker: { fontSize: 10, fontWeight: '800', letterSpacing: 1.15, marginBottom: 9 }, title: { fontSize: 30, lineHeight: 34, fontWeight: '900', letterSpacing: -1 }, body: { fontSize: 15, lineHeight: 22, marginTop: 8 }, sectionTitle: { fontSize: 10, fontWeight: '800', letterSpacing: 1.1, marginTop: 15, marginBottom: 9 }, chips: { gap: 8, paddingRight: 18 }, chip: { borderWidth: 1, borderRadius: 18, paddingHorizontal: 13, paddingVertical: 8 }, card: { borderWidth: 1, borderRadius: 16, padding: 15 }, row: { flexDirection: 'row', alignItems: 'center', gap: 10 }, cardTitle: { fontSize: 14, fontWeight: '800' }, caption: { fontSize: 12, lineHeight: 17 }, action: { height: 46, marginTop: 10, borderRadius: 13, borderWidth: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14 }, provider: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: 8 }, providerName: { fontSize: 12, fontWeight: '800', marginBottom: 2 }, status: { width: 80, fontSize: 9, fontWeight: '800', textAlign: 'right', textTransform: 'uppercase' } });
