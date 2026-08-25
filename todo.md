@@ -379,3 +379,6 @@
 - [x] Replace the unchanged-looking first-use setup screen with a direct citizen disaster-alert dashboard
 - [x] Keep local identity optional and move it behind a secondary preference rather than the opening experience
 - [x] Verify the visible direct-entry alert experience, safety actions, responsive layout, and checkpoint the repair
+- [x] Reproduce and repair the broken Safety & Evacuation route from the citizen alert dashboard
+- [x] Reproduce and repair the Test Alert action with clear local/browser/native feedback
+- [x] Add interaction regressions, complete verification, and checkpoint the safety and alert repairs

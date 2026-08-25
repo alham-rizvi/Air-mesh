@@ -7,12 +7,14 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8"
 describe("citizen-first disaster-response flow", () => {
   it("keeps the primary alert actions focused on safety, help, and incident reporting", () => {
     const alertCenter = read("components/alerts-center.tsx");
-    expect(alertCenter).toContain("Safety guide");
+    expect(alertCenter).toContain("Safety & evacuation");
     expect(alertCenter).toContain("I’m safe");
     expect(alertCenter).toContain("Need help");
     expect(alertCenter).toContain("Report incident");
     expect(alertCenter).toContain('onNavigate?.("india-response")');
     expect(alertCenter).toContain('onNavigate?.("report")');
+    expect(alertCenter).toContain("testAlertFeedback");
+    expect(alertCenter).toContain("Browser preview cannot show a native phone notification");
   });
 
   it("routes the report action to the citizen incident form and the response actions to the response workspace", () => {

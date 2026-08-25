@@ -48,6 +48,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
   const [alerts, setAlerts] = useState<DisasterAlert[]>([]);
   const [permission, setPermission] = useState<"unknown" | "granted" | "denied" | "unsupported">("unknown");
   const [categories, setCategories] = useState<AlertCategory[]>(["safety", "evacuation"]);
+  const [testAlertFeedback, setTestAlertFeedback] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const remoteAlerts = trpc.alerts.list.useQuery({ limit: 50 }, { refetchInterval: 60_000 });
   const officialFeed = trpc.alerts.officialFeedStatus.useQuery();
   const knownRemoteAlertIds = useRef(new Set<string>());
@@ -95,15 +96,20 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
   };
 
   const createTest = async () => {
-    const { alert, notified } = await createLocalAlert({
-      title: "Local disaster-alert test",
-      summary: "This is an on-device test alert. It is not from a government, IoT, weather, or live external provider.",
-      type: "test",
-      severity: "high",
-      source: "local_report",
-    });
-    setAlerts((current) => [alert, ...current.filter((entry) => entry.id !== alert.id)]);
-    Alert.alert("Local alert created", notified ? "The alert is stored locally, visible in this inbox, and submitted to the device notification system." : "The alert is stored locally and visible in this inbox. Enable notifications to request device-tray presentation.");
+    try {
+      const { alert, notified } = await createLocalAlert({
+        title: "Local disaster-alert test",
+        summary: "This is an on-device test alert. It is not from a government, IoT, weather, or live external provider.",
+        type: "test",
+        severity: "high",
+        source: "local_report",
+      });
+      setAlerts((current) => [alert, ...current.filter((entry) => entry.id !== alert.id)]);
+      setTestAlertFeedback({ kind: "success", text: notified ? "Test alert created. It is in this alert list and was sent to the device notification system." : "Test alert created. It is now visible in this alert list. Browser preview cannot show a native phone notification." });
+      Alert.alert("Local alert created", notified ? "The alert is stored locally, visible in this inbox, and submitted to the device notification system." : "The alert is stored locally and visible in this inbox. Enable notifications to request device-tray presentation.");
+    } catch (error) {
+      setTestAlertFeedback({ kind: "error", text: error instanceof Error ? `Test alert could not be created: ${error.message}` : "Test alert could not be created. Try reloading the app, then try again." });
+    }
   };
 
   const toggleCategory = async (category: AlertCategory) => {
@@ -146,7 +152,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
           <Text style={[styles.citizenActionTitle, { color: colors.text }]}>One clear action at a time.</Text>
           <Text style={[styles.caption, { color: colors.muted }]}>You can use these safety tools without an email, password, or internet connection.</Text>
           <View style={styles.citizenActionGrid}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Open safety guide" onPress={() => onNavigate?.("india-response")} style={({ pressed }) => [styles.citizenAction, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.72 : 1 }]}><MaterialIcons name="health-and-safety" size={20} color={colors.accent} /><Text style={[styles.citizenActionText, { color: colors.text }]}>Safety guide</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Open Safety and Evacuation" onPress={() => onNavigate?.("india-response")} style={({ pressed }) => [styles.citizenAction, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.72 : 1 }]}><MaterialIcons name="health-and-safety" size={20} color={colors.accent} /><Text style={[styles.citizenActionText, { color: colors.text }]}>Safety & evacuation</Text></Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Mark myself safe locally" onPress={recordCitizenSafetyCheckIn} style={({ pressed }) => [styles.citizenAction, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.72 : 1 }]}><MaterialIcons name="verified-user" size={20} color={colors.accent} /><Text style={[styles.citizenActionText, { color: colors.text }]}>I’m safe</Text></Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Open help request tools" onPress={() => onNavigate?.("india-response")} style={({ pressed }) => [styles.citizenAction, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.72 : 1 }]}><MaterialIcons name="sos" size={20} color="#FF5964" /><Text style={[styles.citizenActionText, { color: colors.text }]}>Need help</Text></Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Report an incident" onPress={() => onNavigate?.("report")} style={({ pressed }) => [styles.citizenAction, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.72 : 1 }]}><MaterialIcons name="report" size={20} color={colors.accent} /><Text style={[styles.citizenActionText, { color: colors.text }]}>Report incident</Text></Pressable>
@@ -163,8 +169,8 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
           <GlassMetricBlock label="SOURCE" value={officialFeed.data?.state === "ready_for_authorized_polling" ? "OFFICIAL" : "LOCAL"} valueColor={officialFeed.data?.state === "ready_for_authorized_polling" ? colors.accent : "#FFB34D"} colors={colors} />
         </View>
 
-        <Text style={[styles.section, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>ALERT CHANNELS</Text>
-        <Text style={[styles.caption, { color: colors.muted }]}>Choose which controlled alert types can raise an in-app banner or native notification while Air-Mesh is active.</Text>
+        <Text style={[styles.section, { color: colors.muted, fontFamily: DISPLAY_FONT }]}>ALERT NOTIFICATION TYPES</Text>
+        <Text style={[styles.caption, { color: colors.muted }]}>These switches only control which alert types can notify you. Use Safety & evacuation above for precautions and evacuation help.</Text>
         <View style={styles.categoryGrid}>{ALERT_CATEGORIES.map((category) => <Pressable key={category} onPress={() => void toggleCategory(category)} style={({ pressed }) => [styles.category, { borderColor: categories.includes(category) ? colors.accent : colors.border, backgroundColor: categories.includes(category) ? colors.accent : "transparent", opacity: pressed ? 0.75 : 1 }]}><Text style={[styles.categoryText, { color: categories.includes(category) ? (colors.onAccent ?? "#000") : colors.text }]}>{category}</Text></Pressable>)}</View>
 
         <View style={[styles.status, { backgroundColor: colors.field, borderColor: active.length ? severityColor(active[0].severity, colors.accent) : colors.border }]}> 
@@ -176,6 +182,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
           <Pressable onPress={() => void createTest()} style={({ pressed }) => [styles.primary, { backgroundColor: colors.accent, opacity: pressed ? 0.86 : 1 }]}><MaterialIcons name="add-alert" size={17} color={colors.onAccent ?? "#000"} /><Text style={[styles.primaryText, { color: colors.onAccent ?? "#000" }]}>Test alert</Text></Pressable>
           <Pressable onPress={() => void enableNotifications()} style={({ pressed }) => [styles.secondary, { borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="notifications-active" size={17} color={colors.accent} /><Text style={[styles.secondaryText, { color: colors.text }]}>{permission === "granted" ? "Alerts ready" : "Enable alerts"}</Text></Pressable>
         </View>
+        {testAlertFeedback && <View style={[styles.testAlertFeedback, { borderColor: testAlertFeedback.kind === "success" ? colors.accent : "#FF5964", backgroundColor: colors.field }]}><MaterialIcons name={testAlertFeedback.kind === "success" ? "check-circle" : "error-outline"} size={18} color={testAlertFeedback.kind === "success" ? colors.accent : "#FF5964"} /><Text style={[styles.caption, { color: colors.text, flex: 1 }]}>{testAlertFeedback.text}</Text></View>}
         <Text style={[styles.caption, { color: colors.muted, marginTop: 10 }]}>Notification status: {permission === "unknown" ? "not requested this session" : permission}. Permission is requested only when you select Enable alerts.</Text>
         <Text style={[styles.caption, { color: officialFeed.data?.state === "ready_for_authorized_polling" ? colors.muted : "#FFB34D", marginTop: 4 }]}>{officialFeed.isLoading ? "Checking official-feed readiness…" : officialFeed.data?.state === "ready_for_authorized_polling" ? "Official CAP feed is approved for server-side polling. CAP XML validation still applies before an alert can appear." : "Official feed not connected. Local alerts, safety guidance, reporting, and offline chat remain available."}</Text>
         <Text style={[styles.caption, { color: remoteAlerts.isError ? "#FFB34D" : colors.muted, marginTop: 4 }]}>{remoteAlerts.isLoading ? "Checking controlled alert service…" : remoteAlerts.isError ? "Controlled alert service unavailable. Local alerts remain available." : `Controlled alert service connected · ${serverAlerts.length} server alert${serverAlerts.length === 1 ? "" : "s"}`}</Text>
@@ -214,7 +221,7 @@ const styles = StyleSheet.create({
   brand: { fontSize: 18, fontWeight: "900", letterSpacing: -0.7 }, micro: { fontSize: 10, fontWeight: "900", letterSpacing: 1.15 }, menuButton: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 1 },
   content: { padding: 18, paddingBottom: 32 }, hero: { minHeight: 260, borderRadius: 22, overflow: "hidden", borderWidth: 1, marginTop: 2 }, heroImage: { opacity: 0.74, resizeMode: "cover" }, hiddenHeroImage: { opacity: 0 }, heroShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.4)" }, heroContent: { flex: 1, minHeight: 260, justifyContent: "space-between", padding: 18 }, heroEyebrow: { alignSelf: "flex-start", flexDirection: "row", gap: 7, alignItems: "center", borderWidth: 1, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 6, backgroundColor: "rgba(0,0,0,0.55)" }, pulse: { width: 7, height: 7, borderRadius: 4 }, heroEyebrowText: { color: "#FFFFFF", fontSize: 9, fontWeight: "900", letterSpacing: 1 }, heroTitle: { color: "#FFFFFF", fontSize: 39, lineHeight: 38, fontWeight: "900", letterSpacing: -1.6, marginTop: 16 }, heroCopy: { color: "#D1D7CB", fontSize: 13, lineHeight: 19, maxWidth: "76%", marginTop: 12 }, heroFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   glassSurface: { boxShadow: "0px 7px 14px rgba(0, 0, 0, 0.28)", elevation: 4 }, commandLine: { minHeight: 68, borderRadius: 16, borderWidth: 1, padding: 12, marginTop: 14, flexDirection: "row", alignItems: "center", gap: 10 }, commandIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" }, commandText: { fontSize: 13, fontWeight: "800", marginTop: 2 }, commandTime: { fontSize: 9, fontWeight: "900", letterSpacing: 0.7 },
-  citizenActionPanel: { borderWidth: 1, borderRadius: 18, padding: 14, marginTop: 14 }, citizenActionTitle: { fontSize: 17, lineHeight: 21, fontWeight: "900", marginTop: 4, marginBottom: 3 }, citizenActionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 13 }, citizenAction: { width: "48.6%", minHeight: 78, borderWidth: 1, borderRadius: 14, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12, gap: 7 }, citizenActionText: { fontSize: 12, fontWeight: "900" }, offlineChatHint: { minHeight: 46, marginTop: 12, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", alignItems: "center", gap: 7 }, offlineChatHintText: { flex: 1, fontSize: 11, lineHeight: 15 },
+  citizenActionPanel: { borderWidth: 1, borderRadius: 18, padding: 14, marginTop: 14 }, citizenActionTitle: { fontSize: 17, lineHeight: 21, fontWeight: "900", marginTop: 4, marginBottom: 3 }, citizenActionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 13 }, citizenAction: { width: "48.6%", minHeight: 78, borderWidth: 1, borderRadius: 14, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12, gap: 7 }, citizenActionText: { fontSize: 12, fontWeight: "900" }, offlineChatHint: { minHeight: 46, marginTop: 12, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", alignItems: "center", gap: 7 }, offlineChatHintText: { flex: 1, fontSize: 11, lineHeight: 15 }, testAlertFeedback: { minHeight: 48, borderWidth: 1, borderRadius: 13, marginTop: 10, paddingHorizontal: 11, paddingVertical: 9, flexDirection: "row", alignItems: "center", gap: 8 },
   status: { borderWidth: 1, borderRadius: 16, padding: 14, marginTop: 18, flexDirection: "row", alignItems: "center", gap: 11 }, statusIcon: { width: 42, height: 42, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   glassGrid: { flexDirection: "row", gap: 8, marginTop: 10 }, glassPressable: { flex: 1 }, glassBlock: { flex: 1, minHeight: 76, borderWidth: 1, borderRadius: 15, padding: 10, justifyContent: "space-between" }, glassLabel: { fontSize: 8, fontWeight: "900", letterSpacing: 0.7 }, glassValue: { fontSize: 23, lineHeight: 24, fontWeight: "900", letterSpacing: -0.8 }, glassSource: { fontSize: 12, lineHeight: 16, fontWeight: "900", letterSpacing: -0.2 },
   caption: { fontSize: 12, lineHeight: 17 }, categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 }, category: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 11, paddingVertical: 8 }, categoryText: { fontSize: 12, fontWeight: "800", textTransform: "capitalize" }, actions: { flexDirection: "row", gap: 9, marginTop: 14 }, primary: { flex: 1, height: 43, borderRadius: 13, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }, primaryText: { fontSize: 13, fontWeight: "900" }, secondary: { flex: 1, height: 43, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }, secondaryText: { fontSize: 13, fontWeight: "800" },
