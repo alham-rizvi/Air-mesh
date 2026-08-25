@@ -7,11 +7,11 @@ import { ACCENT_COLORS, useThemeStore, type AccentColor } from '@/lib/air-mesh-s
 type OnboardingColors = { bg: string; surface: string; text: string; muted: string; border: string; field: string; accent: string };
 
 function MeshMark({ size = 38 }: { size?: number }) {
-  return <Image source={require('../assets/images/airmesh-teal-logo.png')} style={{ width:size, height:size }} resizeMode="contain" accessibilityLabel="Air-Mesh logo" />;
+  return <Image source={require('../assets/images/airmesh-teal-logo.png')} style={{ width:size, height:size }} resizeMode="contain" accessibilityLabel="Sanket Response logo" />;
 }
 
 export function OnboardingVisual({ colors }: { colors: OnboardingColors }) {
-  return <View style={[styles.launchVisual,{borderColor:colors.border}]}><View style={styles.brandRow}><MeshMark size={34}/><Text style={styles.wordmark}>Air-Mesh</Text></View><View style={styles.launchCopy}><Text style={[styles.eyebrow,{color:'#FFFFFF'}]}>DISASTER ALERT / OFFLINE COORDINATION</Text><Text style={styles.launchTitle}>When the internet fails,{`\n`}Air-Mesh keeps you connected.</Text><Text style={styles.launchBody}>Local alerts, reports, and routes stay on-device. Nearby delivery needs compatible devices and an available peer or route.</Text></View><View style={styles.launchStatus}><View style={[styles.statusDot,{backgroundColor:'#00E5C8'}]}/><Text style={styles.launchStatusText}>LOCAL DISASTER WORKSPACE</Text></View></View>;
+  return <View style={[styles.launchVisual,{borderColor:colors.border}]}><View style={styles.brandRow}><MeshMark size={34}/><Text style={styles.wordmark}>Sanket</Text></View><View style={styles.launchCopy}><Text style={[styles.eyebrow,{color:'#FFFFFF'}]}>DISASTER ALERT / OFFLINE COORDINATION</Text><Text style={styles.launchTitle}>When the internet fails,{`\n`}Sanket keeps you connected.</Text><Text style={styles.launchBody}>Local alerts, reports, and routes stay on-device. Nearby delivery needs compatible devices and an available peer or route.</Text></View><View style={styles.launchStatus}><View style={[styles.statusDot,{backgroundColor:'#00E5C8'}]}/><Text style={styles.launchStatusText}>LOCAL DISASTER WORKSPACE</Text></View></View>;
 }
 
 export function HomePreparednessVisual({ colors }: { colors: OnboardingColors }) {
@@ -21,7 +21,7 @@ export function HomePreparednessVisual({ colors }: { colors: OnboardingColors })
 function AccentPalette({ colors }: { colors: OnboardingColors }) {
   const accent = useThemeStore((state)=>state.accent);
   const setAccent = useThemeStore((state)=>state.setAccent);
-  return <View style={[styles.accentPanel,{borderColor:colors.border,backgroundColor:colors.field}]}><Text style={[styles.eyebrow,{color:colors.text}]}>ACCENT COLOUR</Text><Text style={[styles.accentCopy,{color:colors.muted}]}>Choose from 20 local interface accents. The teal Air-Mesh logo stays independent of your interface choice.</Text><View style={styles.accentGrid}>{ACCENT_COLORS.map((color:AccentColor)=><Pressable key={color} accessibilityLabel={`Use ${color} accent`} onPress={()=>setAccent(color)} style={({pressed,hovered})=>[styles.accentChoice,{backgroundColor:color,borderColor:accent===color?'#FFFFFF':colors.field,borderWidth:accent===color?2:1,opacity:pressed?.7:hovered?.86:1}]}>{accent===color&&<View style={styles.accentSelection}/>}</Pressable>)}</View></View>;
+  return <View style={[styles.accentPanel,{borderColor:colors.border,backgroundColor:colors.field}]}><Text style={[styles.eyebrow,{color:colors.text}]}>ACCENT COLOUR</Text><Text style={[styles.accentCopy,{color:colors.muted}]}>Choose from 20 local interface accents. The teal Sanket logo stays independent of your interface choice.</Text><View style={styles.accentGrid}>{ACCENT_COLORS.map((color:AccentColor)=><Pressable key={color} accessibilityLabel={`Use ${color} accent`} onPress={()=>setAccent(color)} style={({pressed,hovered})=>[styles.accentChoice,{backgroundColor:color,borderColor:accent===color?'#FFFFFF':colors.field,borderWidth:accent===color?2:1,opacity:pressed?.7:hovered?.86:1}]}>{accent===color&&<View style={styles.accentSelection}/>}</Pressable>)}</View></View>;
 }
 
 export function SettingsProfileVisual({ colors, variant }: { colors: OnboardingColors; variant: 'settings' | 'profile' }) {
@@ -30,7 +30,7 @@ export function SettingsProfileVisual({ colors, variant }: { colors: OnboardingC
 }
 
 export function BootstrapScreen({ colors }: { colors: OnboardingColors }) {
-  return <ScreenContainer edges={['top', 'bottom', 'left', 'right']}><View style={[styles.bootstrap,{backgroundColor:'#000000'}]}><MeshMark size={66}/><Text style={styles.bootstrapTitle}>airmesh</Text><Text style={[styles.bootstrapBody,{color:colors.muted}]}>Opening disaster coordination workspace</Text><View style={[styles.scanline,{backgroundColor:colors.border}]}><View style={[styles.scanPulse,{backgroundColor:'#00E5C8'}]}/></View></View></ScreenContainer>;
+  return <ScreenContainer edges={['top', 'bottom', 'left', 'right']}><View style={[styles.bootstrap,{backgroundColor:'#000000'}]}><MeshMark size={66}/><Text style={styles.bootstrapTitle}>sanket</Text><Text style={[styles.bootstrapBody,{color:colors.muted}]}>Opening disaster coordination workspace</Text><View style={[styles.scanline,{backgroundColor:colors.border}]}><View style={[styles.scanPulse,{backgroundColor:'#00E5C8'}]}/></View></View></ScreenContainer>;
 }
 
 const styles = StyleSheet.create({

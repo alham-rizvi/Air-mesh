@@ -397,3 +397,8 @@
 - [x] Build in-app authority alert publishing with severity, instructions, and optional geographic target fields
 - [x] Build in-app authority monitoring with update and resolution controls plus clear citizen-status propagation
 - [x] Add authority-console interaction tests, complete verification, and checkpoint the visible APK workflow
+- [x] Define and apply a new project name across the APK and public web companion without changing the technical slug prematurely
+- [x] Redesign the signed-in authority experience as a visually distinct operator command workspace
+- [x] Add a dedicated monitoring console with controlled-alert lifecycle, target, and service-health visibility
+- [x] Add public browser sections for About, verified release downloads, and clear build/release status
+- [x] Add regressions, complete cross-stack verification, and checkpoint the operator and public-site upgrade
