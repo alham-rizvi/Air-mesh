@@ -58,8 +58,9 @@ export async function mirrorControlledAlerts(alerts: DisasterAlert[]): Promise<D
     const existing = existingById.get(alert.id);
     const next: DisasterAlert = {
       ...alert,
-      status: existing?.status ?? 'active',
+      status: alert.status === 'resolved' ? 'resolved' : existing?.status === 'acknowledged' ? 'acknowledged' : alert.status ?? 'active',
       acknowledged_at: existing?.acknowledged_at ?? null,
+      resolved_at: alert.resolved_at ?? existing?.resolved_at ?? null,
     };
     await database.saveAlert(next);
     if (!existing) {

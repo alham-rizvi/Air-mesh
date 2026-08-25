@@ -385,3 +385,11 @@
 - [x] Add an explicit native-only Test Alert sound outcome while preserving honest browser behavior
 - [x] Rename and clarify saved-alert search so it is not mistaken for a live provider search
 - [x] Add sound and search-label regressions, complete verification, and checkpoint the alert interaction update
+- [ ] Confirm authorized official India alert-feed access requirements and inspect the existing SACHET CAP adapter
+- [ ] Configure the approved provider reference securely and ingest only validated official alerts server-side
+- [ ] Render source, freshness, and validated precautions for official alerts with transparent failure states
+- [ ] Add official-feed regressions, complete verification, and checkpoint the authorized integration
+- [x] Map every RIH-PS-016 requirement to current Air-Mesh evidence and identify only concrete gaps
+- [x] Complete authorized alert create, location target, update, and resolved-status workflows
+- [x] Strengthen citizen safety guidance, delivery state, and incident-status tracking without unverified claims
+- [x] Add and verify the mandatory emergency alert, location-based alert, alert update, and alert resolution scenarios

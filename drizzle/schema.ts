@@ -41,6 +41,8 @@ export const disasterAlerts = mysqlTable("disaster_alerts", {
   targetLongitude: double("target_longitude"),
   targetRadiusM: int("target_radius_m"),
   locale: varchar("locale", { length: 16 }).notNull().default("en-IN"),
+  status: mysqlEnum("status", ["active", "resolved"]).notNull().default("active"),
+  resolvedAt: timestamp("resolved_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [index("idx_disaster_alerts_issued").on(table.issuedAt), index("idx_disaster_alerts_severity").on(table.severity), index("idx_disaster_alerts_hazard").on(table.hazard)]);
 

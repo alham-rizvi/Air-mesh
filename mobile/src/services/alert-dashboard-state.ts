@@ -1,12 +1,13 @@
 import type { DisasterAlert } from "@/mobile/src/types/security-data";
 
-export type DashboardAlertState = "active" | "acknowledged" | "expired";
+export type DashboardAlertState = "active" | "acknowledged" | "resolved" | "expired";
 export type DashboardStatusFilter = "all" | DashboardAlertState;
 export type DashboardUrgencyFilter = "all" | "critical" | "high_or_critical";
 export type DashboardSortOption = "newest" | "severity" | "expiry";
 
 export function dashboardAlertState(alert: DisasterAlert, now = Date.now()): DashboardAlertState {
   if (alert.status === "acknowledged") return "acknowledged";
+  if (alert.status === "resolved") return "resolved";
   if (alert.expires_at && Date.parse(alert.expires_at) <= now) return "expired";
   return "active";
 }

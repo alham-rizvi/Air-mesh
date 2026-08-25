@@ -121,8 +121,17 @@ export async function createDisasterAlert(alert: InsertDisasterAlertRow): Promis
       targetLongitude: alert.targetLongitude,
       targetRadiusM: alert.targetRadiusM,
       locale: alert.locale,
+      status: alert.status,
+      resolvedAt: alert.resolvedAt,
     },
   });
+}
+
+export async function resolveDisasterAlert(id: string, resolvedAt: Date): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Server alert storage is unavailable.");
+  const result = await db.update(disasterAlerts).set({ status: "resolved", resolvedAt }).where(eq(disasterAlerts.id, id));
+  return result[0].affectedRows > 0;
 }
 
 export async function listDisasterAlerts(limit = 50) {

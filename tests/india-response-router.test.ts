@@ -35,6 +35,18 @@ describe('India response foundation', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  it('lets an authorized publisher update a targeted alert and mark it resolved', async () => {
+    process.env.ALERT_INGESTION_TOKEN = 'india-test-token';
+    const create = vi.spyOn(db, 'createDisasterAlert').mockResolvedValue();
+    const resolve = vi.spyOn(db, 'resolveDisasterAlert').mockResolvedValue(true);
+    await expect(publisherCaller('india-test-token').alerts.update({
+      id: 'india-zone-1', title: 'Heat warning updated', summary: 'Use cooling centres and avoid afternoon travel.', type: 'weather', severity: 'critical', issuedAt: new Date(), originDeviceId: 'india-publisher', hazard: 'heatwave', locale: 'en-IN', target: { label: 'Ward 12', latitude: 28.6139, longitude: 77.209, radiusM: 1200 },
+    })).resolves.toMatchObject({ accepted: true, status: 'active' });
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ id: 'india-zone-1', severity: 'critical', status: 'active' }));
+    await expect(publisherCaller('india-test-token').alerts.resolve({ id: 'india-zone-1' })).resolves.toMatchObject({ accepted: true, status: 'resolved' });
+    expect(resolve).toHaveBeenCalledWith('india-zone-1', expect.any(Date));
+  });
+
   it('stores an authenticated rescue request without claiming dispatch and exposes unconfigured adapters', async () => {
     const create = vi.spyOn(db, 'createSafetyCheckIn').mockResolvedValue();
     await expect(authenticatedCaller().response.checkIn({ id: 'checkin-1', status: 'rescue_requested', deviceId: 'AM-123456', hazard: 'landslide', note: 'Need local assistance.', location: { latitude: 30.7333, longitude: 76.7794 } })).resolves.toEqual({ accepted: true, status: 'rescue_requested', dispatchRequested: false });

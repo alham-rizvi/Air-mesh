@@ -51,7 +51,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
   const [testAlertFeedback, setTestAlertFeedback] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const remoteAlerts = trpc.alerts.list.useQuery({ limit: 50 }, { refetchInterval: 60_000 });
   const officialFeed = trpc.alerts.officialFeedStatus.useQuery();
-  const knownRemoteAlertIds = useRef(new Set<string>());
+  const knownRemoteAlertVersions = useRef(new Map<string, string>());
   const remoteInitialized = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const refresh = useCallback(() => { void listLocalAlerts().then(setAlerts).catch(() => setAlerts([])); }, []);
@@ -64,22 +64,28 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
 
   useEffect(() => {
     const incoming = remoteAlerts.data ?? [];
+    const alertVersion = (alert: (typeof incoming)[number]) => [alert.issuedAt, alert.severity, alert.summary, alert.status, alert.resolvedAt ?? ""].join("|");
     if (!remoteInitialized.current) {
-      incoming.forEach((alert) => knownRemoteAlertIds.current.add(alert.id));
+      incoming.forEach((alert) => knownRemoteAlertVersions.current.set(alert.id, alertVersion(alert)));
       remoteInitialized.current = true;
       return;
     }
-    incoming.filter((alert) => !knownRemoteAlertIds.current.has(alert.id)).forEach((alert) => {
-      knownRemoteAlertIds.current.add(alert.id);
+    incoming.forEach((alert) => {
+      const version = alertVersion(alert);
+      const prior = knownRemoteAlertVersions.current.get(alert.id);
+      if (prior === version) return;
+      knownRemoteAlertVersions.current.set(alert.id, version);
       if (!categories.includes(alert.type as AlertCategory)) return;
-      const presentation: DisasterAlert = { id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale };
-      Alert.alert(`${alert.severity.toUpperCase()} alert`, `${alert.title}\n\n${alert.summary}`);
-      void notifyLocalAlert(presentation);
+      const resolved = alert.status === "resolved";
+      const presentation: DisasterAlert = { id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: resolved ? "resolved" : "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, resolved_at: alert.resolvedAt ? new Date(alert.resolvedAt).toISOString() : null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale };
+      const heading = resolved ? "ALERT RESOLVED" : prior ? "ALERT UPDATED" : `${alert.severity.toUpperCase()} ALERT`;
+      Alert.alert(heading, `${alert.title}\n\n${alert.summary}`);
+      if (!resolved) void notifyLocalAlert(presentation);
     });
   }, [categories, remoteAlerts.data]);
 
   useEffect(() => {
-    const records: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
+    const records: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: alert.status === "resolved" ? "resolved" : "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, resolved_at: alert.resolvedAt ? new Date(alert.resolvedAt).toISOString() : null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
     if (!records.length) return;
     void mirrorControlledAlerts(records).then(refresh).catch(() => undefined);
   }, [refresh, remoteAlerts.data]);
@@ -140,7 +146,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
     void Linking.openURL(url).catch(() => Alert.alert("Link unavailable", "Air-Mesh could not open this support link on this device."));
   };
 
-  const serverAlerts: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
+  const serverAlerts: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: alert.status === "resolved" ? "resolved" : "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, resolved_at: alert.resolvedAt ? new Date(alert.resolvedAt).toISOString() : null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
   const mergedAlerts = [...alerts, ...serverAlerts.filter((remote) => !alerts.some((local) => local.id === remote.id))];
   const active = mergedAlerts.filter((alert) => alert.status === "active" && (alert.type === "test" || categories.includes(alert.type as AlertCategory)));
 

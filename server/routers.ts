@@ -47,6 +47,11 @@ const controlledAlertInput = z.object({
   }).optional(),
 });
 
+const controlledAlertResolutionInput = z.object({
+  id: z.string().trim().min(1).max(64),
+  resolvedAt: z.coerce.date().optional(),
+});
+
 const safetyCheckInInput = z.object({
   id: z.string().trim().min(1).max(64),
   status: z.enum(["safe", "rescue_requested"]),
@@ -99,13 +104,41 @@ export const appRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: "issuedAt is too far in the future." });
         }
         try {
-          await db.createDisasterAlert({ id: input.id, title: input.title, summary: input.summary, type: input.type, severity: input.severity, source: "controlled_publisher", issuedAt: input.issuedAt, expiresAt: input.expiresAt ?? null, originDeviceId: input.originDeviceId, hazard: input.hazard, locale: input.locale, targetLabel: input.target?.label ?? null, targetLatitude: input.target?.latitude ?? null, targetLongitude: input.target?.longitude ?? null, targetRadiusM: input.target?.radiusM ?? null });
+          await db.createDisasterAlert({ id: input.id, title: input.title, summary: input.summary, type: input.type, severity: input.severity, source: "controlled_publisher", issuedAt: input.issuedAt, expiresAt: input.expiresAt ?? null, originDeviceId: input.originDeviceId, hazard: input.hazard, locale: input.locale, targetLabel: input.target?.label ?? null, targetLatitude: input.target?.latitude ?? null, targetLongitude: input.target?.longitude ?? null, targetRadiusM: input.target?.radiusM ?? null, status: "active", resolvedAt: null });
         } catch (error) {
           console.error("[Alerts] Controlled alert ingestion unavailable", error instanceof Error ? error.message : "unknown");
           throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Server alert storage is unavailable." });
         }
-        return { accepted: true, source: "controlled_publisher" } as const;
-    }),
+        return { accepted: true, source: "controlled_publisher", status: "active" } as const;
+      }),
+    update: publicProcedure
+      .input(controlledAlertInput)
+      .mutation(async ({ ctx, input }) => {
+        requirePublisherToken(ctx.req.headers as Record<string, unknown>);
+        if (input.expiresAt && input.expiresAt <= input.issuedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "expiresAt must be after issuedAt." });
+        try {
+          await db.createDisasterAlert({ id: input.id, title: input.title, summary: input.summary, type: input.type, severity: input.severity, source: "controlled_publisher", issuedAt: input.issuedAt, expiresAt: input.expiresAt ?? null, originDeviceId: input.originDeviceId, hazard: input.hazard, locale: input.locale, targetLabel: input.target?.label ?? null, targetLatitude: input.target?.latitude ?? null, targetLongitude: input.target?.longitude ?? null, targetRadiusM: input.target?.radiusM ?? null, status: "active", resolvedAt: null });
+        } catch (error) {
+          console.error("[Alerts] Controlled alert update unavailable", error instanceof Error ? error.message : "unknown");
+          throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Server alert storage is unavailable." });
+        }
+        return { accepted: true, source: "controlled_publisher", status: "active" } as const;
+      }),
+    resolve: publicProcedure
+      .input(controlledAlertResolutionInput)
+      .mutation(async ({ ctx, input }) => {
+        requirePublisherToken(ctx.req.headers as Record<string, unknown>);
+        const resolvedAt = input.resolvedAt ?? new Date();
+        try {
+          const resolved = await db.resolveDisasterAlert(input.id, resolvedAt);
+          if (!resolved) throw new TRPCError({ code: "NOT_FOUND", message: "Controlled alert was not found." });
+        } catch (error) {
+          if (error instanceof TRPCError) throw error;
+          console.error("[Alerts] Controlled alert resolution unavailable", error instanceof Error ? error.message : "unknown");
+          throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Server alert storage is unavailable." });
+        }
+        return { accepted: true, id: input.id, status: "resolved", resolvedAt } as const;
+      }),
   }),
 
   response: router({
