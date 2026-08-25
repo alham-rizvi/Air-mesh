@@ -14,6 +14,7 @@ import { ALERT_CATEGORIES, loadAlertCategories, saveAlertCategories, type AlertC
 import type { DisasterAlert } from "@/mobile/src/types/security-data";
 
 type Colors = { bg: string; surface: string; text: string; muted: string; border: string; field: string; accent: string; onAccent?: string };
+const PROJECT_WEBSITE_URL = "https://airmesh-fn2gmyjj.manus.space/website";
 
 function severityColor(severity: DisasterAlert["severity"], accent: string) {
   return severity === "critical" ? "#FF5964" : severity === "high" ? "#FFB34D" : severity === "moderate" ? "#EACB5B" : accent;
@@ -146,6 +147,10 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
     void Linking.openURL(url).catch(() => Alert.alert("Link unavailable", "Air-Mesh could not open this support link on this device."));
   };
 
+  const openProjectWebsite = () => {
+    void Linking.openURL(PROJECT_WEBSITE_URL).catch(() => Alert.alert("Website unavailable", "Sanket Response could not open the public project website on this device."));
+  };
+
   const serverAlerts: DisasterAlert[] = (remoteAlerts.data ?? []).map((alert) => ({ id: alert.id, title: alert.title, summary: alert.summary, type: alert.type, severity: alert.severity, source: alert.source, issued_at: new Date(alert.issuedAt).toISOString(), expires_at: alert.expiresAt ? new Date(alert.expiresAt).toISOString() : null, status: alert.status === "resolved" ? "resolved" : "active", origin_device_id: alert.originDeviceId, acknowledged_at: null, resolved_at: alert.resolvedAt ? new Date(alert.resolvedAt).toISOString() : null, hazard: alert.hazard, target_label: alert.targetLabel, target_latitude: alert.targetLatitude, target_longitude: alert.targetLongitude, target_radius_m: alert.targetRadiusM, locale: alert.locale }));
   const mergedAlerts = [...alerts, ...serverAlerts.filter((remote) => !alerts.some((local) => local.id === remote.id))];
   const active = mergedAlerts.filter((alert) => alert.status === "active" && (alert.type === "test" || categories.includes(alert.type as AlertCategory)));
@@ -155,6 +160,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
       <View style={[styles.header, { borderBottomColor: colors.border }]}> 
         <View style={[styles.logo, { borderColor: colors.accent }]}><MaterialIcons name="warning-amber" size={18} color={colors.accent} /></View>
         <View style={{ flex: 1 }}><Text style={[styles.brand, { color: colors.text, fontFamily: DISPLAY_FONT }]}>Sanket</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>RESPONSE COMMAND</Text></View>
+        <Pressable accessibilityRole="link" accessibilityLabel="Visit Sanket Response website" onPress={openProjectWebsite} style={({ pressed }) => [styles.websiteButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="public" size={18} color={colors.accent} /><Text style={[styles.websiteButtonText, { color: colors.text }]}>Web</Text></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Open Air-Mesh menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
@@ -230,9 +236,9 @@ const redesign = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  header: { height: 62, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  header: { height: 62, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   logo: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center", borderWidth: 1 },
-  brand: { fontSize: 18, fontWeight: "900", letterSpacing: -0.7 }, micro: { fontSize: 10, fontWeight: "900", letterSpacing: 1.15 }, menuButton: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 1 },
+  brand: { fontSize: 18, fontWeight: "900", letterSpacing: -0.7 }, micro: { fontSize: 10, fontWeight: "900", letterSpacing: 1.15 }, websiteButton: { height: 40, borderRadius: 12, borderWidth: 1, paddingHorizontal: 9, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 4 }, websiteButtonText: { fontSize: 10, fontWeight: "900" }, menuButton: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 1 },
   content: { padding: 18, paddingBottom: 32 }, hero: { minHeight: 260, borderRadius: 22, overflow: "hidden", borderWidth: 1, marginTop: 2 }, heroImage: { opacity: 0.74, resizeMode: "cover" }, hiddenHeroImage: { opacity: 0 }, heroShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.4)" }, heroContent: { flex: 1, minHeight: 260, justifyContent: "space-between", padding: 18 }, heroEyebrow: { alignSelf: "flex-start", flexDirection: "row", gap: 7, alignItems: "center", borderWidth: 1, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 6, backgroundColor: "rgba(0,0,0,0.55)" }, pulse: { width: 7, height: 7, borderRadius: 4 }, heroEyebrowText: { color: "#FFFFFF", fontSize: 9, fontWeight: "900", letterSpacing: 1 }, heroTitle: { color: "#FFFFFF", fontSize: 39, lineHeight: 38, fontWeight: "900", letterSpacing: -1.6, marginTop: 16 }, heroCopy: { color: "#D1D7CB", fontSize: 13, lineHeight: 19, maxWidth: "76%", marginTop: 12 }, heroFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   glassSurface: { boxShadow: "0px 7px 14px rgba(0, 0, 0, 0.28)", elevation: 4 }, commandLine: { minHeight: 68, borderRadius: 16, borderWidth: 1, padding: 12, marginTop: 14, flexDirection: "row", alignItems: "center", gap: 10 }, commandIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" }, commandText: { fontSize: 13, fontWeight: "800", marginTop: 2 }, commandTime: { fontSize: 9, fontWeight: "900", letterSpacing: 0.7 },
   citizenActionPanel: { borderWidth: 1, borderRadius: 18, padding: 14, marginTop: 14 }, citizenActionTitle: { fontSize: 17, lineHeight: 21, fontWeight: "900", marginTop: 4, marginBottom: 3 }, citizenActionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 13 }, citizenAction: { width: "48.6%", minHeight: 78, borderWidth: 1, borderRadius: 14, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12, gap: 7 }, citizenActionText: { fontSize: 12, fontWeight: "900" }, offlineChatHint: { minHeight: 46, marginTop: 12, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", alignItems: "center", gap: 7 }, offlineChatHintText: { flex: 1, fontSize: 11, lineHeight: 15 }, testAlertFeedback: { minHeight: 48, borderWidth: 1, borderRadius: 13, marginTop: 10, paddingHorizontal: 11, paddingVertical: 9, flexDirection: "row", alignItems: "center", gap: 8 },

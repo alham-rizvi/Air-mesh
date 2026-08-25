@@ -33,7 +33,6 @@ import type { KeyPair, Report as StoredReport, RetryHistoryRecord } from '@/mobi
 import { IndiaResponseWorkspace } from '@/components/india-response-workspace';
 import { CitizenIncidentForm } from '@/components/citizen-incident-form';
 import { AuthorityConsole } from '@/components/authority-console';
-import { PublicProjectSite } from '@/components/public-project-site';
 
 const DEFAULT_ACCENT = '#2DD4BF';
 const accentForeground = (value: string) => { const clean=value.replace('#',''); const red=parseInt(clean.slice(0,2),16); const green=parseInt(clean.slice(2,4),16); const blue=parseInt(clean.slice(4,6),16); return ((red*299)+(green*587)+(blue*114))/1000 > 148 ? '#090B09' : '#FFFFFF'; };
@@ -66,7 +65,7 @@ function TopologyGraph({ routes, connectedPeers, colors }: { routes: Awaited<Ret
   </Svg><View style={{flexDirection:'row',gap:12,marginTop:2}}><Text style={[styles.caption,{color:colors.accent}]}>━ connected peer</Text><Text style={[styles.caption,{color:colors.muted}]}>┄ route-table path</Text></View></Card>;
 }
 
-function Home({ colors, go }: { colors:ReturnType<typeof palette>; go:(s:string)=>void }) { return Platform.OS === 'web' ? <PublicProjectSite colors={colors} onOpenCitizen={() => go('alerts-app')} onOpenAuthority={() => go('authority')}/> : <AlertsCenter colors={colors} onNavigate={go}/>; }
+function Home({ colors, go }: { colors:ReturnType<typeof palette>; go:(s:string)=>void }) { return <AlertsCenter colors={colors} onNavigate={go}/>; }
 function Messages({ colors, go }: { colors:ReturnType<typeof palette>; go:(s:string)=>void }) { const chats=useChatStore(s=>s.chats); const [query,setQuery]=useState(''); const filtered=chats.filter(c=>c.name.toLowerCase().includes(query.toLowerCase())); return <ScreenContainer><TopBar title="Chat" colors={colors} onMenu={()=>go('audit')} right={<Icon name="search" color={colors.text} onPress={()=>setQuery(query?'':' ')} />} /><ScrollView contentContainerStyle={styles.content}><WorkspaceBanner eyebrow="LOCAL CONVERSATIONS" title={'KEEP THE\nMESSAGE MOVING.'} detail="Messages remain on this device until a supported nearby route can accept them." colors={colors}/><View style={[styles.search,{marginHorizontal:0,marginTop:14,backgroundColor:colors.surface,borderColor:colors.border}]}><MaterialIcons name="search" size={19} color={colors.muted}/><TextInput value={query.trim()} onChangeText={setQuery} placeholder="Search local conversations" placeholderTextColor={colors.muted} style={[styles.searchInput,{color:colors.text}]}/></View>{filtered.length===0 ? <Text style={[styles.caption,{color:colors.muted,marginBottom:12}]}>No conversations stored locally yet. Connect a transport and add a contact to begin.</Text> : filtered.map(chat=><Pressable key={chat.id} onPress={()=>go('chat:'+chat.id)} style={({pressed})=>[styles.chatRow,{borderBottomColor:colors.border,opacity:pressed?.65:1}]}><Avatar initials={chat.initials} colors={colors}/><View style={{flex:1,marginLeft:12}}><View style={styles.row}><Text style={[styles.cardTitle,{color:colors.text}]}>{chat.name}</Text><Text style={[styles.caption,{color:colors.muted}]}>{chat.time}</Text></View><Text numberOfLines={1} style={[styles.caption,{color:colors.muted,marginTop:4}]}>{chat.preview} · {chat.relay}</Text></View>{chat.unread>0&&<View style={styles.badge}><Text style={styles.badgeText}>{chat.unread}</Text></View>}</Pressable>)}<View style={{flexDirection:'row',gap:8}}><View style={{flex:1}}><Button label="Start conversation" colors={colors} onPress={()=>go('discover')}/></View><View style={{flex:1}}><Button label="New group" colors={colors} outline onPress={()=>go('new-group')}/></View></View><Text style={[styles.caption,{textAlign:'center',marginTop:16,color:colors.muted}]}>No internet is required. Live peer messaging remains unavailable until a mesh transport is connected.</Text></ScrollView></ScreenContainer>; }
 function Chat({ colors, chatId, go }: { colors:ReturnType<typeof palette>; chatId:string; go:(s:string)=>void }) {
   const chatState=useChatStore(s=>s); const add=useChatStore(s=>s.addMessage); const updateDelivery=useChatStore(s=>s.updateDelivery);
@@ -284,7 +283,7 @@ export default function HomeScreen() {
   };
 
   const go = (destination: string) => {
-    const detailRoutes = ['contacts', 'discover', 'add-contact', 'new-group', 'report', 'sync', 'reports', 'profile', 'audit', 'faq', 'about', 'india-response', 'authority', 'alerts-app'];
+    const detailRoutes = ['contacts', 'discover', 'add-contact', 'new-group', 'report', 'sync', 'reports', 'profile', 'audit', 'faq', 'about', 'india-response', 'authority'];
     if (destination.includes(':') || detailRoutes.includes(destination)) { setDetail(destination); return; }
     setDetail('');
     setTab(destination as PrimaryDestination);
@@ -305,7 +304,6 @@ export default function HomeScreen() {
   if (detail === 'about') return <About colors={colors} go={go}/>;
   if (detail === 'india-response') return <IndiaResponseWorkspace colors={colors} deviceId={localIdentity.deviceId} displayName={localIdentity.displayName} onBack={() => go('alerts')}/>;
   if (detail === 'authority') return <AuthorityConsole colors={colors} onBack={() => go('alerts')}/>;
-  if (detail === 'alerts-app') return <AlertsCenter colors={colors} onNavigate={go}/>;
 
   return <View style={{ flex: 1, backgroundColor: colors.bg }}><View style={{ flex: 1 }}>{tab === 'alerts' ? <Home colors={colors} go={go}/> : tab === 'messages' ? <Messages colors={colors} go={go}/> : tab === 'rescue' ? <Rescue colors={colors} go={go}/> : <Settings colors={colors} go={go} onLogout={logout}/>}</View>{Platform.OS !== 'web' && <View style={[styles.tabs, { backgroundColor: colors.surface, borderColor: colors.border }]}>{PRIMARY_NAVIGATION.map(({ key, icon, label }) => <Pressable key={key} onPress={() => go(key)} style={styles.tab}><MaterialIcons name={icon as IconName} size={22} color={tab === key ? colors.accent : colors.muted}/><Text style={{ color: tab === key ? colors.accent : colors.muted, fontSize: 11, marginTop: 3, fontFamily: DISPLAY_FONT }}>{label}</Text></Pressable>)}</View>}</View>;
 }

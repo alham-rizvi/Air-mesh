@@ -402,3 +402,7 @@
 - [x] Add a dedicated monitoring console with controlled-alert lifecycle, target, and service-health visibility
 - [x] Add public browser sections for About, verified release downloads, and clear build/release status
 - [x] Add regressions, complete cross-stack verification, and checkpoint the operator and public-site upgrade
+- [x] Restore the installed-app launch path to a polished citizen-first alert command experience
+- [x] Keep the Authority Console as a clearly labelled secondary command-menu option
+- [x] Add launch and authority-menu regressions, complete verification, and checkpoint the entry-flow repair
+- [x] Restore the citizen alert command as the default web and APK entry, then add a top-bar Visit our website option for About, project details, and release downloads

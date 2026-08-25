@@ -21,13 +21,15 @@ describe("Sanket Response operator and public-site surfaces", () => {
   it("presents a public browser site with About and a truthful release-download destination", () => {
     const site = read("components/public-project-site.tsx");
     const shell = read("app/(tabs)/index.tsx");
+    const website = read("app/website.tsx");
     expect(site).toContain("ABOUT SANKET RESPONSE");
     expect(site).toContain("Published Android releases");
     expect(site).toContain("GitHub Releases page");
     expect(site).toContain("does not pretend that an unpublished APK exists");
     expect(site).toContain("https://github.com/alham-rizvi/Air-mesh/releases");
-    expect(shell).toContain("Platform.OS === 'web'");
-    expect(shell).toContain("PublicProjectSite");
+    expect(shell).toContain("return <AlertsCenter colors={colors} onNavigate={go}/>;");
+    expect(website).toContain("PublicProjectSite");
+    expect(website).toContain('router.replace("/")');
   });
 
   it("renames the installed product display without changing the established technical slug", () => {
