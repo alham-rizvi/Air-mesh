@@ -408,3 +408,6 @@
 - [x] Restore the citizen alert command as the default web and APK entry, then add a top-bar Visit our website option for About, project details, and release downloads
 - [x] Add a clear Home option in the command menu and Settings that returns to the citizen Alert Command
 - [x] Add Home-navigation regression coverage, complete verification, and checkpoint the menu update
+- [x] Audit reproducible citizen, menu, alert-action, dashboard, and authority workflow defects without applying the task-management reference UI
+- [x] Repair confirmed defects while preserving the current Sanket emergency-first visual language
+- [x] Add regression coverage, complete verification, and checkpoint the focused bug-fix update

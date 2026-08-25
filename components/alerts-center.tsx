@@ -144,7 +144,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
 
   const openSupportLink = (url: string) => {
     setMenuOpen(false);
-    void Linking.openURL(url).catch(() => Alert.alert("Link unavailable", "Air-Mesh could not open this support link on this device."));
+    void Linking.openURL(url).catch(() => Alert.alert("Link unavailable", "Sanket Response could not open this support link on this device."));
   };
 
   const openProjectWebsite = () => {
@@ -161,7 +161,7 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
         <View style={[styles.logo, { borderColor: colors.accent }]}><MaterialIcons name="warning-amber" size={18} color={colors.accent} /></View>
         <View style={{ flex: 1 }}><Text style={[styles.brand, { color: colors.text, fontFamily: DISPLAY_FONT }]}>Sanket</Text><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>RESPONSE COMMAND</Text></View>
         <Pressable accessibilityRole="link" accessibilityLabel="Visit Sanket Response website" onPress={openProjectWebsite} style={({ pressed }) => [styles.websiteButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="public" size={18} color={colors.accent} /><Text style={[styles.websiteButtonText, { color: colors.text }]}>Web</Text></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Open Air-Mesh menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open Sanket menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <SignalField activeCount={active.length} colors={colors} />
