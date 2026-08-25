@@ -19,6 +19,10 @@ describe("citizen-first entry and public website link", () => {
     expect(center).toContain("/website");
     expect(center).toContain('onNavigate?.("authority")');
     expect(center).toContain("Authority Console");
+    expect(center).toContain('onNavigate?.("alerts")');
+    expect(center).toContain('onNavigate?.("settings")');
+    expect(center).toContain("Go to home Alert Command");
+    expect(center).toContain("Open settings");
   });
 
   it("serves public information and release downloads from a dedicated website route", () => {

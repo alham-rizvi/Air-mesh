@@ -406,3 +406,5 @@
 - [x] Keep the Authority Console as a clearly labelled secondary command-menu option
 - [x] Add launch and authority-menu regressions, complete verification, and checkpoint the entry-flow repair
 - [x] Restore the citizen alert command as the default web and APK entry, then add a top-bar Visit our website option for About, project details, and release downloads
+- [x] Add a clear Home option in the command menu and Settings that returns to the citizen Alert Command
+- [x] Add Home-navigation regression coverage, complete verification, and checkpoint the menu update
