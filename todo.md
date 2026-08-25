@@ -393,3 +393,7 @@
 - [x] Complete authorized alert create, location target, update, and resolved-status workflows
 - [x] Strengthen citizen safety guidance, delivery state, and incident-status tracking without unverified claims
 - [x] Add and verify the mandatory emergency alert, location-based alert, alert update, and alert resolution scenarios
+- [x] Add a visible Authority Console entry and explicit controlled-demo/operator authorization boundary in the APK
+- [x] Build in-app authority alert publishing with severity, instructions, and optional geographic target fields
+- [x] Build in-app authority monitoring with update and resolution controls plus clear citizen-status propagation
+- [x] Add authority-console interaction tests, complete verification, and checkpoint the visible APK workflow

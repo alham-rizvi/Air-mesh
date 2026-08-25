@@ -24,10 +24,10 @@ export function GlobalAlertBanner() {
       remoteInitialized.current = true;
       return;
     }
-    const unseen = items.find((item) => !seen.current.has(item.id) && categories.current.includes(item.type as AlertCategory));
+    const unseen = items.find((item) => item.status !== "resolved" && !seen.current.has(item.id) && categories.current.includes(item.type as AlertCategory));
     if (!unseen) return;
     seen.current.add(unseen.id);
-    const next: DisasterAlert = { id: unseen.id, title: unseen.title, summary: unseen.summary, type: unseen.type, severity: unseen.severity, source: unseen.source, issued_at: new Date(unseen.issuedAt).toISOString(), expires_at: unseen.expiresAt ? new Date(unseen.expiresAt).toISOString() : null, status: "active", origin_device_id: unseen.originDeviceId, acknowledged_at: null };
+    const next: DisasterAlert = { id: unseen.id, title: unseen.title, summary: unseen.summary, type: unseen.type, severity: unseen.severity, source: unseen.source, issued_at: new Date(unseen.issuedAt).toISOString(), expires_at: unseen.expiresAt ? new Date(unseen.expiresAt).toISOString() : null, status: unseen.status === "resolved" ? "resolved" : "active", origin_device_id: unseen.originDeviceId, acknowledged_at: null, resolved_at: unseen.resolvedAt ? new Date(unseen.resolvedAt).toISOString() : null };
     setAlert(next);
     void notifyLocalAlert(next);
   }, [remote.data]);

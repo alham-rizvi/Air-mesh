@@ -32,6 +32,7 @@ import type { ImportedSupportBundle } from '@/mobile/src/services/support-bundle
 import type { KeyPair, Report as StoredReport, RetryHistoryRecord } from '@/mobile/src/types/security-data';
 import { IndiaResponseWorkspace } from '@/components/india-response-workspace';
 import { CitizenIncidentForm } from '@/components/citizen-incident-form';
+import { AuthorityConsole } from '@/components/authority-console';
 
 const DEFAULT_ACCENT = '#2DD4BF';
 const accentForeground = (value: string) => { const clean=value.replace('#',''); const red=parseInt(clean.slice(0,2),16); const green=parseInt(clean.slice(2,4),16); const blue=parseInt(clean.slice(4,6),16); return ((red*299)+(green*587)+(blue*114))/1000 > 148 ? '#090B09' : '#FFFFFF'; };
@@ -282,7 +283,7 @@ export default function HomeScreen() {
   };
 
   const go = (destination: string) => {
-    const detailRoutes = ['contacts', 'discover', 'add-contact', 'new-group', 'report', 'sync', 'reports', 'profile', 'audit', 'faq', 'about', 'india-response'];
+    const detailRoutes = ['contacts', 'discover', 'add-contact', 'new-group', 'report', 'sync', 'reports', 'profile', 'audit', 'faq', 'about', 'india-response', 'authority'];
     if (destination.includes(':') || detailRoutes.includes(destination)) { setDetail(destination); return; }
     setDetail('');
     setTab(destination as PrimaryDestination);
@@ -302,6 +303,7 @@ export default function HomeScreen() {
   if (detail === 'faq') return <FAQ colors={colors} go={go}/>;
   if (detail === 'about') return <About colors={colors} go={go}/>;
   if (detail === 'india-response') return <IndiaResponseWorkspace colors={colors} deviceId={localIdentity.deviceId} displayName={localIdentity.displayName} onBack={() => go('alerts')}/>;
+  if (detail === 'authority') return <AuthorityConsole colors={colors} onBack={() => go('alerts')}/>;
 
   return <View style={{ flex: 1, backgroundColor: colors.bg }}><View style={{ flex: 1 }}>{tab === 'alerts' ? <Home colors={colors} go={go}/> : tab === 'messages' ? <Messages colors={colors} go={go}/> : tab === 'rescue' ? <Rescue colors={colors} go={go}/> : <Settings colors={colors} go={go} onLogout={logout}/>}</View><View style={[styles.tabs, { backgroundColor: colors.surface, borderColor: colors.border }]}>{PRIMARY_NAVIGATION.map(({ key, icon, label }) => <Pressable key={key} onPress={() => go(key)} style={styles.tab}><MaterialIcons name={icon as IconName} size={22} color={tab === key ? colors.accent : colors.muted}/><Text style={{ color: tab === key ? colors.accent : colors.muted, fontSize: 11, marginTop: 3, fontFamily: DISPLAY_FONT }}>{label}</Text></Pressable>)}</View></View>;
 }
