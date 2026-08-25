@@ -360,3 +360,8 @@
 - [x] Add explicit unconfigured provider adapters for Indian carrier, SMS, media, map, sensor, and translation integrations
 - [x] Add a responsive desktop browser command companion that presents real alert, filter, and provider-readiness states
 - [x] Verify the browser companion at desktop and mobile breakpoints without changing installed-app behavior
+- [ ] Define durable local shelter and evacuation-route records with explicit live-data status
+- [ ] Configure the native map provider safely and add interactive shelter/route map workflows
+- [ ] Add map and route validation coverage, verify the feature, and checkpoint the map experience
+- [x] Trace and remove every remaining runtime font-loading path causing the native 6000 ms timeout
+- [x] Add startup-font regression coverage, complete full verification, and checkpoint the repair

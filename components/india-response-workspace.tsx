@@ -1,6 +1,6 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { MaterialIcons } from '@/components/ui/vectorless-icon';
 import { INDIA_HAZARDS, INDIA_PROVIDER_ADAPTERS, INDIA_RESPONSE_GUIDES, type IndiaHazard } from '@/shared/india-response';
 import { airMeshIntegration } from '@/mobile/src/services/integration-service';
 import { auditService } from '@/mobile/src/services/auditService';

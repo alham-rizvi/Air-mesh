@@ -1,5 +1,5 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@/components/ui/vectorless-icon';
 
 import { ScreenContainer } from '@/components/screen-container';
 import { ACCENT_COLORS, useThemeStore, type AccentColor } from '@/lib/air-mesh-store';

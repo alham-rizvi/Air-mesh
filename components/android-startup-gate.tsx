@@ -1,5 +1,5 @@
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@/components/ui/vectorless-icon';
 import { useEffect, useState } from 'react';
 
 import { useDeviceReadiness } from '@/hooks/use-device-readiness';

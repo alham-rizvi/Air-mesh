@@ -1,6 +1,6 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import { Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import { MaterialIcons } from '@/components/ui/vectorless-icon';
 import { INDIA_PROVIDER_ADAPTERS } from '@/shared/india-response';
 
 type Colors = { surface: string; text: string; muted: string; border: string; field: string; accent: string };

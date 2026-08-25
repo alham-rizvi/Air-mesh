@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@/components/ui/vectorless-icon';
 import Svg, { Circle, Line } from 'react-native-svg';
 
 import { ScreenContainer } from '@/components/screen-container';

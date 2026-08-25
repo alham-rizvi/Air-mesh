@@ -1,11 +1,10 @@
-// Fallback for using MaterialIcons on Android and web.
+// Lightweight SVG fallback that never requests a runtime icon font.
 
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcons } from "@/components/ui/vectorless-icon";
 import { SymbolWeight, SymbolViewProps } from "expo-symbols";
-import { ComponentProps } from "react";
 import { OpaqueColorValue, type StyleProp, type TextStyle } from "react-native";
 
-type IconMapping = Record<SymbolViewProps["name"], ComponentProps<typeof MaterialIcons>["name"]>;
+type IconMapping = Record<SymbolViewProps["name"], string>;
 type IconSymbolName = keyof typeof MAPPING;
 
 /**

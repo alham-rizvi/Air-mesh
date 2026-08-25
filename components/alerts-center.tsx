@@ -1,5 +1,5 @@
 import { Alert, Animated, ImageBackground, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/components/ui/vectorless-icon";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AlertsDashboard } from "@/components/alerts-dashboard";

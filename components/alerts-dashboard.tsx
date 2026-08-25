@@ -1,7 +1,7 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { MaterialIcons } from "@/components/ui/vectorless-icon";
 import { dashboardAlertState, filterDashboardAlerts, sortDashboardAlerts, type DashboardAlertState, type DashboardSortOption, type DashboardStatusFilter, type DashboardUrgencyFilter } from "@/mobile/src/services/alert-dashboard-state";
 import type { DisasterAlert } from "@/mobile/src/types/security-data";
 

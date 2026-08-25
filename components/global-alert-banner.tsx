@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/components/ui/vectorless-icon";
 import { useEffect, useRef, useState } from "react";
 
 import { trpc } from "@/lib/trpc";
