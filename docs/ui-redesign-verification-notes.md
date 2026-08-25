@@ -11,3 +11,5 @@ The rebuilt Chat destination now presents a clear local-conversation status, res
 The Settings destination retains its local identity, permissions, Bluetooth handoff, connectivity, retry policy, appearance, and diagnostic controls under the redesigned top bar, spacing, command cards, and color system.
 
 The dark command palette was exercised through the existing appearance switch. It preserves high-contrast labels, surfaced card boundaries, signal-teal interaction states, and readable local-control sections without changing their behavior.
+
+The updated local preview enters its established bootstrap state before loading the optional-name, no-login entry surface. A separate warmed mobile capture confirms the first-use screen now offers **Open Air-Mesh now** without an email, password, or mandatory display name.

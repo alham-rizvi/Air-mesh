@@ -7,6 +7,7 @@ import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import * as db from "./db";
 import { INDIA_HAZARDS, INDIA_PROVIDER_ADAPTERS } from "../shared/india-response";
+import { getOfficialFeedReadiness } from "./ndma-sachet-cap";
 
 function hasValidPublisherToken(candidate: string): boolean {
   const configured = process.env.ALERT_INGESTION_TOKEN;
@@ -73,6 +74,7 @@ export const appRouter = router({
   }),
 
   alerts: router({
+    officialFeedStatus: publicProcedure.query(() => getOfficialFeedReadiness()),
     publisherHealth: publicProcedure
       .query(({ ctx }) => {
         requirePublisherToken(ctx.req.headers as Record<string, unknown>);

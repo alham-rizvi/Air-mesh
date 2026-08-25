@@ -368,3 +368,7 @@
 - [x] Define and document a new mobile-first Air-Mesh design system, navigation, and accessibility baseline
 - [x] Rebuild shared UI primitives and the Alerts, Response, Chat, and Settings experiences from scratch
 - [x] Validate redesigned mobile and web layouts, preserve functional flows, and checkpoint the UX redesign
+- [x] Simplify the first-use path so a local profile is optional and no login is required to access safety tools
+- [x] Create a guided alert-to-precaution-to-offline-incident-report and chat flow for new users
+- [x] Assess and connect an authorized official India disaster-alert feed through a secure server-side adapter with explicit unconfigured states
+- [x] Add urgent alert sound/vibration/in-app notification behavior and validate the beginner disaster-response flow

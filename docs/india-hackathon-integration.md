@@ -22,10 +22,13 @@ Air-Mesh exposes application APIs through HTTPS only; the externally reachable s
 
 India’s ERSS describes **112** as a nationwide emergency number and lists multiple incident channels, while the official NDMA Sachet portal describes a CAP-based, geo-intelligent, multilingual, multi-media warning system. Air-Mesh therefore treats those systems as authoritative external services—not as APIs it may invoke without approval. [1] [2]
 
-The current adapter catalog is deliberately honest: ERSS is a user-initiated dialer handoff; CAP/NDMA, cell broadcast, SMS, media, maps, translation, and sensors are visible but unconfigured. The server must receive the provider agreement and credentials before changing an adapter to active.
+The official SACHET portal publishes CAP-based, geo-targeted alerts and exposes an RSS feed subscription page. That makes a server-side read-only RSS/CAP adapter the viable integration candidate for Air-Mesh, subject to feed-format validation, rate limits, and the NDMA terms applicable to the intended use. It is not a license to originate alerts, obtain cell-broadcast delivery, or represent Air-Mesh as an NDMA application. [2] [4]
+
+The current adapter catalog is deliberately honest: ERSS is a user-initiated dialer handoff; CAP/NDMA, cell broadcast, SMS, media, maps, translation, and sensors are visible but unconfigured. The server must receive the provider agreement and credentials before changing an adapter to active. A public feed can only be labeled active after its exact endpoint, permitted use, freshness, and failure behavior are verified in the deployed environment.
 
 ## References
 
 [1]: https://www.mha.gov.in/en/commoncontent/emergency-response-support-system-erss "Ministry of Home Affairs — Emergency Response Support System"
 [2]: https://sachet.ndma.gov.in/ "NDMA Sachet — National Disaster Alert Portal"
 [3]: https://ndma.gov.in/ndma-guidelines "NDMA Guidelines"
+[4]: https://sachet.ndma.gov.in/CapFeed "NDMA Sachet — CAP/RSS feed subscription"

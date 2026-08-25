@@ -1,0 +1,135 @@
+CAP XML Feed Integration Guide for Agencies
+Efficient Consumption of CAP-XML Using ETag & Client-Side Caching
+This guide describes how external agencies should consume the CAP XML feed
+efficiently. To reduce unnecessary load on Sachet National Disaster Portal
+Alerting System, it is required that all-consuming systems follow the ETagbased caching mechanism described below.
+1. Overview
+Our CAP XML endpoint supports the following modern web caching standards:
+
+
+
+
+ETag (Entity Tag) for change detection in CAP XML File
+HTTP 200 OK when CAP XML content has changed
+HTTP 304 Not Modified when CAP XML content is unchanged
+
+To reduce network traffic and server load, agencies must implement clientside caching using ETags.
+2. Expected Consumer Behaviour
+STEP 1 — First Request (No ETag)
+
+
+Consumer calls the URL:
+
+GET
+https://sachet.ndma.gov.in/cap_public_website/FetchXMLFile?identifier=X
+XXXXXXXXXXX
+Server returns:
+
+
+
+
+HTTP 200 OK
+XML Content
+Response Header
+ETag: "<etag-value>"
+
+STEP 2 — Cache the response
+Consumer must store:
+
+
+The XML data
+
+
+
+The ETag value returned by the server
+
+3. Subsequent Requests (With ETag)
+Every subsequent request must include:
+If-None-Match: "<etag-value-from-last-response>"
+Depending on server response:
+CASE A: Server returns 304 Not Modified
+Server response: HTTP 304 Not Modified
+Consumer should:
+
+
+
+
+NOT download anything
+Use the previously cached XML
+Continue processing normally
+
+This avoids unnecessary load and saves bandwidth.
+
+CASE B: Server returns 200 OK
+Server response: HTTP 200 OK , ETag: "<new-etag>" in Response Header
+Consumer must:
+
+
+
+Replace the cached XML with the new XML
+Replace the stored ETag with the new ETag
+
+This means the alert has changed or new alerts added.
+4. Mandatory Requirements for Agencies
+a) MUST send ETag in request
+All consumers must pass ETag after the first request:
+If-None-Match: "<etag-value>"
+b) MUST use cached XML for 304
+
+If 304 is received:
+
+
+
+Do NOT call again
+Use cached XML immediately
+
+c) MUST properly handle both 200 and 304 Response Codes
+
+5. Benefits for Agencies
+
+
+
+
+
+
+
+Faster consumption
+Reduced network usage
+Reduced API load
+More stable alert delivery
+No rate-limiting issues
+More reliable operations
+
+6. Server Response Summary
+Scenario
+First call
+Next call,
+unchanged CAP
+XML
+Next call,
+updated CAP
+XML
+
+Response
+Code
+200
+304
+
+Meaning
+
+What Agency Must Do
+
+New content
+No update
+
+Store XML + ETag
+Use cached XML
+
+200
+
+Updated alert
+
+Replace XML + NEW
+ETag
+
+
