@@ -372,3 +372,7 @@
 - [x] Create a guided alert-to-precaution-to-offline-incident-report and chat flow for new users
 - [x] Assess and connect an authorized official India disaster-alert feed through a secure server-side adapter with explicit unconfigured states
 - [x] Add urgent alert sound/vibration/in-app notification behavior and validate the beginner disaster-response flow
+- [x] Define the citizen-first alert, precaution, safety check-in, incident report, and website handoff contract
+- [x] Rebuild the primary mobile command flow around four simple citizen actions and clear alert status
+- [x] Make online dashboard handoff and offline queued/relay report states explicit and truthful
+- [x] Add workflow regressions, complete verification, and checkpoint the citizen-first disaster-response experience
