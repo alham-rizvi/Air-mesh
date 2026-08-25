@@ -382,3 +382,6 @@
 - [x] Reproduce and repair the broken Safety & Evacuation route from the citizen alert dashboard
 - [x] Reproduce and repair the Test Alert action with clear local/browser/native feedback
 - [x] Add interaction regressions, complete verification, and checkpoint the safety and alert repairs
+- [x] Add an explicit native-only Test Alert sound outcome while preserving honest browser behavior
+- [x] Rename and clarify saved-alert search so it is not mistaken for a live provider search
+- [x] Add sound and search-label regressions, complete verification, and checkpoint the alert interaction update

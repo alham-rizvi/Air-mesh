@@ -14,7 +14,9 @@ describe("citizen-first disaster-response flow", () => {
     expect(alertCenter).toContain('onNavigate?.("india-response")');
     expect(alertCenter).toContain('onNavigate?.("report")');
     expect(alertCenter).toContain("testAlertFeedback");
-    expect(alertCenter).toContain("Browser preview cannot show a native phone notification");
+    expect(alertCenter).toContain("await requestLocalAlertPermission()");
+    expect(alertCenter).toContain("Android requested the device alert sound and vibration");
+    expect(alertCenter).toContain("Browser preview cannot play the Android alert buzzer");
   });
 
   it("routes the report action to the citizen incident form and the response actions to the response workspace", () => {
@@ -38,5 +40,12 @@ describe("citizen-first disaster-response flow", () => {
     expect(form).toContain("website dashboard is not connected yet");
     expect(form).toContain("dashboard_handoff: \"not_configured\"");
     expect(form).toContain("saveLocalReport(report)");
+  });
+
+  it("labels saved-alert filtering honestly instead of implying a live provider search", () => {
+    const dashboard = read("components/alerts-dashboard.tsx");
+    expect(dashboard).toContain("SAVED ALERTS ON THIS DEVICE");
+    expect(dashboard).toContain("Find a saved alert");
+    expect(dashboard).toContain("It does not search government or internet alert feeds.");
   });
 });

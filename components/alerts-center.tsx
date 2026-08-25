@@ -97,6 +97,8 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
 
   const createTest = async () => {
     try {
+      const testPermission = permission === "granted" ? "granted" : await requestLocalAlertPermission();
+      setPermission(testPermission);
       const { alert, notified } = await createLocalAlert({
         title: "Local disaster-alert test",
         summary: "This is an on-device test alert. It is not from a government, IoT, weather, or live external provider.",
@@ -105,8 +107,13 @@ export function AlertsCenter({ colors, onNavigate }: { colors: Colors; onNavigat
         source: "local_report",
       });
       setAlerts((current) => [alert, ...current.filter((entry) => entry.id !== alert.id)]);
-      setTestAlertFeedback({ kind: "success", text: notified ? "Test alert created. It is in this alert list and was sent to the device notification system." : "Test alert created. It is now visible in this alert list. Browser preview cannot show a native phone notification." });
-      Alert.alert("Local alert created", notified ? "The alert is stored locally, visible in this inbox, and submitted to the device notification system." : "The alert is stored locally and visible in this inbox. Enable notifications to request device-tray presentation.");
+      const feedback = notified
+        ? "Test alert created. Android requested the device alert sound and vibration, and the alert is now in this list."
+        : testPermission === "unsupported"
+          ? "Test alert created. It is now visible in this list. Browser preview cannot play the Android alert buzzer."
+          : "Test alert created. It is now visible in this list, but alert sound needs notification permission in Android settings.";
+      setTestAlertFeedback({ kind: "success", text: feedback });
+      Alert.alert("Local alert created", feedback);
     } catch (error) {
       setTestAlertFeedback({ kind: "error", text: error instanceof Error ? `Test alert could not be created: ${error.message}` : "Test alert could not be created. Try reloading the app, then try again." });
     }
