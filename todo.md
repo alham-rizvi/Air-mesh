@@ -376,3 +376,6 @@
 - [x] Rebuild the primary mobile command flow around four simple citizen actions and clear alert status
 - [x] Make online dashboard handoff and offline queued/relay report states explicit and truthful
 - [x] Add workflow regressions, complete verification, and checkpoint the citizen-first disaster-response experience
+- [x] Replace the unchanged-looking first-use setup screen with a direct citizen disaster-alert dashboard
+- [x] Keep local identity optional and move it behind a secondary preference rather than the opening experience
+- [x] Verify the visible direct-entry alert experience, safety actions, responsive layout, and checkpoint the repair

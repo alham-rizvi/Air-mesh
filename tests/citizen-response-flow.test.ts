@@ -18,8 +18,16 @@ describe("citizen-first disaster-response flow", () => {
   it("routes the report action to the citizen incident form and the response actions to the response workspace", () => {
     const shell = read("app/(tabs)/index.tsx");
     expect(shell).toContain("CitizenIncidentForm");
-    expect(shell).toContain("detail==='india-response'");
+    expect(shell).toContain("detail === 'india-response'");
     expect(shell).toContain("dashboard not connected");
+  });
+
+  it("opens the direct alert dashboard without making a local identity a prerequisite", () => {
+    const shell = read("app/(tabs)/index.tsx");
+    expect(shell).toContain("const localIdentity = account ??");
+    expect(shell).toContain("Local user");
+    expect(shell).not.toContain("if(!account) return <AccountSetup");
+    expect(shell).not.toContain("if (!account) return <AccountSetup");
   });
 
   it("saves reports locally and does not present an unconfigured dashboard as an operator receipt", () => {
