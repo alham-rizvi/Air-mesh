@@ -365,3 +365,6 @@
 - [ ] Add map and route validation coverage, verify the feature, and checkpoint the map experience
 - [x] Trace and remove every remaining runtime font-loading path causing the native 6000 ms timeout
 - [x] Add startup-font regression coverage, complete full verification, and checkpoint the repair
+- [x] Define and document a new mobile-first Air-Mesh design system, navigation, and accessibility baseline
+- [x] Rebuild shared UI primitives and the Alerts, Response, Chat, and Settings experiences from scratch
+- [x] Validate redesigned mobile and web layouts, preserve functional flows, and checkpoint the UX redesign

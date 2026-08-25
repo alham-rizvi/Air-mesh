@@ -14,8 +14,6 @@ import type { DisasterAlert } from "@/mobile/src/types/security-data";
 
 type Colors = { bg: string; surface: string; text: string; muted: string; border: string; field: string; accent: string; onAccent?: string };
 
-const ALERT_COMMAND_HERO = { uri: "https://images.unsplash.com/photo-1758404958502-44f156617bae?auto=format&fit=crop&w=1200&q=75" };
-
 function severityColor(severity: DisasterAlert["severity"], accent: string) {
   return severity === "critical" ? "#FF5964" : severity === "high" ? "#FFB34D" : severity === "moderate" ? "#EACB5B" : accent;
 }
@@ -35,11 +33,20 @@ function GlassMetricBlock({ label, value, valueColor, colors }: { label: string;
   </Pressable>;
 }
 
+function SignalField({ activeCount, colors }: { activeCount: number; colors: Colors }) {
+  const status = activeCount ? "REVIEW REQUIRED" : "LOCAL WORKSPACE READY";
+  return <View style={[redesign.signalField, { borderColor: activeCount ? "rgba(255,107,107,0.7)" : colors.border, backgroundColor: colors.surface }]}>
+    <View style={redesign.signalGrid}><View style={[redesign.signalNode, redesign.nodeOne, { borderColor: colors.accent }]} /><View style={[redesign.signalNode, redesign.nodeTwo, { borderColor: colors.accent }]} /><View style={[redesign.signalNode, redesign.nodeThree, { borderColor: colors.accent }]} /><View style={[redesign.signalLine, redesign.lineOne, { backgroundColor: colors.accent }]} /><View style={[redesign.signalLine, redesign.lineTwo, { backgroundColor: colors.accent }]} /></View>
+    <View style={redesign.signalTop}><View style={[redesign.signalState, { borderColor: activeCount ? "rgba(255,107,107,0.55)" : "rgba(45,212,191,0.45)" }]}><View style={[redesign.signalDot, { backgroundColor: activeCount ? "#FF6B6B" : colors.accent }]} /><Text style={[redesign.signalStateText, { color: activeCount ? "#FF9D9D" : colors.accent, fontFamily: DISPLAY_FONT }]}>{status}</Text></View><Text style={[redesign.signalTimestamp, { color: colors.muted }]}>LOCAL</Text></View>
+    <View style={redesign.signalCopy}><Text style={[redesign.signalTitle, { color: colors.text, fontFamily: DISPLAY_FONT }]}>{activeCount ? `${activeCount.toString().padStart(2, "0")} NOTICE${activeCount === 1 ? "" : "S"}\nNEED REVIEW.` : "STAY READY.\nMOVE CLEAR."}</Text><Text style={[redesign.signalBody, { color: colors.muted }]}>{activeCount ? "Review the local alert queue, then acknowledge records when you have read them." : "Your local alert workspace is ready. Alerts and response records stay accessible when networks fail."}</Text></View>
+    <View style={[redesign.signalFooter, { borderTopColor: colors.border }]}><Text style={[redesign.signalFooterLabel, { color: colors.muted }]}>ALERT COMMAND</Text><View style={redesign.signalLegend}><View style={[redesign.legendDot, { backgroundColor: colors.accent }]} /><Text style={[redesign.signalFooterLabel, { color: colors.text }]}>ON-DEVICE STATUS</Text></View></View>
+  </View>;
+}
+
 export function AlertsCenter({ colors }: { colors: Colors }) {
   const [alerts, setAlerts] = useState<DisasterAlert[]>([]);
   const [permission, setPermission] = useState<"unknown" | "granted" | "denied" | "unsupported">("unknown");
   const [categories, setCategories] = useState<AlertCategory[]>(["safety", "evacuation"]);
-  const [heroImageUnavailable, setHeroImageUnavailable] = useState(false);
   const remoteAlerts = trpc.alerts.list.useQuery({ limit: 50 }, { refetchInterval: 60_000 });
   const knownRemoteAlertIds = useRef(new Set<string>());
   const remoteInitialized = useRef(false);
@@ -124,15 +131,7 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
         <Pressable accessibilityRole="button" accessibilityLabel="Open Air-Mesh menu" onPress={() => setMenuOpen(true)} style={({ pressed }) => [styles.menuButton, { borderColor: colors.border, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 }]}><MaterialIcons name="menu" size={23} color={colors.text} /></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <ImageBackground source={heroImageUnavailable ? undefined : ALERT_COMMAND_HERO} onError={() => setHeroImageUnavailable(true)} imageStyle={[styles.heroImage, heroImageUnavailable && styles.hiddenHeroImage]} style={[styles.hero, { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "#050605" }]}> 
-          <View style={styles.heroShade} />
-          <View style={styles.heroContent}>
-            <View style={[styles.heroEyebrow, { borderColor: "rgba(255,255,255,0.2)" }]}><View style={[styles.pulse, { backgroundColor: colors.accent }]} /><Text style={[styles.heroEyebrowText, { fontFamily: DISPLAY_FONT }]}>DISASTER RESPONSE SYSTEM</Text></View>
-            <Text style={[styles.heroTitle, { fontFamily: DISPLAY_FONT }]}>TRIAGE{`\n`}THE SIGNAL.</Text>
-            <Text style={styles.heroCopy}>Review incoming notices, set device preferences, and retain your response record when networks fail.</Text>
-            <View style={styles.heroFooter}><Text style={[styles.micro, { color: colors.accent, fontFamily: DISPLAY_FONT }]}>{heroImageUnavailable ? "REMOTE IMAGE UNAVAILABLE · LOCAL UI READY" : "LOCAL-FIRST · AUDITABLE"}</Text><MaterialIcons name="arrow-downward" size={16} color="#FFFFFF" /></View>
-          </View>
-        </ImageBackground>
+        <SignalField activeCount={active.length} colors={colors} />
 
         <WebCommandCompanion colors={colors} activeAlerts={active.length} serverAlertCount={serverAlerts.length} controlledServiceAvailable={!remoteAlerts.isError} />
 
@@ -176,6 +175,16 @@ export function AlertsCenter({ colors }: { colors: Colors }) {
     </ScreenContainer>
   );
 }
+
+const redesign = StyleSheet.create({
+  signalField: { minHeight: 310, borderWidth: 1, borderRadius: 24, overflow: "hidden", padding: 18, justifyContent: "space-between" },
+  signalGrid: { ...StyleSheet.absoluteFillObject, opacity: 0.74 },
+  signalNode: { position: "absolute", width: 12, height: 12, borderWidth: 2, borderRadius: 6, backgroundColor: "#070909" }, nodeOne: { top: 42, right: 36 }, nodeTwo: { top: 155, right: 102 }, nodeThree: { bottom: 42, right: 30 },
+  signalLine: { position: "absolute", height: 1, opacity: 0.4 }, lineOne: { width: 114, top: 82, right: 48, transform: [{ rotate: "124deg" }] }, lineTwo: { width: 108, top: 168, right: 45, transform: [{ rotate: "-128deg" }] },
+  signalTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, signalState: { minHeight: 30, borderRadius: 999, borderWidth: 1, paddingHorizontal: 10, flexDirection: "row", alignItems: "center", gap: 7 }, signalDot: { width: 7, height: 7, borderRadius: 4 }, signalStateText: { fontSize: 9, letterSpacing: 0.9, fontWeight: "900" }, signalTimestamp: { fontSize: 10, fontWeight: "800", letterSpacing: 1 },
+  signalCopy: { maxWidth: "86%", marginTop: 25 }, signalTitle: { fontSize: 33, lineHeight: 34, letterSpacing: -1.5, fontWeight: "900" }, signalBody: { fontSize: 13, lineHeight: 19, marginTop: 12, maxWidth: 286 },
+  signalFooter: { paddingTop: 13, flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: StyleSheet.hairlineWidth }, signalLegend: { flexDirection: "row", alignItems: "center", gap: 6 }, legendDot: { width: 6, height: 6, borderRadius: 3 }, signalFooterLabel: { fontSize: 9, fontWeight: "900", letterSpacing: 0.85 },
+});
 
 const styles = StyleSheet.create({
   header: { height: 62, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
